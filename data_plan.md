@@ -42,7 +42,7 @@ Data Sources (JSON files / APIs)
 | Agent | Primary data | Cross-references | Emits to |
 |-------|-------------|-----------------|----------|
 | People | `team_activity.json` | Infra (service ownership), Finance (payroll cost) | Signal bus, Cascade mapper |
-| Finance | `financials.json` | Legal (contract values), People (headcount cost), Product (revenue-driving features) | Signal bus, Cascade mapper |
+| Finance | `deadpool_finance_data.csv` + `deadpool_revenue_pipeline.csv` + `deadpool_funding_runway.csv` | Legal (contract terms tied to pipeline deals), People (headcount cost, key-person blocking deals), Product (churn impact on subscription revenue) | Signal bus, Cascade mapper |
 | Infra | `infrastructure.json` | People (service owners), Legal (SLA deadlines), Product (error rates) | Signal bus, Cascade mapper |
 | Legal | `contracts.json` | Finance (contract values, funding terms), Infra (delivery deadlines), Market (regulatory signals) | Signal bus, Cascade mapper |
 | Product | `product_metrics.json` | Infra (service health causing UX issues), Finance (revenue impact of churn), People (support team capacity) | Signal bus, Cascade mapper |
@@ -65,19 +65,19 @@ Agents connect data across domains using shared entity keys. These keys must be 
 **Example cross-reference chain:**
 
 ```
-People agent finds: "Sarah Chen" commit drop
+People agent finds: "Engineer 3 (Mobile)" commit drop → on leave
         │
         ▼ (developer_name → service ownership)
-Infra agent checks: "payments-service" deploy velocity
+Infra agent checks: "payments-service" deploy velocity — stalled
         │
-        ▼ (service_name → contract obligation)
-Legal agent checks: contract CTR-2025-047 deadline for "Payments API v2"
+        ▼ (service_name + feature_name → pipeline deal)
+Finance agent checks: Nexus Corp pipeline deal linked to "Payments API v2" — at_risk, probability 0.35
         │
-        ▼ (client_name → revenue share)
-Finance agent checks: "Nexus Corp" revenue concentration = 42%
+        ▼ (pipeline deal lost → runway impact)
+Finance agent checks: without Nexus revenue, runway = 6.7 months, declining
         │
         ▼ (funding terms → runway threshold)
-Finance agent checks: down-round clause triggers at runway < 3 months
+Finance agent checks: down-round clause triggers at runway < 3 months — ~3.6 months away
 ```
 
 ---
@@ -174,112 +174,79 @@ For the cascade trigger developer:
 
 ---
 
-### 4.2 Finance Agent — `financials.json`
+### 4.2 Finance Agent — Three CSV files
 
-**Purpose:** Simulate 12 months of startup financials showing healthy early metrics that deteriorate as the cascade unfolds. Revenue is concentrated in one client tied to a feature delivery deadline.
+The Finance Agent consumes three CSV files that together cover the full financial picture: transaction history, revenue pipeline, and funding/runway model.
 
-**File structure:**
+#### 4.2a Transaction Ledger — `deadpool_finance_data.csv`
 
-```json
-{
-  "metadata": {
-    "company": "Acme SaaS Inc.",
-    "stage": "Seed",
-    "data_period": {
-      "start": "2025-04-01",
-      "end": "2026-03-31",
-      "granularity": "monthly",
-      "months": 12
-    }
-  },
-  "monthly_financials": [
-    {
-      "month": "YYYY-MM",
-      "revenue": {
-        "total": "float — total monthly revenue",
-        "by_client": {
-          "client_name": "float — revenue from this client"
-        },
-        "mrr": "float — monthly recurring revenue",
-        "arr": "float — annualized recurring revenue"
-      },
-      "expenses": {
-        "total": "float — total monthly expenses",
-        "payroll": "float",
-        "cloud_infrastructure": "float",
-        "legal_and_compliance": "float",
-        "sales_and_marketing": "float",
-        "office_and_misc": "float"
-      },
-      "cash_balance": "float — end of month cash",
-      "monthly_burn_rate": "float — expenses minus revenue",
-      "runway_months": "float — cash_balance / monthly_burn_rate"
-    }
-  ],
-  "revenue_concentration": {
-    "top_client": "string — client name",
-    "top_client_share": "float — percentage of total revenue (0-1)",
-    "herfindahl_index": "float — revenue concentration index"
-  },
-  "funding_history": [
-    {
-      "round": "string — Pre-Seed | Seed | Series A",
-      "amount": "float",
-      "date": "ISO 8601 date",
-      "lead_investor": "string",
-      "post_money_valuation": "float",
-      "key_terms": {
-        "down_round_protection": "string — description of clause",
-        "trigger_condition": "string — condition that activates the clause",
-        "consequence": "string — what happens when triggered"
-      }
-    }
-  ],
-  "accounts_receivable": [
-    {
-      "client": "string — client name",
-      "invoice_amount": "float",
-      "due_date": "ISO 8601 date",
-      "days_overdue": "integer",
-      "status": "string — paid | pending | overdue | at_risk"
-    }
-  ]
-}
+**Purpose:** Complete transaction-level record of every dollar in and out from company founding (Sep 2025) through current date (Mar 2026). This is the source of truth for cash position, burn rate, and expense breakdown.
+
+**Columns:** `date, category, subcategory, description, amount, running_balance, notes`
+
+**Key characteristics of the existing data:**
+- Funding: $150K pre-seed (Sep 2025) + $750K seed (Nov 2025) = $900K total raised
+- Team grows from 2 founders to 10 employees (2 founders, 5 engineers, 1 designer, 1 PM, 1 marketing, 1 DevOps, 1 data analyst)
+- Monthly payroll peaks at ~$72K (10 people), drops to ~$65K in March when Engineer 3 goes on unpaid leave
+- Cloud costs escalate from $210/mo to $5,200/mo (unoptimized — DevOps distracted)
+- Revenue is minimal: only $1,200/mo from ~80 SMB subscribers at $15/mo
+- Final cash balance: ~$493K
+- Notes field contains cascade-relevant signals: `*** Commit activity dropped 60%`, `*** ON LEAVE - unpaid. DM feature stalled.`, `*** Burn rate accelerating`
+
+**This file already exists and is the source of truth. Do not regenerate.**
+
+#### 4.2b Revenue Pipeline — `deadpool_revenue_pipeline.csv`
+
+**Purpose:** Track all revenue sources, outstanding invoices, and pipeline deals with their probabilities and feature dependencies. The critical data for the Finance Agent is that the Nexus Corp enterprise deal ($423K/year) depends on Payments API v2 shipping by April 15 — and that feature is stalled because Engineer 3 is on leave.
+
+**Columns:** `record_type, date, client_name, description, amount, status, linked_feature, linked_service, contract_id, payment_terms, days_overdue, probability, notes`
+
+**Record types:**
+- `revenue` — Collected subscription revenue (SMB self-serve)
+- `invoice` — Accounts receivable with payment status and overdue tracking
+- `pipeline` — Enterprise deals in progress with close probability and feature dependencies
+- `revenue_projection` — Forward-looking scenarios
+
+**Key data points:**
+- SMB subscriptions: $840–$1,200/month, growth stalling, churn increasing from payments errors
+- Greenleaf Consulting: two invoices totaling $9K overdue (56 and 27 days) — noise anomaly, not cascade-critical
+- Nexus Corp pipeline: $423K/year deal, probability degraded from 0.85 → 0.35 as Engineer 3 situation deteriorated. `linked_feature: "Payments API v2"`, `linked_service: "payments-service"`. Hard deadline April 15.
+- Patel Industries pipeline: $96K/year deal stalled (champion left) — secondary risk
+- BrightPath Education: $18K/year deal delayed by SOC 2 gap — minor
+
+**Cascade-critical pipeline entry:**
+```csv
+pipeline,2026-03-15,Nexus Corp,Enterprise contract - at risk,423360.00,at_risk,Payments API v2,payments-service,CTR-DRAFT-047,Prepaid Annual,0,0.35,*** Nexus Corp CFO emailed asking for status update on API v2. Engineer 3 on leave. No one else has context. Deadline April 15.
 ```
 
-**Synthetic data generation rules:**
+#### 4.2c Funding Terms & Runway — `deadpool_funding_runway.csv`
 
-- Revenue should grow steadily months 1-8 (5-8% month-over-month), then flatten months 9-12.
-- One client (Nexus Corp) should represent 40-45% of revenue throughout. This is the concentration risk.
-- Burn rate should be stable around $120K-$135K/month with payroll as the largest component.
-- Runway should start at 12+ months and gradually decline to ~6 months by the current month.
-- The down-round clause should trigger at runway < 3 months — this is the final cascade node.
-- Include one overdue invoice from a smaller client (noise, not cascade-relevant).
+**Purpose:** Investor agreement terms (especially the down-round clause), monthly financial summaries, and runway scenario modeling. This is where the Finance Agent detects the final node of the cascade: if Nexus deal fails → no revenue inflection → runway erodes → investor clause triggers.
 
-**Key cascade data points:**
+**Columns:** `record_type, date, field, value, detail, threshold, status, notes`
 
-```json
-{
-  "revenue_concentration": {
-    "top_client": "Nexus Corp",
-    "top_client_share": 0.42,
-    "herfindahl_index": 0.28
-  },
-  "funding_history": [
-    {
-      "round": "Seed",
-      "amount": 1500000,
-      "date": "2025-06-01",
-      "lead_investor": "Horizon Ventures",
-      "post_money_valuation": 8000000,
-      "key_terms": {
-        "down_round_protection": "Full ratchet anti-dilution with enhanced liquidation preference",
-        "trigger_condition": "runway_months < 3 before Series A close",
-        "consequence": "Investor converts at 50% discount with 2x liquidation preference and board observer seat"
-      }
-    }
-  ]
-}
+**Record types:**
+- `funding_round` — Round details (amount, valuation, instrument type)
+- `investor_clause` — Specific clause terms with trigger metrics and consequences
+- `monthly_summary` — Aggregated monthly financials (derived from the transaction ledger)
+- `runway_scenario` — Projected outcomes under different assumptions
+
+**Key data points:**
+- Pre-seed: $150K SAFE at $1.5M cap (David Park angel syndicate)
+- Seed: $750K priced round at $4.75M post-money (Horizon Ventures, Maria Santos)
+- Down-round clause: triggers when `runway_months < 3`. Consequence: investor converts at 50% discount with 2x liquidation preference and full board seat. Current status: `monitoring`
+- Current runway: 6.7 months (base case, no Nexus revenue)
+- Best case (Nexus closes): runway extends to 13.2 months
+- Worst case (Nexus lost + churn accelerates): ~3.6 months until down-round trigger
+
+**Cascade-critical clause:**
+```csv
+investor_clause,2025-11-01,clause_name,Anti-dilution (full ratchet),Horizon Ventures seed agreement - Section 5.2,runway_months < 3,monitoring,Triggers if runway drops below 3 months before Series A close
+```
+
+**Cascade-critical scenario:**
+```csv
+runway_scenario,2026-03-28,months_to_trigger,6.6,Months until runway < 3 (investor clause),3.0,warning,*** ~3.6 months until down-round clause triggers if no revenue inflection
 ```
 
 ---
@@ -455,50 +422,43 @@ For the cascade-affected service (payments-service):
 
 ```json
 {
-  "client_contracts": [
+  "pipeline_contracts": [
     {
-      "id": "CTR-2025-047",
+      "id": "CTR-DRAFT-047",
       "client": "Nexus Corp",
+      "status": "in_procurement",
       "annual_value": 423360,
       "clauses": [
         {
           "section": "Section 4.2",
-          "title": "Feature delivery obligation",
-          "summary": "Payments API v2 must be deployed to production by April 15, 2026",
+          "title": "Feature delivery prerequisite",
+          "summary": "Contract execution contingent on Payments API v2 deployed to production by April 15, 2026. If not delivered, Nexus Corp walks.",
           "deadline": "2026-04-15",
           "linked_service": "payments-service",
           "linked_feature": "Payments API v2",
-          "breach_consequence": "Client may terminate without penalty and receive prorated refund",
+          "failure_consequence": "Deal collapses. $423,360/year revenue never materializes. Company remains pre-revenue.",
           "financial_impact": 423360,
           "status": "at_risk"
-        },
-        {
-          "section": "Section 7.3",
-          "title": "Refund on termination for cause",
-          "summary": "All prepaid fees for unused period refunded within 30 days of termination",
-          "deadline": null,
-          "linked_service": null,
-          "linked_feature": null,
-          "breach_consequence": "Cash outflow of up to $211,680",
-          "financial_impact": 211680,
-          "status": "monitoring"
         }
       ]
-    },
+    }
+  ],
+  "active_contracts": [
     {
-      "id": "CTR-2025-012",
-      "client": "Patel Industries",
-      "annual_value": 221760,
+      "id": "CTR-2025-063",
+      "client": "Greenleaf Consulting",
+      "status": "dispute",
+      "annual_value": 54000,
       "clauses": [
         {
-          "section": "Section 3.1",
-          "title": "SLA guarantee",
-          "summary": "99.5% uptime guaranteed. Three consecutive months below triggers 20% discount",
+          "section": "Section 2.1",
+          "title": "Deliverable acceptance",
+          "summary": "Client claims analytics integration deliverable incomplete. Withholding payment.",
           "deadline": null,
-          "linked_service": "payments-service",
-          "linked_feature": null,
-          "breach_consequence": "Automatic 20% revenue reduction on this contract",
-          "financial_impact": 44352,
+          "linked_service": "analytics-pipeline",
+          "linked_feature": "Analytics Dashboard",
+          "breach_consequence": "$9,000 in receivables at risk",
+          "financial_impact": 9000,
           "status": "monitoring"
         }
       ]
@@ -910,19 +870,22 @@ Every agent emits anomalies in this standardized format to the signal bus.
 
 ## 7. File manifest
 
-Place all synthetic data files in `/data/synthetic/` in the project repo.
+Place all data files in `/data/` in the project repo. Finance Agent files are CSV; other agents use JSON.
 
-| File | Agent | Size (approx) | Description |
-|------|-------|---------------|-------------|
-| `team_activity.json` | People | ~15 KB | 12 developers × 12 weeks of activity |
-| `financials.json` | Finance | ~10 KB | 12 months of P&L, client revenue, funding terms |
-| `infrastructure.json` | Infra | ~12 KB | 6 services × 12 weeks of health metrics |
-| `contracts.json` | Legal | ~8 KB | 4 client contracts + 1 investor agreement + compliance |
-| `product_metrics.json` | Product | ~10 KB | Global metrics + feature-level data + support tickets |
-| `market_signals.json` | Market | ~6 KB | 2 competitors + industry trends + regulatory signals |
-| `dependency_graph.json` | Cascade Mapper | ~4 KB | Pre-built node-edge graph with baseline probabilities |
+| File | Agent | Format | Size (approx) | Description |
+|------|-------|--------|---------------|-------------|
+| `deadpool_finance_data.csv` | Finance | CSV | ~12 KB | Transaction ledger: Sep 2025–Mar 2026, every income/expense with running balance |
+| `deadpool_revenue_pipeline.csv` | Finance | CSV | ~3 KB | Revenue actuals, overdue invoices, pipeline deals with probabilities and feature dependencies |
+| `deadpool_funding_runway.csv` | Finance | CSV | ~5 KB | Funding rounds, investor clause terms, monthly summaries, runway scenarios |
+| `team_activity.json` | People | JSON | ~12 KB | 10 team members × 12 weeks of activity |
+| `infrastructure.json` | Infra | JSON | ~12 KB | 6 services × 12 weeks of health metrics |
+| `contracts.json` | Legal | JSON | ~8 KB | Pipeline deal terms + investor agreement + compliance |
+| `product_metrics.json` | Product | JSON | ~10 KB | Global metrics + feature-level data + support tickets |
+| `market_signals.json` | Market | JSON | ~6 KB | 2 competitors + industry trends + regulatory signals |
+| `codebase_audit.json` | Code Audit | JSON | ~8 KB | Code ownership, CVE scan, test coverage, bus factor |
+| `dependency_graph.json` | Cascade Mapper | JSON | ~4 KB | Pre-built node-edge graph with baseline probabilities |
 
-**Total synthetic dataset: ~65 KB** — small enough to load entirely in memory, rich enough to power a compelling demo.
+**Total dataset: ~80 KB** — small enough to load entirely in memory, rich enough to power a compelling demo.
 
 ---
 
@@ -930,14 +893,16 @@ Place all synthetic data files in `/data/synthetic/` in the project repo.
 
 Before demo day, verify:
 
-- [ ] All linking keys are consistent across files (`"Sarah Chen"` spelled identically everywhere, `"payments-service"` matches in all files)
-- [ ] Timeline alignment: all files cover weeks 1-12 with the same `week_start` dates
-- [ ] The cascade trigger developer's decline correlates with the infra service degradation (same timeline)
-- [ ] The contract deadline (April 15) falls within the infra agent's projected miss window
-- [ ] The financial model correctly shows runway dropping below 3 months if Nexus Corp revenue is removed + refund is paid
-- [ ] At least 2-3 non-cascading anomalies exist as noise (vacation week, one-time blip, minor overdue invoice)
+- [ ] All linking keys are consistent across files (`"Engineer 3"` / `"payments-service"` / `"Nexus Corp"` spelled identically everywhere)
+- [ ] Timeline alignment: all files cover the same period (Sep 2025 – Mar 2026 for finance, weeks 1-12 of 2026 for others)
+- [ ] Engineer 3's disengagement timeline in People data correlates with payments-service degradation in Infra data
+- [ ] The Nexus Corp pipeline deal in `deadpool_revenue_pipeline.csv` references `linked_feature: "Payments API v2"` and `linked_service: "payments-service"`
+- [ ] The funding terms in `deadpool_funding_runway.csv` show down-round trigger at `runway_months < 3` with correct consequence text
+- [ ] Monthly summaries in `deadpool_funding_runway.csv` are consistent with the transaction ledger totals in `deadpool_finance_data.csv`
+- [ ] Runway scenarios correctly show: base case ~6.7 months, best case (Nexus closes) ~13.2 months, worst case ~3.6 months to trigger
+- [ ] At least 2-3 non-cascading anomalies exist as noise (Greenleaf overdue invoices, Patel Industries stalled deal, BrightPath SOC 2 delay)
 - [ ] No data file references an entity that doesn't exist in another file
-- [ ] Anomaly severity scores are calibrated: the cascade-relevant anomalies are 0.7+ severity, noise anomalies are 0.3-0.5
+- [ ] Anomaly severity scores are calibrated: cascade-relevant anomalies are 0.7+ severity, noise anomalies are 0.3-0.5
 
 ---
 

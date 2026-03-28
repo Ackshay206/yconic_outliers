@@ -10,7 +10,7 @@
 
 Startups don't die from one thing. They die from a chain reaction that nobody mapped until it was too late.
 
-A lead engineer quietly disengages. Nobody notices for three weeks. The payments service she owns stops getting deployed. A critical feature deadline slips. The contract with your biggest client — 42% of revenue — has a delivery clause tied to that feature. The contract lapses. Revenue craters overnight. Your runway drops below three months. The down-round clause in your investor agreement triggers. The company is effectively dead.
+A mobile engineer quietly disengages. Nobody notices for three weeks. The payments feature he was building stops making progress. A critical enterprise deal — $423K/year, the company's path to real revenue — has a delivery clause tied to that feature. The deadline passes. The deal collapses. The startup stays pre-revenue, burning $73K/month on $493K in the bank. Runway shrinks month by month. The down-round clause in the investor agreement triggers. The company is effectively dead.
 
 Every signal was visible. The GitHub commits were declining. The deployment frequency was dropping. The contract deadline was approaching. The revenue concentration was documented. The investor terms were signed. But no tool, no dashboard, no human connected these dots across domains until the post-mortem.
 
@@ -89,7 +89,7 @@ DEADPOOL runs a hierarchical multi-agent system. Six specialist agents are domai
 
 Every specialist agent monitors its domain on a continuous cycle: ingest data, analyze for anomalies, emit structured anomaly events to the signal bus. But the magic isn't in the individual agents — it's in the Head Agent connecting them.
 
-When the People Agent flags that a key engineer's commit activity dropped 94% over five weeks, the Head Agent doesn't just pass that through. It asks the Code Audit Agent: "What's the state of the code areas this engineer owns?" Code Audit responds: zero code reviews in 14 days, test coverage dropped from 82% to 61%, and there's an unpatched CVE in the payments service dependency. The Head Agent then asks the Legal Agent: "Are there any contracts tied to the payments service?" Legal responds: Nexus Corp contract Section 4.2 requires Payments API v2 delivery by April 15, breach triggers termination without penalty. The Head Agent asks Finance: "What happens if Nexus Corp revenue disappears?" Finance responds: 42% revenue loss, runway drops to 2.5 months, triggering the down-round clause.
+When the People Agent flags that a key engineer's commit activity dropped 60% and they've gone on unpaid leave, the Head Agent doesn't just pass that through. It asks the Code Audit Agent: "What's the state of the code areas this engineer owns?" Code Audit responds: zero code reviews in 14 days, test coverage dropped from 82% to 61%, and there's an unpatched CVE in the payments service dependency. The Head Agent then asks the Infra Agent: "What feature was this engineer building?" Infra responds: Payments API v2 is stalled at 34% completion — no one else has context. The Head Agent then asks Finance: "What depends on Payments API v2?" Finance responds: the Nexus Corp enterprise deal ($423K/year, currently in procurement) has an April 15 hard deadline for API v2 deployment. If the deal collapses, the company stays pre-revenue at $1,200/month with $493K cash and $73K/month burn — that's 6.7 months of runway with no path to extending it. Within 3.6 months of that, the down-round clause in the Horizon Ventures agreement triggers.
 
 No single agent could produce this insight. The Head Agent synthesized signals from four specialists into a cascade chain with quantified probability at every link. That's the product.
 
@@ -115,10 +115,10 @@ These linking keys are what make cross-domain cascades discoverable.
 **Cross-references:** Code Audit (which code areas are affected by the person's decline), Infra (which services the person owns), Finance (payroll cost and hiring pipeline impact).
 
 ### Finance Agent
-**Domain:** Cash flow, runway, revenue, funding terms.  
-**Data sources:** CSV/Google Sheets upload, Stripe API (test mode), cap table data.  
-**Detects:** Runway dropping below 6 months, revenue concentration exceeding 40% in a single client, burn rate acceleration, approaching investor clause thresholds, payment delays.  
-**Cross-references:** Legal (contract values and renewal dates), People (headcount cost impact), Product (health of revenue-driving features).
+**Domain:** Cash flow, runway, revenue pipeline, funding terms.  
+**Data sources:** Three CSV files — `deadpool_finance_data.csv` (transaction ledger), `deadpool_revenue_pipeline.csv` (revenue, invoices, and pipeline deals), `deadpool_funding_runway.csv` (investor terms, monthly summaries, runway scenarios).  
+**Detects:** Runway approaching 6-month threshold, burn rate acceleration, pipeline deals at risk due to feature dependencies, overdue invoices, approaching investor clause thresholds (down-round at runway < 3 months), revenue projections under different scenarios.  
+**Cross-references:** Legal (contract terms and deadlines), People (headcount cost impact, key-person dependency on pipeline deals), Infra (feature delivery status blocking pipeline deals), Product (churn impact on subscription revenue).
 
 ### Infra Agent
 **Domain:** System reliability, deployment operations, performance.  
@@ -287,15 +287,19 @@ For the hackathon demo, we use carefully constructed synthetic data that represe
 
 Six JSON data files, one per specialist agent domain:
 
-- **team_activity.json** — 12 developers with weekly commit, PR, and response time data. One developer (the cascade trigger) shows a gradual five-week disengagement pattern. Eleven developers show normal patterns with realistic noise (vacations, sprint spikes).
+- **deadpool_finance_data.csv** — Transaction-level ledger from Sep 2025 through Mar 2026: every income event (funding rounds, subscription revenue) and every expense (salaries by person, cloud costs, API fees, reimbursements, rent). Running balance tracked. Covers $150K pre-seed, $750K seed, team growing from 2 founders to 10 employees, and burn rate escalation.
 
-- **financials.json** — 12 months of revenue by client, expenses by category, cash balance, burn rate, and runway. One client represents 42% of revenue. Investor agreement includes a down-round clause triggered at runway below 3 months.
+- **deadpool_revenue_pipeline.csv** — Revenue actuals (SMB subscriptions), accounts receivable (Greenleaf overdue invoices), and pipeline deals with probabilities. The Nexus Corp enterprise deal ($423K/year) is in procurement with a hard April 15 deadline tied to Payments API v2. Pipeline status degrades from 0.85 probability to 0.35 as the engineer goes on leave.
 
-- **infrastructure.json** — 6 microservices with weekly deploy counts, uptime percentages, response times, error rates, and cloud costs. The payments service degrades in correlation with the lead engineer's decline. Other services remain stable.
+- **deadpool_funding_runway.csv** — Funding round details, investor clause terms (Horizon Ventures down-round trigger at runway < 3 months), monthly financial summaries (burn, revenue, cash, runway), and scenario projections (base case vs. Nexus closes vs. worst case).
+
+- **team_activity.json** — 10 team members with weekly commit, PR, and response time data. Engineer 3 (Mobile) shows gradual disengagement: 60% commit drop in Feb, on unpaid leave in March. Other team members show normal patterns with realistic noise.
+
+- **infrastructure.json** — 6 microservices with weekly deploy counts, uptime percentages, response times, error rates, and cloud costs. The payments service degrades in correlation with Engineer 3's decline. Other services remain stable.
 
 - **product_metrics.json** — Weekly active users, feature-level engagement data, support ticket volume and sentiment, NPS scores, and churn rates. The payments dashboard feature shows declining usage and rising errors. Other features remain healthy.
 
-- **contracts.json** — 4 client contracts with parsed clauses including delivery deadlines and SLA guarantees. One investor agreement with a down-round clause. PCI DSS compliance obligation linked to the payments service.
+- **contracts.json** — Nexus Corp deal terms (draft contract with April 15 delivery clause), Greenleaf Consulting pilot (dispute), BrightPath Education (delayed by SOC 2). Investor agreement with down-round clause. PCI DSS compliance obligation linked to the payments service.
 
 - **codebase_audit.json** — Repository-level analysis including file change frequency, code ownership maps, dependency vulnerability scan results, test coverage per service, PR review patterns, and architecture signals. The payments service has a bus factor of 1, a critical unpatched CVE, and declining test coverage.
 
@@ -316,13 +320,13 @@ All files share consistent entity linking keys: developer names, service names, 
 
 ### Primary demo cascade (5 agents, 6 nodes)
 
-This is the cascade we demonstrate on stage. It passes through People → Code Audit → Infra → Legal → Finance → Finance (investor terms), showing DEADPOOL's cross-domain intelligence.
+This is the cascade we demonstrate on stage. It passes through People → Code Audit → Infra → Finance (pipeline) → Finance (runway) → Finance (investor terms), showing DEADPOOL's cross-domain intelligence.
 
 ```
 Step 1 │ PEOPLE AGENT detects
-       │ Sarah Chen commit activity dropped 94% over 5 weeks
-       │ Severity: 0.85 → Head Agent validates to 0.91
-       │ (Code Audit confirms: 0 code reviews in her areas for 14 days)
+       │ Engineer 3 (Mobile) commit activity dropped 60%, now on unpaid leave
+       │ Severity: 0.85 → Head Agent validates to 0.88
+       │ (Code Audit confirms: 0 code reviews in payments areas for 14 days)
        │
        ▼ Conditional probability: 0.78
        │
@@ -336,42 +340,42 @@ Step 2 │ CODE AUDIT AGENT confirms
 Step 3 │ INFRA AGENT reports
        │ payments-service deploy frequency: 0 in last 2 weeks
        │ Payments API v2 at 34% completion, deadline in 18 days
-       │ Projected miss: 30+ days overdue
+       │ Projected miss: 30+ days overdue. No other engineer has context.
        │ Severity: 0.79
-       │
-       ▼ Conditional probability: 0.58
-       │
-Step 4 │ LEGAL AGENT flags
-       │ Nexus Corp contract Section 4.2: delivery of Payments API v2
-       │ required by April 15, 2026. Breach = termination without penalty.
-       │ Refund liability: $211,680
-       │ Severity: 0.88
        │
        ▼ Conditional probability: 0.65
        │
-Step 5 │ FINANCE AGENT calculates
-       │ Nexus Corp = 42% of revenue ($35,280/month)
-       │ Post-loss monthly burn: $80,000 net negative
-       │ After refund: cash drops to ~$200,000
-       │ Runway: 2.5 months
-       │ Severity: 0.92
+Step 4 │ FINANCE AGENT (pipeline) flags
+       │ Nexus Corp deal ($423K/year) in procurement — hard deadline April 15
+       │ for Payments API v2 deployment. Deal probability dropped from 0.85 to 0.35.
+       │ Nexus CFO asking for status update. They're evaluating PayFlow AI.
+       │ Severity: 0.88
        │
-       ▼ Conditional probability: 0.75
+       ▼ Conditional probability: 0.70
        │
-Step 6 │ FINANCE AGENT (investor terms) triggers
-       │ Down-round clause activates below 3-month runway
-       │ Investor converts at 50% discount with 2x liquidation preference
+Step 5 │ FINANCE AGENT (runway) calculates
+       │ Without Nexus: $493K cash, $73K/month burn, $1.2K/month revenue
+       │ Runway: 6.7 months and declining — no revenue inflection path
+       │ Greenleaf $9K overdue compounds cash position
+       │ Severity: 0.75
+       │
+       ▼ Conditional probability: 0.60
+       │
+Step 6 │ FINANCE AGENT (investor terms) projects
+       │ Down-round clause triggers at runway < 3 months
+       │ At current burn: ~3.6 months until trigger
+       │ Horizon Ventures converts at 50% discount with 2x liquidation preference
        │ Founder diluted below control threshold
        │ END STATE: Company effectively lost
        │
-       │ Overall cascade probability: 0.19
-       │ Time to impact: 75 days
-       │ Financial impact: $1.9M+
+       │ Overall cascade probability: 0.16
+       │ Time to impact: 110 days
+       │ Financial impact: $1.2M+ (deal lost + dilution + runway crisis)
 ```
 
 **Head Agent briefing for this cascade:**
 
-> "Your lead backend engineer has been disengaging for five weeks, and she's the only person who can ship the payments feature that Nexus Corp's contract requires by April 15. The Code Audit Agent found an unpatched critical vulnerability in the same service. If the deadline is missed, Nexus Corp can walk — taking 42% of your revenue with them. That drops your runway below three months and triggers the down-round clause in your investor agreement. Talk to Sarah Chen today. Start a knowledge transfer to a backup engineer this week. Contact Nexus Corp about a deadline extension before April 1."
+> "Engineer 3 has been disengaging since February and is now on unpaid leave. He's the only person with context on Payments API v2 — which is at 34% completion with 18 days until the Nexus Corp deadline. The Code Audit Agent found an unpatched critical vulnerability in the same service. Nexus Corp's $423K/year enterprise deal requires API v2 live by April 15 or the deal collapses. Without that deal, you're a pre-revenue company burning $73K/month with $493K in the bank. That's 6.7 months of runway with no path to extending it. In 3.6 months you hit the down-round clause threshold. Resolve Engineer 3's situation or start knowledge transfer to a backup engineer this week. Contact Nexus Corp about a deadline extension before April 1."
 
 ---
 
@@ -423,7 +427,7 @@ Step 6 │ FINANCE AGENT (investor terms) triggers
 Show the 7-agent hierarchy on screen. "Six specialist agents monitor every layer of your company — your team, your money, your infrastructure, your product, your contracts, and your code. One Head Agent connects the dots across all of them."
 
 **0:45 – 1:45 | Live cascade.**
-Walk through the primary cascade on the dashboard. "The Code Audit Agent found a critical CVE in the payments service. The People Agent confirmed the only engineer who can patch it has been disengaged for three weeks. The Legal Agent flagged that this vulnerability violates PCI compliance required by the biggest client's contract. The Finance Agent calculated what happens if that client walks. The Head Agent connected all four signals and predicted: if unaddressed, this leads to contract breach in 18 days, 42% revenue loss, and a runway crisis in 75 days. Here's the cascade chain on screen — every link, every probability, every dollar amount."
+Walk through the primary cascade on the dashboard. "The People Agent detected that Engineer 3 went from strong contributor to unpaid leave in five weeks. The Code Audit Agent confirmed: the payments service has a bus factor of 1, an unpatched critical CVE, and test coverage is collapsing. The Infra Agent reported Payments API v2 is stuck at 34% completion with an April 15 deadline. The Finance Agent connected this to the Nexus Corp deal — $423K per year, the company's only path to real revenue — and calculated: if this feature doesn't ship, the deal dies, the company stays pre-revenue burning $73K a month, and the down-round clause triggers in 3.6 months. Here's the cascade chain on screen — every link, every probability, every dollar amount."
 
 **1:45 – 2:15 | What If mode.**
 Toggle simulation. "But what if we act? Watch." Drag the "engineer leaves" slider to 100%. The Head Agent recalculates in real-time. New briefing appears. "Now watch what happens when we assign a backup engineer." Adjust the slider. Cascade probability drops. Risk score drops. "DEADPOOL doesn't just find the problem — it tells you exactly where to break the chain."
