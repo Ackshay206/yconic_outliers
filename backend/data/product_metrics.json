@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "company": "Acme SaaS",
+    "period": "2026-02-14 to 2026-03-28",
+    "reporting_date": "2026-03-28"
+  },
+  "overall_metrics": {
+    "weekly_active_users": [
+      { "week": "2026-02-14", "wau": 4821, "mau": 11240, "new_signups": 187, "churned": 62, "nps": 48 },
+      { "week": "2026-02-21", "wau": 4904, "mau": 11388, "new_signups": 193, "churned": 58, "nps": 47 },
+      { "week": "2026-02-28", "wau": 4861, "mau": 11352, "new_signups": 175, "churned": 71, "nps": 44 },
+      { "week": "2026-03-07", "wau": 4778, "mau": 11291, "new_signups": 162, "churned": 84, "nps": 41 },
+      { "week": "2026-03-14", "wau": 4692, "mau": 11188, "new_signups": 148, "churned": 98, "nps": 38 },
+      { "week": "2026-03-21", "wau": 4580, "mau": 11047, "new_signups": 131, "churned": 119, "nps": 34 }
+    ]
+  },
+  "feature_engagement": [
+    {
+      "feature": "payments-dashboard",
+      "service": "payments-service",
+      "description": "Primary payments management and monitoring interface",
+      "linked_contract": "Nexus Corp — Payments API v2 required by 2026-04-15",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "active_users": 1842, "sessions": 5280, "avg_session_min": 8.4, "errors": 38, "error_rate_pct": 0.72 },
+        { "week": "2026-02-21", "active_users": 1798, "sessions": 5110, "avg_session_min": 7.9, "errors": 52, "error_rate_pct": 1.02 },
+        { "week": "2026-02-28", "active_users": 1701, "sessions": 4840, "avg_session_min": 7.1, "errors": 81, "error_rate_pct": 1.67 },
+        { "week": "2026-03-07", "active_users": 1580, "sessions": 4420, "avg_session_min": 6.3, "errors": 128, "error_rate_pct": 2.90 },
+        { "week": "2026-03-14", "active_users": 1421, "sessions": 3870, "avg_session_min": 5.8, "errors": 187, "error_rate_pct": 4.83 },
+        { "week": "2026-03-21", "active_users": 1228, "sessions": 3210, "avg_session_min": 4.9, "errors": 264, "error_rate_pct": 8.22 }
+      ],
+      "trend": "CRITICAL DECLINE — 33% user drop, 11x error rate increase over 6 weeks"
+    },
+    {
+      "feature": "analytics-dashboard",
+      "service": "analytics-service",
+      "description": "Usage analytics and reporting for enterprise customers",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "active_users": 2180, "sessions": 6820, "avg_session_min": 11.2, "errors": 28, "error_rate_pct": 0.41 },
+        { "week": "2026-02-21", "active_users": 2241, "sessions": 7110, "avg_session_min": 11.5, "errors": 25, "error_rate_pct": 0.35 },
+        { "week": "2026-02-28", "active_users": 2198, "sessions": 6940, "avg_session_min": 11.0, "errors": 31, "error_rate_pct": 0.45 },
+        { "week": "2026-03-07", "active_users": 2265, "sessions": 7190, "avg_session_min": 11.7, "errors": 23, "error_rate_pct": 0.32 },
+        { "week": "2026-03-14", "active_users": 2312, "sessions": 7380, "avg_session_min": 12.1, "errors": 20, "error_rate_pct": 0.27 },
+        { "week": "2026-03-21", "active_users": 2289, "sessions": 7240, "avg_session_min": 11.8, "errors": 24, "error_rate_pct": 0.33 }
+      ],
+      "trend": "STABLE — healthy growth"
+    },
+    {
+      "feature": "user-management",
+      "service": "user-service",
+      "description": "User profiles, teams, and permissions management",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "active_users": 3140, "sessions": 8820, "avg_session_min": 6.8, "errors": 19, "error_rate_pct": 0.22 },
+        { "week": "2026-02-21", "active_users": 3188, "sessions": 9010, "avg_session_min": 6.9, "errors": 17, "error_rate_pct": 0.19 },
+        { "week": "2026-02-28", "active_users": 3162, "sessions": 8890, "avg_session_min": 6.7, "errors": 21, "error_rate_pct": 0.24 },
+        { "week": "2026-03-07", "active_users": 3201, "sessions": 9080, "avg_session_min": 7.0, "errors": 16, "error_rate_pct": 0.18 },
+        { "week": "2026-03-14", "active_users": 3178, "sessions": 8950, "avg_session_min": 6.8, "errors": 18, "error_rate_pct": 0.20 },
+        { "week": "2026-03-21", "active_users": 3195, "sessions": 9020, "avg_session_min": 6.9, "errors": 17, "error_rate_pct": 0.19 }
+      ],
+      "trend": "STABLE"
+    },
+    {
+      "feature": "onboarding-flow",
+      "service": "onboarding-flow",
+      "description": "New user onboarding and setup wizard",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "active_users": 187, "sessions": 421, "avg_session_min": 14.2, "errors": 8, "error_rate_pct": 1.90 },
+        { "week": "2026-02-21", "active_users": 193, "sessions": 438, "avg_session_min": 13.8, "errors": 9, "error_rate_pct": 2.05 },
+        { "week": "2026-02-28", "active_users": 175, "sessions": 392, "avg_session_min": 14.5, "errors": 7, "error_rate_pct": 1.79 },
+        { "week": "2026-03-07", "active_users": 162, "sessions": 361, "avg_session_min": 14.1, "errors": 8, "error_rate_pct": 2.22 },
+        { "week": "2026-03-14", "active_users": 148, "sessions": 328, "avg_session_min": 13.9, "errors": 9, "error_rate_pct": 2.74 },
+        { "week": "2026-03-21", "active_users": 131, "sessions": 289, "avg_session_min": 13.6, "errors": 11, "error_rate_pct": 3.81 }
+      ],
+      "trend": "DECLINING — mirrors new signup drop"
+    }
+  ],
+  "support_tickets": {
+    "weekly_volume": [
+      { "week": "2026-02-14", "total": 48, "payments_related": 9, "sentiment_negative_pct": 18 },
+      { "week": "2026-02-21", "total": 52, "payments_related": 13, "sentiment_negative_pct": 22 },
+      { "week": "2026-02-28", "total": 61, "payments_related": 21, "sentiment_negative_pct": 29 },
+      { "week": "2026-03-07", "total": 74, "payments_related": 34, "sentiment_negative_pct": 38 },
+      { "week": "2026-03-14", "total": 93, "payments_related": 51, "sentiment_negative_pct": 47 },
+      { "week": "2026-03-21", "total": 118, "payments_related": 72, "sentiment_negative_pct": 59 }
+    ],
+    "top_complaints": [
+      "Payment processing timing out (most frequent)",
+      "Payments dashboard loading slowly",
+      "Unable to complete payment flow — getting 500 errors",
+      "Payment reconciliation data missing from reports"
+    ]
+  },
+  "churn_analysis": {
+    "recent_churned_companies": [
+      { "company": "Brightside Inc", "plan": "Pro", "mrr": 890, "reason": "Payment errors causing billing failures" },
+      { "company": "Steadfast Co", "plan": "Growth", "mrr": 1240, "reason": "Payments dashboard performance unacceptable" },
+      { "company": "NovaTech", "plan": "Pro", "mrr": 780, "reason": "Payment API reliability concerns" }
+    ],
+    "churned_mrr_last_30_days": 2910,
+    "churn_acceleration_flag": true
+  }
+}

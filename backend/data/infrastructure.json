@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "company": "Acme SaaS",
+    "period": "2026-02-14 to 2026-03-28",
+    "reporting_date": "2026-03-28"
+  },
+  "services": [
+    {
+      "name": "payments-service",
+      "owner": "Sarah Chen",
+      "criticality": "critical",
+      "description": "Handles all payment processing, Payments API v2 in development",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "deploys": 8, "uptime_pct": 99.92, "p50_response_ms": 142, "p99_response_ms": 380, "error_rate_pct": 0.08, "ci_pass_rate": 0.96 },
+        { "week": "2026-02-21", "deploys": 6, "uptime_pct": 99.89, "p50_response_ms": 155, "p99_response_ms": 410, "error_rate_pct": 0.11, "ci_pass_rate": 0.94 },
+        { "week": "2026-02-28", "deploys": 3, "uptime_pct": 99.81, "p50_response_ms": 178, "p99_response_ms": 490, "error_rate_pct": 0.18, "ci_pass_rate": 0.91 },
+        { "week": "2026-03-07", "deploys": 1, "uptime_pct": 99.74, "p50_response_ms": 201, "p99_response_ms": 560, "error_rate_pct": 0.27, "ci_pass_rate": 0.87 },
+        { "week": "2026-03-14", "deploys": 0, "uptime_pct": 99.68, "p50_response_ms": 228, "p99_response_ms": 670, "error_rate_pct": 0.41, "ci_pass_rate": 0.83 },
+        { "week": "2026-03-21", "deploys": 0, "uptime_pct": 99.61, "p50_response_ms": 264, "p99_response_ms": 810, "error_rate_pct": 0.58, "ci_pass_rate": 0.79 }
+      ],
+      "feature_progress": {
+        "feature": "Payments API v2",
+        "completion_pct": 34,
+        "deadline": "2026-04-15",
+        "days_remaining": 18,
+        "projected_completion_days": 49,
+        "projected_delay_days": 31,
+        "blockers": ["No deploys in 2 weeks", "Sarah Chen disengagement", "Unpatched CVE-2026-4821"]
+      }
+    },
+    {
+      "name": "auth-service",
+      "owner": "Marcus Williams",
+      "criticality": "critical",
+      "description": "Authentication and authorization for all users",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "deploys": 5, "uptime_pct": 99.98, "p50_response_ms": 28, "p99_response_ms": 95, "error_rate_pct": 0.02, "ci_pass_rate": 0.99 },
+        { "week": "2026-02-21", "deploys": 6, "uptime_pct": 99.97, "p50_response_ms": 31, "p99_response_ms": 98, "error_rate_pct": 0.02, "ci_pass_rate": 0.98 },
+        { "week": "2026-02-28", "deploys": 4, "uptime_pct": 99.99, "p50_response_ms": 27, "p99_response_ms": 89, "error_rate_pct": 0.01, "ci_pass_rate": 0.99 },
+        { "week": "2026-03-07", "deploys": 5, "uptime_pct": 99.97, "p50_response_ms": 29, "p99_response_ms": 92, "error_rate_pct": 0.02, "ci_pass_rate": 0.99 },
+        { "week": "2026-03-14", "deploys": 7, "uptime_pct": 99.98, "p50_response_ms": 28, "p99_response_ms": 91, "error_rate_pct": 0.02, "ci_pass_rate": 0.98 },
+        { "week": "2026-03-21", "deploys": 5, "uptime_pct": 99.99, "p50_response_ms": 27, "p99_response_ms": 88, "error_rate_pct": 0.01, "ci_pass_rate": 0.99 }
+      ]
+    },
+    {
+      "name": "user-service",
+      "owner": "Marcus Williams",
+      "criticality": "high",
+      "description": "User profiles, preferences, and account management",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "deploys": 4, "uptime_pct": 99.95, "p50_response_ms": 45, "p99_response_ms": 180, "error_rate_pct": 0.04, "ci_pass_rate": 0.97 },
+        { "week": "2026-02-21", "deploys": 5, "uptime_pct": 99.94, "p50_response_ms": 47, "p99_response_ms": 185, "error_rate_pct": 0.05, "ci_pass_rate": 0.96 },
+        { "week": "2026-02-28", "deploys": 4, "uptime_pct": 99.96, "p50_response_ms": 44, "p99_response_ms": 176, "error_rate_pct": 0.03, "ci_pass_rate": 0.98 },
+        { "week": "2026-03-07", "deploys": 5, "uptime_pct": 99.95, "p50_response_ms": 46, "p99_response_ms": 182, "error_rate_pct": 0.04, "ci_pass_rate": 0.97 },
+        { "week": "2026-03-14", "deploys": 4, "uptime_pct": 99.97, "p50_response_ms": 43, "p99_response_ms": 174, "error_rate_pct": 0.03, "ci_pass_rate": 0.98 },
+        { "week": "2026-03-21", "deploys": 5, "uptime_pct": 99.94, "p50_response_ms": 47, "p99_response_ms": 186, "error_rate_pct": 0.05, "ci_pass_rate": 0.96 }
+      ]
+    },
+    {
+      "name": "analytics-service",
+      "owner": "Tom Fischer",
+      "criticality": "medium",
+      "description": "Usage analytics and reporting",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "deploys": 3, "uptime_pct": 99.88, "p50_response_ms": 210, "p99_response_ms": 820, "error_rate_pct": 0.12, "ci_pass_rate": 0.93 },
+        { "week": "2026-02-21", "deploys": 4, "uptime_pct": 99.91, "p50_response_ms": 198, "p99_response_ms": 780, "error_rate_pct": 0.09, "ci_pass_rate": 0.95 },
+        { "week": "2026-02-28", "deploys": 3, "uptime_pct": 99.87, "p50_response_ms": 215, "p99_response_ms": 840, "error_rate_pct": 0.13, "ci_pass_rate": 0.92 },
+        { "week": "2026-03-07", "deploys": 4, "uptime_pct": 99.90, "p50_response_ms": 204, "p99_response_ms": 800, "error_rate_pct": 0.10, "ci_pass_rate": 0.94 },
+        { "week": "2026-03-14", "deploys": 3, "uptime_pct": 99.89, "p50_response_ms": 208, "p99_response_ms": 815, "error_rate_pct": 0.11, "ci_pass_rate": 0.93 },
+        { "week": "2026-03-21", "deploys": 4, "uptime_pct": 99.92, "p50_response_ms": 201, "p99_response_ms": 790, "error_rate_pct": 0.09, "ci_pass_rate": 0.95 }
+      ]
+    },
+    {
+      "name": "notification-service",
+      "owner": "Aisha Rahman",
+      "criticality": "medium",
+      "description": "Email and in-app notifications",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "deploys": 2, "uptime_pct": 99.78, "p50_response_ms": 310, "p99_response_ms": 1100, "error_rate_pct": 0.22, "ci_pass_rate": 0.91 },
+        { "week": "2026-02-21", "deploys": 3, "uptime_pct": 99.82, "p50_response_ms": 295, "p99_response_ms": 1050, "error_rate_pct": 0.19, "ci_pass_rate": 0.93 },
+        { "week": "2026-02-28", "deploys": 2, "uptime_pct": 99.75, "p50_response_ms": 320, "p99_response_ms": 1150, "error_rate_pct": 0.24, "ci_pass_rate": 0.90 },
+        { "week": "2026-03-07", "deploys": 3, "uptime_pct": 99.80, "p50_response_ms": 305, "p99_response_ms": 1080, "error_rate_pct": 0.21, "ci_pass_rate": 0.92 },
+        { "week": "2026-03-14", "deploys": 2, "uptime_pct": 99.77, "p50_response_ms": 314, "p99_response_ms": 1120, "error_rate_pct": 0.23, "ci_pass_rate": 0.91 },
+        { "week": "2026-03-21", "deploys": 3, "uptime_pct": 99.83, "p50_response_ms": 298, "p99_response_ms": 1060, "error_rate_pct": 0.20, "ci_pass_rate": 0.93 }
+      ]
+    },
+    {
+      "name": "billing-service",
+      "owner": "Sarah Chen",
+      "criticality": "critical",
+      "description": "Subscription billing, invoicing, and revenue recognition",
+      "weekly_metrics": [
+        { "week": "2026-02-14", "deploys": 4, "uptime_pct": 99.95, "p50_response_ms": 88, "p99_response_ms": 290, "error_rate_pct": 0.04, "ci_pass_rate": 0.97 },
+        { "week": "2026-02-21", "deploys": 3, "uptime_pct": 99.92, "p50_response_ms": 94, "p99_response_ms": 320, "error_rate_pct": 0.07, "ci_pass_rate": 0.95 },
+        { "week": "2026-02-28", "deploys": 2, "uptime_pct": 99.87, "p50_response_ms": 108, "p99_response_ms": 370, "error_rate_pct": 0.12, "ci_pass_rate": 0.92 },
+        { "week": "2026-03-07", "deploys": 1, "uptime_pct": 99.80, "p50_response_ms": 131, "p99_response_ms": 430, "error_rate_pct": 0.19, "ci_pass_rate": 0.88 },
+        { "week": "2026-03-14", "deploys": 0, "uptime_pct": 99.71, "p50_response_ms": 162, "p99_response_ms": 510, "error_rate_pct": 0.28, "ci_pass_rate": 0.84 },
+        { "week": "2026-03-21", "deploys": 0, "uptime_pct": 99.62, "p50_response_ms": 198, "p99_response_ms": 640, "error_rate_pct": 0.39, "ci_pass_rate": 0.80 }
+      ]
+    }
+  ],
+  "infrastructure_alerts": [
+    {
+      "alert": "payments-service: 0 deploys in last 14 days — feature delivery stalled",
+      "severity": "critical",
+      "service": "payments-service"
+    },
+    {
+      "alert": "billing-service: 0 deploys in last 14 days — degrading error rate (0.39%)",
+      "severity": "high",
+      "service": "billing-service"
+    },
+    {
+      "alert": "payments-service: Payments API v2 at 34% completion with 18 days to deadline",
+      "severity": "critical",
+      "service": "payments-service",
+      "deadline": "2026-04-15"
+    }
+  ]
+}

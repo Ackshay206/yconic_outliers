@@ -228,10 +228,10 @@ When a new cascade chain is detected or an existing chain's probability crosses 
 | Layer | Technology | Why |
 |-------|-----------|-----|
 | Frontend | React + D3.js | D3 handles the dependency graph rendering with animated edges and interactive nodes. React manages dashboard state, panels, and real-time updates. |
-| Backend | Node.js + Express | Lightweight and fast to scaffold. Handles API polling cycles for all six agents, the signal bus event queue, and the Head Agent orchestration loop. |
-| AI orchestration | Anthropic Claude API (claude-sonnet-4-20250514) | Each specialist agent is a Claude call with a specialized system prompt. The Head Agent is a more comprehensive Claude call with function-calling capability to query specialists. Total: ~10 Claude calls per monitoring cycle. |
-| Data ingestion | GitHub REST API, CSV parsing via Papaparse, file upload for contracts, npm audit / pip-audit output for dependency scanning | Covers all six specialist agents with minimal integration overhead. |
-| Real-time updates | Server-Sent Events (SSE) | Pushes cascade updates, Head Agent briefings, and risk score changes to the dashboard without client-side polling. |
+| Backend | Python + FastAPI | Async-native, Pydantic v2 for type-safe agent I/O, minimal boilerplate. Handles API polling cycles for all six agents, the signal bus event queue, and the Head Agent orchestration loop. |
+| AI orchestration | Anthropic Claude API (claude-sonnet-4-6) | Each specialist agent is a Claude call with a specialized system prompt. The Head Agent is a more comprehensive Claude call with cross-validation routing to query specialists. Total: ~10 Claude calls per monitoring cycle. |
+| Data ingestion | JSON synthetic data files (hackathon), GitHub REST API, CSV upload for financials, pip-audit output for dependency scanning | Covers all six specialist agents with minimal integration overhead. |
+| Real-time updates | Server-Sent Events (SSE) via sse-starlette | Pushes cascade updates, Head Agent briefings, and risk score changes to the dashboard without client-side polling. |
 | Deployment | Vercel (frontend) + Railway (backend) | Free tiers, deploy in under 5 minutes, sufficient for hackathon demo traffic. |
 
 ---

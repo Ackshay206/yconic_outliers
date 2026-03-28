@@ -346,10 +346,10 @@ Each path is encoded as nodes and edges with baseline probabilities. The Head Ag
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
 | Frontend | React + D3.js | D3 for dependency graph visualization, React for dashboard state management |
-| Backend | Node.js + Express | Lightweight, fast to scaffold, handles API polling and event bus |
-| AI orchestration | Anthropic Claude API (claude-sonnet-4-20250514) | Each specialist agent is a specialized system prompt. Head Agent uses a more comprehensive prompt with function-calling to query specialists. |
-| Data ingestion | GitHub REST API, CSV parsing (Papaparse), file upload, npm audit / pip-audit for dependency scanning | Covers all six agents with minimal integration work |
-| Real-time updates | Server-Sent Events (SSE) or WebSocket | Push cascade updates and Head Agent briefings to the dashboard without polling |
+| Backend | Python + FastAPI | Async-native, Pydantic v2 for type-safe agent I/O, automatic OpenAPI docs. Handles API polling, signal bus, and Head Agent orchestration. |
+| AI orchestration | Anthropic Claude API (claude-sonnet-4-6) | Each specialist agent is a specialized system prompt. Head Agent uses a more comprehensive prompt with cross-validation routing to query specialists. |
+| Data ingestion | JSON synthetic data files (hackathon MVP), GitHub REST API, CSV upload for financials, pip-audit for dependency scanning | Covers all six agents with minimal integration work |
+| Real-time updates | Server-Sent Events (SSE) via sse-starlette | Push cascade updates and Head Agent briefings to the dashboard without polling |
 | Deployment | Vercel (frontend) + Railway or Render (backend) | Free tiers, deploy in minutes |
 
 ### 7.2 Agent implementation pattern
