@@ -1,0 +1,235 @@
+{
+  "metadata": {
+    "company": "Acme SaaS",
+    "period": "2026-02-14 to 2026-03-28",
+    "weeks": 6,
+    "team_size": 12
+  },
+  "developers": [
+    {
+      "name": "Sarah Chen",
+      "role": "Senior Backend Engineer",
+      "primary_services": ["payments-service", "billing-service"],
+      "tenure_months": 18,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 100, "prs_opened": 8, "prs_reviewed": 6, "comments": 42, "slack_messages": 87, "avg_response_time_hours": 0.8 },
+        { "week": "2026-02-21", "commits": 90, "prs_opened": 7, "prs_reviewed": 5, "comments": 31, "slack_messages": 64, "avg_response_time_hours": 1.2 },
+        { "week": "2026-02-28", "commits": 60, "prs_opened": 4, "prs_reviewed": 2, "comments": 18, "slack_messages": 41, "avg_response_time_hours": 2.4 },
+        { "week": "2026-03-07", "commits": 30, "prs_opened": 2, "prs_reviewed": 1, "comments": 8, "slack_messages": 22, "avg_response_time_hours": 4.1 },
+        { "week": "2026-03-14", "commits": 10, "prs_opened": 1, "prs_reviewed": 0, "comments": 3, "slack_messages": 9, "avg_response_time_hours": 11.3 },
+        { "week": "2026-03-21", "commits": 6, "prs_opened": 0, "prs_reviewed": 0, "comments": 1, "slack_messages": 4, "avg_response_time_hours": 26.5 }
+      ],
+      "code_ownership": {
+        "payments-service": 0.84,
+        "billing-service": 0.61
+      },
+      "notes": "Previously one of the most active contributors. Dramatic disengagement over 5 weeks."
+    },
+    {
+      "name": "Marcus Williams",
+      "role": "Backend Engineer",
+      "primary_services": ["auth-service", "user-service"],
+      "tenure_months": 12,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 62, "prs_opened": 5, "prs_reviewed": 7, "comments": 38, "slack_messages": 92, "avg_response_time_hours": 0.6 },
+        { "week": "2026-02-21", "commits": 58, "prs_opened": 6, "prs_reviewed": 8, "comments": 41, "slack_messages": 88, "avg_response_time_hours": 0.7 },
+        { "week": "2026-02-28", "commits": 71, "prs_opened": 5, "prs_reviewed": 6, "comments": 35, "slack_messages": 96, "avg_response_time_hours": 0.5 },
+        { "week": "2026-03-07", "commits": 55, "prs_opened": 4, "prs_reviewed": 7, "comments": 29, "slack_messages": 79, "avg_response_time_hours": 0.8 },
+        { "week": "2026-03-14", "commits": 68, "prs_opened": 6, "prs_reviewed": 8, "comments": 44, "slack_messages": 101, "avg_response_time_hours": 0.6 },
+        { "week": "2026-03-21", "commits": 60, "prs_opened": 5, "prs_reviewed": 7, "comments": 37, "slack_messages": 85, "avg_response_time_hours": 0.7 }
+      ],
+      "code_ownership": {
+        "auth-service": 0.72,
+        "user-service": 0.58
+      }
+    },
+    {
+      "name": "Priya Patel",
+      "role": "Frontend Engineer",
+      "primary_services": ["dashboard-app", "admin-portal"],
+      "tenure_months": 9,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 48, "prs_opened": 4, "prs_reviewed": 3, "comments": 27, "slack_messages": 74, "avg_response_time_hours": 0.9 },
+        { "week": "2026-02-21", "commits": 52, "prs_opened": 5, "prs_reviewed": 4, "comments": 31, "slack_messages": 81, "avg_response_time_hours": 0.8 },
+        { "week": "2026-02-28", "commits": 44, "prs_opened": 3, "prs_reviewed": 5, "comments": 24, "slack_messages": 67, "avg_response_time_hours": 1.1 },
+        { "week": "2026-03-07", "commits": 57, "prs_opened": 6, "prs_reviewed": 4, "comments": 33, "slack_messages": 89, "avg_response_time_hours": 0.7 },
+        { "week": "2026-03-14", "commits": 49, "prs_opened": 4, "prs_reviewed": 3, "comments": 28, "slack_messages": 72, "avg_response_time_hours": 1.0 },
+        { "week": "2026-03-21", "commits": 53, "prs_opened": 5, "prs_reviewed": 4, "comments": 30, "slack_messages": 78, "avg_response_time_hours": 0.9 }
+      ],
+      "code_ownership": {
+        "dashboard-app": 0.68,
+        "admin-portal": 0.51
+      }
+    },
+    {
+      "name": "James Okafor",
+      "role": "DevOps Engineer",
+      "primary_services": ["infra-config", "ci-cd-pipeline"],
+      "tenure_months": 14,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 35, "prs_opened": 3, "prs_reviewed": 5, "comments": 22, "slack_messages": 118, "avg_response_time_hours": 0.4 },
+        { "week": "2026-02-21", "commits": 41, "prs_opened": 2, "prs_reviewed": 6, "comments": 19, "slack_messages": 131, "avg_response_time_hours": 0.5 },
+        { "week": "2026-02-28", "commits": 38, "prs_opened": 3, "prs_reviewed": 4, "comments": 25, "slack_messages": 109, "avg_response_time_hours": 0.4 },
+        { "week": "2026-03-07", "commits": 43, "prs_opened": 4, "prs_reviewed": 5, "comments": 21, "slack_messages": 124, "avg_response_time_hours": 0.6 },
+        { "week": "2026-03-14", "commits": 37, "prs_opened": 2, "prs_reviewed": 7, "comments": 18, "slack_messages": 115, "avg_response_time_hours": 0.3 },
+        { "week": "2026-03-21", "commits": 39, "prs_opened": 3, "prs_reviewed": 6, "comments": 23, "slack_messages": 127, "avg_response_time_hours": 0.5 }
+      ],
+      "code_ownership": {
+        "infra-config": 0.89,
+        "ci-cd-pipeline": 0.76
+      }
+    },
+    {
+      "name": "Aisha Rahman",
+      "role": "Full Stack Engineer",
+      "primary_services": ["notification-service", "dashboard-app"],
+      "tenure_months": 7,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 44, "prs_opened": 4, "prs_reviewed": 3, "comments": 25, "slack_messages": 63, "avg_response_time_hours": 1.3 },
+        { "week": "2026-02-21", "commits": 39, "prs_opened": 3, "prs_reviewed": 4, "comments": 21, "slack_messages": 58, "avg_response_time_hours": 1.5 },
+        { "week": "2026-02-28", "commits": 51, "prs_opened": 5, "prs_reviewed": 3, "comments": 29, "slack_messages": 71, "avg_response_time_hours": 1.1 },
+        { "week": "2026-03-07", "commits": 42, "prs_opened": 3, "prs_reviewed": 4, "comments": 23, "slack_messages": 65, "avg_response_time_hours": 1.4 },
+        { "week": "2026-03-14", "commits": 47, "prs_opened": 4, "prs_reviewed": 3, "comments": 27, "slack_messages": 69, "avg_response_time_hours": 1.2 },
+        { "week": "2026-03-21", "commits": 45, "prs_opened": 4, "prs_reviewed": 4, "comments": 26, "slack_messages": 67, "avg_response_time_hours": 1.3 }
+      ],
+      "code_ownership": {
+        "notification-service": 0.63,
+        "dashboard-app": 0.29
+      }
+    },
+    {
+      "name": "Tom Fischer",
+      "role": "Backend Engineer",
+      "primary_services": ["analytics-service"],
+      "tenure_months": 22,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 55, "prs_opened": 4, "prs_reviewed": 6, "comments": 34, "slack_messages": 82, "avg_response_time_hours": 0.9 },
+        { "week": "2026-02-21", "commits": 48, "prs_opened": 3, "prs_reviewed": 5, "comments": 28, "slack_messages": 76, "avg_response_time_hours": 1.0 },
+        { "week": "2026-02-28", "commits": 62, "prs_opened": 5, "prs_reviewed": 7, "comments": 39, "slack_messages": 91, "avg_response_time_hours": 0.8 },
+        { "week": "2026-03-07", "commits": 51, "prs_opened": 4, "prs_reviewed": 6, "comments": 31, "slack_messages": 84, "avg_response_time_hours": 1.0 },
+        { "week": "2026-03-14", "commits": 58, "prs_opened": 4, "prs_reviewed": 5, "comments": 36, "slack_messages": 88, "avg_response_time_hours": 0.9 },
+        { "week": "2026-03-21", "commits": 53, "prs_opened": 3, "prs_reviewed": 6, "comments": 33, "slack_messages": 79, "avg_response_time_hours": 1.1 }
+      ],
+      "code_ownership": {
+        "analytics-service": 0.77
+      }
+    },
+    {
+      "name": "Elena Sokolova",
+      "role": "QA Engineer",
+      "primary_services": ["test-automation"],
+      "tenure_months": 11,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 29, "prs_opened": 2, "prs_reviewed": 8, "comments": 52, "slack_messages": 95, "avg_response_time_hours": 0.7 },
+        { "week": "2026-02-21", "commits": 33, "prs_opened": 3, "prs_reviewed": 9, "comments": 48, "slack_messages": 88, "avg_response_time_hours": 0.8 },
+        { "week": "2026-02-28", "commits": 27, "prs_opened": 2, "prs_reviewed": 7, "comments": 44, "slack_messages": 91, "avg_response_time_hours": 0.7 },
+        { "week": "2026-03-07", "commits": 31, "prs_opened": 2, "prs_reviewed": 10, "comments": 55, "slack_messages": 103, "avg_response_time_hours": 0.6 },
+        { "week": "2026-03-14", "commits": 28, "prs_opened": 1, "prs_reviewed": 8, "comments": 49, "slack_messages": 94, "avg_response_time_hours": 0.8 },
+        { "week": "2026-03-21", "commits": 30, "prs_opened": 2, "prs_reviewed": 9, "comments": 51, "slack_messages": 97, "avg_response_time_hours": 0.7 }
+      ],
+      "code_ownership": {
+        "test-automation": 0.82
+      }
+    },
+    {
+      "name": "David Kim",
+      "role": "Frontend Engineer",
+      "primary_services": ["dashboard-app"],
+      "tenure_months": 5,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 36, "prs_opened": 3, "prs_reviewed": 2, "comments": 19, "slack_messages": 55, "avg_response_time_hours": 1.6 },
+        { "week": "2026-02-21", "commits": 41, "prs_opened": 4, "prs_reviewed": 3, "comments": 23, "slack_messages": 61, "avg_response_time_hours": 1.4 },
+        { "week": "2026-02-28", "commits": 38, "prs_opened": 3, "prs_reviewed": 2, "comments": 21, "slack_messages": 58, "avg_response_time_hours": 1.7 },
+        { "week": "2026-03-07", "commits": 44, "prs_opened": 4, "prs_reviewed": 3, "comments": 25, "slack_messages": 63, "avg_response_time_hours": 1.5 },
+        { "week": "2026-03-14", "commits": 39, "prs_opened": 3, "prs_reviewed": 2, "comments": 20, "slack_messages": 57, "avg_response_time_hours": 1.8 },
+        { "week": "2026-03-21", "commits": 42, "prs_opened": 4, "prs_reviewed": 3, "comments": 24, "slack_messages": 62, "avg_response_time_hours": 1.5 }
+      ],
+      "code_ownership": {
+        "dashboard-app": 0.31
+      }
+    },
+    {
+      "name": "Fatima Al-Hassan",
+      "role": "Backend Engineer",
+      "primary_services": ["user-service", "notification-service"],
+      "tenure_months": 8,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 47, "prs_opened": 4, "prs_reviewed": 4, "comments": 29, "slack_messages": 71, "avg_response_time_hours": 1.1 },
+        { "week": "2026-02-21", "commits": 51, "prs_opened": 5, "prs_reviewed": 5, "comments": 33, "slack_messages": 78, "avg_response_time_hours": 1.0 },
+        { "week": "2026-02-28", "commits": 45, "prs_opened": 4, "prs_reviewed": 4, "comments": 27, "slack_messages": 69, "avg_response_time_hours": 1.2 },
+        { "week": "2026-03-07", "commits": 53, "prs_opened": 5, "prs_reviewed": 5, "comments": 35, "slack_messages": 82, "avg_response_time_hours": 0.9 },
+        { "week": "2026-03-14", "commits": 48, "prs_opened": 4, "prs_reviewed": 4, "comments": 30, "slack_messages": 74, "avg_response_time_hours": 1.1 },
+        { "week": "2026-03-21", "commits": 50, "prs_opened": 5, "prs_reviewed": 4, "comments": 32, "slack_messages": 77, "avg_response_time_hours": 1.0 }
+      ],
+      "code_ownership": {
+        "user-service": 0.41,
+        "notification-service": 0.35
+      }
+    },
+    {
+      "name": "Carlos Mendes",
+      "role": "Data Engineer",
+      "primary_services": ["analytics-service", "data-pipeline"],
+      "tenure_months": 16,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 40, "prs_opened": 3, "prs_reviewed": 3, "comments": 21, "slack_messages": 66, "avg_response_time_hours": 1.3 },
+        { "week": "2026-02-21", "commits": 36, "prs_opened": 2, "prs_reviewed": 4, "comments": 18, "slack_messages": 59, "avg_response_time_hours": 1.5 },
+        { "week": "2026-02-28", "commits": 43, "prs_opened": 3, "prs_reviewed": 3, "comments": 23, "slack_messages": 68, "avg_response_time_hours": 1.2 },
+        { "week": "2026-03-07", "commits": 38, "prs_opened": 2, "prs_reviewed": 4, "comments": 20, "slack_messages": 62, "avg_response_time_hours": 1.4 },
+        { "week": "2026-03-14", "commits": 41, "prs_opened": 3, "prs_reviewed": 3, "comments": 22, "slack_messages": 65, "avg_response_time_hours": 1.3 },
+        { "week": "2026-03-21", "commits": 37, "prs_opened": 2, "prs_reviewed": 4, "comments": 19, "slack_messages": 60, "avg_response_time_hours": 1.5 }
+      ],
+      "code_ownership": {
+        "analytics-service": 0.22,
+        "data-pipeline": 0.78
+      }
+    },
+    {
+      "name": "Yuki Tanaka",
+      "role": "Security Engineer",
+      "primary_services": ["auth-service"],
+      "tenure_months": 19,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 25, "prs_opened": 2, "prs_reviewed": 9, "comments": 48, "slack_messages": 103, "avg_response_time_hours": 0.5 },
+        { "week": "2026-02-21", "commits": 28, "prs_opened": 2, "prs_reviewed": 10, "comments": 51, "slack_messages": 98, "avg_response_time_hours": 0.6 },
+        { "week": "2026-02-28", "commits": 23, "prs_opened": 1, "prs_reviewed": 8, "comments": 44, "slack_messages": 89, "avg_response_time_hours": 0.5 },
+        { "week": "2026-03-07", "commits": 30, "prs_opened": 3, "prs_reviewed": 11, "comments": 55, "slack_messages": 112, "avg_response_time_hours": 0.4 },
+        { "week": "2026-03-14", "commits": 26, "prs_opened": 2, "prs_reviewed": 9, "comments": 47, "slack_messages": 101, "avg_response_time_hours": 0.5 },
+        { "week": "2026-03-21", "commits": 27, "prs_opened": 2, "prs_reviewed": 10, "comments": 50, "slack_messages": 105, "avg_response_time_hours": 0.5 }
+      ],
+      "code_ownership": {
+        "auth-service": 0.27
+      }
+    },
+    {
+      "name": "Ryan O'Brien",
+      "role": "Product Engineer",
+      "primary_services": ["dashboard-app", "onboarding-flow"],
+      "tenure_months": 6,
+      "weekly_activity": [
+        { "week": "2026-02-14", "commits": 33, "prs_opened": 3, "prs_reviewed": 2, "comments": 17, "slack_messages": 49, "avg_response_time_hours": 1.8 },
+        { "week": "2026-02-21", "commits": 37, "prs_opened": 3, "prs_reviewed": 3, "comments": 20, "slack_messages": 54, "avg_response_time_hours": 1.6 },
+        { "week": "2026-02-28", "commits": 31, "prs_opened": 2, "prs_reviewed": 2, "comments": 16, "slack_messages": 47, "avg_response_time_hours": 1.9 },
+        { "week": "2026-03-07", "commits": 39, "prs_opened": 4, "prs_reviewed": 3, "comments": 22, "slack_messages": 58, "avg_response_time_hours": 1.5 },
+        { "week": "2026-03-14", "commits": 34, "prs_opened": 3, "prs_reviewed": 2, "comments": 18, "slack_messages": 51, "avg_response_time_hours": 1.7 },
+        { "week": "2026-03-21", "commits": 36, "prs_opened": 3, "prs_reviewed": 3, "comments": 19, "slack_messages": 53, "avg_response_time_hours": 1.8 }
+      ],
+      "code_ownership": {
+        "dashboard-app": 0.15,
+        "onboarding-flow": 0.70
+      }
+    }
+  ],
+  "team_alerts": [
+    {
+      "alert": "Sarah Chen commit activity dropped 94% over 5 weeks (100 → 6 commits/week)",
+      "severity": "critical",
+      "affected_services": ["payments-service", "billing-service"]
+    },
+    {
+      "alert": "payments-service has zero PR reviews in the last 14 days",
+      "severity": "high",
+      "affected_services": ["payments-service"]
+    }
+  ]
+}
