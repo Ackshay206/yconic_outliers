@@ -24,9 +24,9 @@ This is the problem DEADPOOL solves.
 
 ## The vision
 
-DEADPOOL is a multi-agent startup immune system built on LangGraph's stateful graph orchestration framework. Six specialist agents continuously monitor every operational layer of a company — people, finance, infrastructure, product, legal, and codebase — connected by a LangGraph `StateGraph` where a Head Supervisor node orchestrates them all: dynamically routing cross-validation tasks between specialists via conditional edges, accumulating corroborated evidence in a shared typed state object, and tracing exactly how a single anomaly cascades into downstream failures.
+DEADPOOL is a multi-agent startup immune system built on LangGraph's stateful graph orchestration framework. Six specialist agents continuously monitor every operational layer of a company — people, finance, infrastructure, product, legal, and codebase — connected by a LangGraph `StateGraph` where a Head Agent node orchestrates them all: cross-validating signals across domains, computing a 0–100 risk score, generating a plain-language founder briefing, and seeding a looping cascade expander that traces exactly how a single anomaly propagates into downstream failures.
 
-The system is **model-agnostic by design** — five specialist agents and the Head Supervisor run on **Google Gemini 2.5 Flash**, while the Finance Agent runs on **OpenAI GPT-4o-mini**. This multi-provider architecture is intentional: it demonstrates that the orchestration layer (LangGraph) is the intelligence, not any single model. When a Gemini-powered agent and a GPT-4o-mini-powered agent independently corroborate the same anomaly, the finding is robust across model families — not just consistent within one model's biases.
+The system is **model-agnostic by design** — five specialist agents and the Head Agent run on **Google Gemini 2.5 Pro**, while the Finance Agent runs on **OpenAI GPT-4o-mini**. This multi-provider architecture is intentional: it demonstrates that the orchestration layer (LangGraph) is the intelligence, not any single model. When a Gemini-powered agent and a GPT-4o-mini-powered agent independently corroborate the same anomaly, the finding is robust across model families — not just consistent within one model's biases.
 
 ### What ships at this hackathon vs. what comes later
 
@@ -34,8 +34,8 @@ The system is **model-agnostic by design** — five specialist agents and the He
 |---|---|---|
 | **Data** | Real API integrations: Slack API (People), GitHub Actions + REST + Dependabot APIs (Infra, Code Audit), uploaded CSVs (Finance, Product), uploaded PDFs + DuckDuckGo search (Legal) | Full OAuth + webhook connectors, multi-tenant ingestion pipelines |
 | **Agents** | 7 LangGraph nodes, each making 1 LLM call per cycle with structured output | Agents with multi-step tool-use loops, retry logic, and rate limit handling |
-| **Orchestration** | Full LangGraph StateGraph with conditional routing, parallel fan-out, and MemorySaver checkpointing | PostgresSaver, multi-tenant thread_id isolation, horizontal node scaling |
-| **Dashboard** | React + D3.js: cascade graph visualization, risk score, founder briefing, activity log | Animated cascade pulses, What-If simulation mode, alert system, mobile responsive |
+| **Orchestration** | Full LangGraph StateGraph with conditional routing, parallel fan-out, LLM cascade expander loop (max depth 5) | PostgresSaver, multi-tenant thread_id isolation, horizontal node scaling |
+| **Dashboard** | React + React Flow (`@xyflow/react`): cascade chain graph, risk score, founder briefing, liabilities panel | Animated cascade pulses, What-If simulation mode, alert system, mobile responsive |
 | **Traction** | Landing page with signup form | Waitlist → beta invites → paid pilot with 5 founders |
 
 This distinction matters because **code is evaluated against the master plan** — not against an aspirational vision. Everything in the "Hackathon" column is what we commit to building and what the code will be measured against. The "Post-hackathon" column is documented to show scalability thinking, but we do not claim to build it this weekend.
@@ -46,8 +46,8 @@ This distinction matters because **code is evaluated against the master plan** �
 |--------|------|------|--------|
 | **Dev 1** | Agent Engineer (People, Finance, Product) | 3 specialist nodes, all prompts + structured output schemas, synthetic data files | Python, LLM APIs, data modeling |
 | **Dev 2** | Agent Engineer (Infra, Legal, Code Audit) | 3 specialist nodes, CVE matching, contract parsing, deploy analysis | Python, security, systems |
-| **Dev 3** | Orchestration Lead | Head Supervisor node, LangGraph StateGraph, conditional routing, cascade mapper, corroboration loop | Python, LangGraph, graph algorithms |
-| **Dev 4** | Frontend Lead | React dashboard, D3 cascade graph, risk score panel, activity log, SSE client, landing page | React, D3.js, CSS, UI/UX |
+| **Dev 3** | Orchestration Lead | LangGraph orchestrator (`orchestrator.py`), head_agent node, cascade expander loop, conditional routing | Python, LangGraph, graph algorithms |
+| **Dev 4** | Frontend Lead | React dashboard, React Flow cascade graph, risk score panel, liabilities panel, SSE client | React, React Flow, CSS, UI/UX |
 | **Dev 5** | Integration & Infra | FastAPI backend, SSE streaming, deployment (Vercel + Railway), API wiring between frontend/backend, demo environment, traction | Python, DevOps, marketing |
 
 Five people is the right size for this architecture: two devs building six specialist agents in parallel, one dedicated to the hardest engineering problem (LangGraph orchestration + cascade mapper), one owning the entire frontend, and one making sure everything connects and deploys. No single person is a bottleneck for more than one Tier 1 feature.
@@ -56,27 +56,27 @@ Five people is the right size for this architecture: two devs building six speci
 
 We are not starting from zero. Here's what's done and what remains:
 
-| Component | Status | What's left |
-|-----------|--------|-------------|
+| Component | Status | Notes |
+|-----------|--------|-------|
 | **FastAPI backend scaffold** | ✅ Done | — |
 | **React frontend scaffold** | ✅ Done | — |
-| **All 6 specialist agent nodes** | ✅ Done | Prompt tuning, edge case handling |
-| **Pydantic schemas** (Anomaly, AgentReport, CascadeChain) | ✅ Done | — |
+| **All 6 specialist agent nodes** | ✅ Done | — |
+| **Pydantic schemas** (Anomaly, AgentReport, CascadeChain, FounderBriefing, RiskScore) | ✅ Done | — |
 | **Synthetic data files** (all 8 JSON/CSV) | ✅ Done | — |
 | **Gemini + OpenAI SDK integration** | ✅ Done | — |
-| **Deployment pipeline** (Vercel + Railway) | ✅ Done | — |
-| **Head Supervisor node** | 🔄 In progress | Conditional routing logic, corroboration loop |
-| **LangGraph StateGraph compilation** | 🔄 In progress | Wiring conditional edges, Send API fan-out |
-| **Cascade mapper** (NetworkX BFS) | 🔄 In progress | Probability multiplication, chain pruning |
-| **Agent collaboration protocol** | 🔄 In progress | Corroboration re-queries, entity-scoped context passing |
-| **Dashboard: cascade graph (D3)** | 🔜 Next | Color-coded nodes, edge thickness, click-to-expand |
-| **Dashboard: risk score + briefing** | 🔜 Next | Wire to SSE stream from backend |
-| **Dashboard: activity log** | 🔜 Next | Read Head Supervisor decisions from state |
-| **SSE streaming** | 🔜 Next | FastAPI → React push |
-| **Landing page** | 🔜 Next | Signup form, "What's your DEADPOOL score?" |
-| **What-If simulation** (Tier 2) | 🔜 Stretch | Only if Tier 1 is solid |
+| **Deployment pipeline** (Caddy + Railway) | ✅ Done | — |
+| **LangGraph orchestrator** (`orchestrator.py`) | ✅ Done | Parallel fan-out → head_agent → cascade_expander loop → format_output |
+| **Head Agent** (cross-validate + risk score + briefing) | ✅ Done | Single-pass cross-validation; briefing via Gemini 2.5 Pro |
+| **LLM cascade expander** (loop, max 5 depth) | ✅ Done | Replaces deterministic NetworkX — Gemini drives expansion |
+| **SSE streaming** | ✅ Done | FastAPI `signal_bus` → React `EventSource` |
+| **Dashboard: cascade graph (React Flow)** | ✅ Done | Domain-colored nodes, animated edges, MiniMap, Controls |
+| **Dashboard: risk score + founder briefing** | ✅ Done | Summary, timeline, recommended_action |
+| **Dashboard: liabilities panel** | ✅ Done | Replaces activity log — sorted by severity |
+| **What-If simulation** | ✅ Done | `POST /api/whatif` wired to `HeadAgent.simulate_whatif()` |
+| **Dashboard: activity log** | ❌ Not shipped | Deprioritised in favour of liabilities panel |
+| **Landing page** | ❌ Not shipped | Out of scope for hackathon code submission |
 
-The critical path right now is **agent collaboration and cascade detection** — getting the Head Supervisor's conditional routing to work correctly so that the primary cascade (People → Code Audit → Infra → Legal → Finance) fires end-to-end. Once that works, the remaining items are frontend wiring and polish.
+The critical path was **agent collaboration and cascade detection** — getting the LangGraph conditional routing to work correctly so that the primary cascade (People → Code Audit → Infra → Legal → Finance) fires end-to-end. This is complete. The LLM-driven cascade expander replaced the planned deterministic NetworkX approach.
 
 ---
 
@@ -84,103 +84,122 @@ The critical path right now is **agent collaboration and cascade detection** —
 
 ### The 7-node LangGraph
 
-DEADPOOL runs as a **LangGraph `StateGraph`**. Six specialist nodes are domain experts. The Head Supervisor node is the graph's central router. Each node is a pure function: read from `DEADPOOLState`, call its model (Gemini or GPT-4o-mini), write structured output back.
+DEADPOOL runs as a **LangGraph `StateGraph`**. Six specialist nodes are domain experts. The head_agent node orchestrates cross-validation and briefing. The cascade_expander loops to trace consequences. Each node is a pure function: read from `OrchestratorState`, call its model (Gemini or GPT-4o-mini), write structured output back.
 
 **Model assignment:**
 
 | Node | Model | Rationale |
 |------|-------|-----------|
-| Head Supervisor | Gemini 2.5 Flash | Needs the longest context to read all six domain reports + corroboration history simultaneously |
-| People Agent | Gemini 2.5 Flash | Pattern recognition on 12-week developer activity time series |
+| Head Agent | Gemini 2.5 Pro | Cross-validates all 6 reports, computes risk score, generates FounderBriefing in one pass |
+| People Agent | Gemini 2.5 Pro | Pattern recognition on 12-week developer activity time series |
 | Finance Agent | **GPT-4o-mini** | Most structured workload — CSV parsing, arithmetic, threshold checks. GPT-4o-mini excels at structured extraction at low latency. Creates cross-provider corroboration signal. |
-| Infra Agent | Gemini 2.5 Flash | System metrics correlation and degradation pattern detection |
-| Product Agent | Gemini 2.5 Flash | Sentiment analysis on support tickets and engagement trends |
-| Legal Agent | Gemini 2.5 Flash | Contract clause comprehension and compliance deadline tracking |
-| Code Audit Agent | Gemini 2.5 Flash | Dependency tree analysis, CVE matching, bus factor calculation |
-| Cascade Mapper | Deterministic | No LLM — pure NetworkX BFS with probability multiplication |
-| Briefing Node | Gemini 2.5 Flash | Natural language synthesis for founder-facing output |
+| Infra Agent | Gemini 2.5 Pro | System metrics correlation and degradation pattern detection |
+| Product Agent | Gemini 2.5 Pro | Sentiment analysis on support tickets and engagement trends |
+| Legal Agent | Gemini 2.5 Pro | Contract clause comprehension and compliance deadline tracking |
+| Code Audit Agent | Gemini 2.5 Pro | Dependency tree analysis, CVE matching, bus factor calculation |
+| Cascade Expander | Gemini 2.5 Pro | LLM-driven consequence expansion — asks "what happens next?" for all active threads collectively, enabling cross-cause acceleration detection |
 
 ```
-                      ┌─────────────────────────────┐
-                      │       DEADPOOLState          │
-                      │  TypedDict — shared across   │
-                      │  all nodes in the graph      │
-                      └──────────────┬──────────────┘
-                                     │
-                    ┌────────────────▼────────────────┐
-                    │     HEAD SUPERVISOR (Gemini)     │
-                    │  Reads all domain_reports        │
-                    │  Conditional edge routing        │
-                    └─────────┬──────────────────────┘
-          ┌──────────────────┬┼──────────────────┐
-          │                  ││                  │
-  ┌───────▼──────┐  ┌───────▼┴───────┐  ┌──────▼──────────┐
+  ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐
   │ People       │  │ Finance        │  │ Infra           │
   │ (Gemini)     │  │ (GPT-4o-mini)  │  │ (Gemini)        │
-  └──────────────┘  └────────────────┘  └─────────────────┘
-  ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐
+  └──────┬───────┘  └───────┬────────┘  └────────┬────────┘
+  ┌──────┴───────┐  ┌───────┴────────┐  ┌────────┴────────┐
   │ Product      │  │ Legal          │  │ Code Audit      │
   │ (Gemini)     │  │ (Gemini)       │  │ (Gemini)        │
-  └──────────────┘  └────────────────┘  └─────────────────┘
-          │                  │                  │
-          └──────────────────▼──────────────────┘
-                    ┌─────────────────────┐
-                    │ Cascade Mapper      │
-                    │ (deterministic)     │
-                    └──────────┬──────────┘
-                    ┌──────────▼──────────┐
-                    │ Briefing (Gemini)   │
-                    └─────────────────────┘
+  └──────┬───────┘  └───────┬────────┘  └────────┬────────┘
+         └──────────────────▼──────────────────────┘
+                    ┌──────────────────────────────────┐
+                    │  HEAD AGENT (Gemini 2.5 Pro)     │
+                    │  Cross-validate anomalies         │
+                    │  Compute risk score 0–100         │
+                    │  Generate FounderBriefing         │
+                    │  Seed cascade threads (sev ≥ 0.5)│
+                    └──────────────┬───────────────────┘
+                                   │ conditional
+                         ┌─────────▼─────────┐
+                         │  CASCADE EXPANDER  │◄──┐
+                         │  (Gemini 2.5 Pro)  │   │ loop (max 5)
+                         │  LLM next-step     │───┘
+                         │  _apply_rules boost│
+                         │  prune < 40%       │
+                         └─────────┬──────────┘
+                                   │ conditional
+                         ┌─────────▼──────────┐
+                         │  FORMAT OUTPUT     │
+                         │  Build dashboard   │
+                         │  nodes/edges/chains│
+                         └────────────────────┘
 ```
 
-### DEADPOOLState — the shared typed state
+### OrchestratorState — the shared typed state
 
 ```python
-class DEADPOOLState(TypedDict):
-    anomalies: Annotated[list[Anomaly], operator.add]  # list-append reducer
-    domain_reports: dict[str, AgentReport]
-    corroboration_queue: list[str]
-    corroboration_results: dict
-    cascade_chains: list[CascadeChain]
-    risk_score: float
-    briefing: str
-    iteration: int              # guards against infinite loops (max 2)
-    whatif_params: dict | None  # None = live mode, dict = simulation
+class OrchestratorState(TypedDict):
+    # Specialist outputs — operator.add merges parallel branches
+    specialist_reports: Annotated[list[AgentReport], operator.add]
+
+    # Head agent output
+    risk_score:      Optional[RiskScore]
+    root_causes:     list[str]
+    domains_present: list[str]
+
+    # Cascade loop state
+    active_threads:  list[dict]                          # current depth threads (replaced each iter)
+    cascade_nodes:   Annotated[list[dict], operator.add] # accumulated across iterations
+    cascade_edges:   Annotated[list[dict], operator.add] # accumulated across iterations
+    visited_causes:  Annotated[list[str],  operator.add] # dedup across iterations
+    depth:           int                                  # loop counter (replaced each iter)
+
+    # Final output
+    dashboard: Optional[dict]
 ```
 
-State is model-agnostic — it doesn't care whether the writing node used Gemini or GPT-4o-mini. The Pydantic schemas for anomalies and reports are identical regardless of provider. LangGraph's `operator.add` reducer handles parallel merge of anomaly lists without conflict.
+State is model-agnostic — the same `OrchestratorState` flows through Gemini specialist nodes and the GPT-4o-mini Finance node unchanged. LangGraph's `operator.add` reducer handles parallel merge of `specialist_reports` without conflict. The cascade loop state (`active_threads`, `depth`) is replaced each iteration while `cascade_nodes`/`cascade_edges`/`visited_causes` accumulate across iterations.
 
 ### Graph execution flow
 
 ```
-START → [Parallel Fan-Out: 6 specialists via Send API]
-         5 call Gemini, 1 calls GPT-4o-mini, all concurrent
-      → [Head Supervisor reads all 6 reports]
-         Identifies cross-domain anomalies
-         Writes corroboration_queue (e.g. ["code_audit", "legal"])
-      → [Conditional edge → targeted corroboration re-queries]
-         Entity-scoped, not full re-scan
-      → [Head Supervisor second pass]
-         Cross-validates, raises/lowers severity
-         Cross-provider agreement gets confidence boost
-         iteration < 2? → more corroboration or → cascade_mapper
-      → [Cascade Mapper: deterministic graph traversal]
-         BFS through dependency graph, multiply probabilities
-         Prune chains below 0.25 threshold
-      → [Briefing Node: Gemini generates founder brief]
-         Top 3 cascades, plain language, one action
+START → [Parallel Fan-Out: 6 specialist nodes]
+         5 call Gemini 2.5 Pro, 1 calls GPT-4o-mini, all concurrent
+      → [Barrier join: all 6 feed into head_agent node]
+      → [Head Agent: HeadAgent.analyze()]
+         Cross-validates anomalies via CORROBORATION_MAP
+         Severity +15% for 2+ corroborating domains
+         Severity −15% for unconfirmed weak signals
+         Computes 0–100 risk score
+         Generates FounderBriefing via Gemini
+         Seeds cascade threads from anomalies with severity ≥ 0.5
+      → [Conditional edge]
+         active_threads exist? → cascade_expander
+         no anomalies? → format_output
+      → [Cascade Expander loop (max depth 5)]
+         Calls _llm_next_step(Gemini): given all active threads, what next?
+         Applies _apply_rules: boosts probability for dangerous domain combos
+           (finance+people: +25, legal+finance: +20, infra+product: +15)
+         Prunes branches below 40% probability
+         Deduplicates visited causes
+         Has more threads AND depth < 5? → loop back
+         Done? → format_output
+      → [Format Output]
+         Numbers edges, builds adjacency map
+         DFS to trace chain paths (root → terminal)
+         Returns { riskScore, trend, activeCascades, nodes, edges, activeChains }
       → END
 ```
 
 ### Conditional routing — the intelligence layer
 
-The Head Supervisor uses `add_conditional_edges` with a routing function. LangGraph fans out to all targets in parallel — each uses its own model provider. The routing function is not hardcoded; it's Gemini reasoning over accumulated evidence to decide which specialist to query next.
+The orchestrator uses `add_conditional_edges` with two router functions:
 
 ```python
-def supervisor_router(state: DEADPOOLState) -> list[str]:
-    if state["iteration"] >= 2 or not state["corroboration_queue"]:
-        return ["cascade_mapper"]
-    return state["corroboration_queue"]
+def _after_head_agent(state: OrchestratorState) -> str:
+    return "cascade_expander" if state.get("active_threads") else "format_output"
+
+def _after_cascade_expander(state: OrchestratorState) -> str:
+    if state.get("depth", 0) < MAX_CASCADE_DEPTH and state.get("active_threads"):
+        return "cascade_expander"
+    return "format_output"
 ```
 
 ### Cross-domain linking via entity keys
@@ -237,41 +256,40 @@ These keys are embedded in every corroboration query so receiving nodes narrow t
 
 ---
 
-## The Head Supervisor Node *(Gemini)*
+## The Head Agent Node *(Gemini 2.5 Pro)*
 
-The Head Supervisor orchestrates, arbitrates, and synthesizes through LangGraph's graph execution model.
+The Head Agent cross-validates, scores, and synthesizes in a single pass within the LangGraph graph.
 
-**Cross-validation:** Reads all six domain reports (five from Gemini, one from GPT-4o-mini), identifies high-severity anomalies, routes corroboration queries via conditional edges. Cross-provider corroborations (Gemini ↔ GPT-4o-mini) carry extra confidence weight.
+**Cross-validation:** Reads all six specialist reports (five from Gemini, one from GPT-4o-mini). Uses `CORROBORATION_MAP` to check which expected corroborating domains are active. 2+ corroborating domains → severity +15%, confidence +10%. Zero corroborating domains AND severity < 0.5 → severity −15%. Cross-provider corroborations (Gemini specialist ↔ GPT-4o-mini Finance) are structurally independent — same `Anomaly` schema, different model family — making the signal model-family-independent.
 
-**Conflict resolution:** Does not average or discard contradictory signals. Models the scenario forward. Example: GPT-4o-mini Finance reports healthy runway (9.4 months). Gemini Legal flags contract breach risk. The supervisor reasons: *"Finance computed runway without the conditional revenue loss. Legal's breach is upstream — recalculate Finance under Legal's scenario."* Routes to GPT-4o-mini Finance with breach parameters. New output: runway = 2.5 months. Legal dominates. Resolution documented in state.
+**Risk score computation:** Three additive components (each capped):
+- Cascade urgency: Σ min(urgency × 500, 40) for top 3 chains — up to 40 pts
+- High-severity anomaly count: count(severity ≥ 0.75) × 8 — up to 40 pts
+- Baseline severity: avg(all severities) × 20 — up to 20 pts
 
-**Cascade ranking:**
-```
-urgency = (1 / time_to_impact_days) × severity × (1 - reversibility)
-```
-Top 3 cascades surfaced. Information overload is itself a risk.
+**Briefing generation:** Calls Gemini 2.5 Pro with top 10 anomalies + cascade summaries, returns structured `FounderBriefing` (summary, timeline, recommended_action).
 
-**LangGraph checkpointing:** `MemorySaver` persists every execution by `thread_id`. Across cycles, the supervisor reads prior state to adjust baseline probabilities based on which signals proved predictive.
+**Cascade seeding:** After analysis, anomalies with severity ≥ 0.5 become root threads for the cascade expander. These are written to `active_threads` in `OrchestratorState`, triggering the conditional edge to the cascade expander loop.
 
 ---
 
-## The Cascade Mapper *(deterministic)*
+## The Cascade Expander *(LLM-driven, Gemini 2.5 Pro)*
 
-No LLM. Pure NetworkX BFS with probability multiplication. This is intentional — the cascade mapper should be deterministic, fast, and free of model variance.
+LLM-driven consequence expansion via the `_llm_next_step` function in `cascade_mapper.py`, called iteratively by the cascade expander node in `orchestrator.py`.
 
-1. Reads validated anomalies from state
-2. Matches each to pre-built cascade paths via `TRIGGER_MAP`
-3. Multiplies conditional probabilities edge-by-edge
-4. Prunes chains where cumulative probability < 0.25
-5. Writes `CascadeChain` objects to state
+**How it works:**
+1. Receives all currently `active_threads` (seeded from anomalies with severity ≥ 0.5)
+2. Sends all threads collectively to Gemini: *"Given these active causal threads, what are the next consequences?"*
+3. Gemini returns a JSON array of consequence objects with probability (0–100), contributing_causes, and is_terminal flag
+4. `_apply_rules` applies additive probability boosts for dangerous domain combinations:
+   - `finance+people`: +25 pts — workforce issues that hit cash simultaneously
+   - `legal+finance`: +20 pts — compliance exposure meets burn pressure
+   - `infra+product`: +15 pts — infrastructure failures manifest in product
+5. Branches below 40% probability are pruned; visited causes are deduplicated
+6. Terminal consequences (bankruptcy, acquisition, founder dilution) stop their branch
+7. Loop continues until no active threads remain OR `MAX_CASCADE_DEPTH` (5) is reached
 
-**Six pre-seeded cascade paths:**
-1. Key-person departure → code gap → quality drop → delivery delay → contract breach → revenue loss → runway crisis *(primary demo cascade)*
-2. CVE in dependency → compliance breach → legal exposure → investor confidence loss
-3. Test coverage decline → bugs shipped → user errors → churn spike → revenue drop
-4. Tech debt → deploy velocity drop → feature failure → competitive loss
-5. Revenue concentration → single client churn → revenue cliff → down-round trigger
-6. Infra degradation → SLA breach → contract penalty → burn spike → runway compression
+**Key advantage over deterministic approach:** Sending all active threads collectively enables Gemini to detect cross-cause acceleration — where two simultaneous signals combine to produce a higher-probability consequence than either alone would (e.g., engineer departure + deploy stall → contract breach happens faster than either factor independently predicts).
 
 ---
 
@@ -279,33 +297,32 @@ No LLM. Pure NetworkX BFS with probability multiplication. This is intentional �
 
 **The scoring rubric evaluates code against the master plan.** Overcommitting kills the completeness score. We define three tiers:
 
-### Tier 1 — Must ship (core product, code deadline: Day 1 midnight)
+### Tier 1 — Must ship ✅ All shipped
 
 | Feature | Owner | Description | Status |
 |---------|-------|-------------|--------|
-| **7-node LangGraph graph** | Dev 3 | All 6 specialists + Head Supervisor compiled and executing. Parallel fan-out, conditional routing, corroboration loop, cascade mapper, briefing node. | 🔄 Agent nodes done, orchestration in progress |
-| **Cascade detection** | Dev 3 + Dev 1/2 | Primary cascade (People → Code Audit → Infra → Legal → Finance) detected from synthetic data with correct probability chain. | 🔄 In progress |
-| **Dashboard: cascade graph** | Dev 4 | React + D3.js directed graph showing cascade chains with color-coded nodes and edge thickness encoding probability. Clickable nodes expanding to show evidence. | 🔜 Next |
-| **Dashboard: risk score + briefing** | Dev 4 | Single number 0–100, color indicator, trend arrow, and 2–3 sentence Head Supervisor briefing displayed below. | 🔜 Next |
-| **Dashboard: activity log** | Dev 4 | Scrollable log showing Head Supervisor routing decisions, corroboration results, and severity adjustments. | 🔜 Next |
-| **SSE streaming** | Dev 5 | FastAPI → React real-time push for cascade updates and briefings. | 🔜 Next |
-| **Landing page** | Dev 5 | Signup form with "What's your DEADPOOL score?" framing. | 🔜 Next |
+| **LangGraph orchestrator** | Dev 3 | 6 specialists + head_agent + cascade_expander loop + format_output. Parallel fan-out, conditional routing. | ✅ Shipped |
+| **Cascade detection** | Dev 3 + Dev 1/2 | LLM-driven expansion (Gemini) traces multi-domain chains from synthetic data. | ✅ Shipped |
+| **Dashboard: cascade graph** | Dev 4 | React Flow directed graph — domain-colored nodes, animated edges, MiniMap, Controls. | ✅ Shipped (React Flow, not D3) |
+| **Dashboard: risk score + briefing** | Dev 4 | 0–100 score, severity level, trend, FounderBriefing (summary, timeline, action). | ✅ Shipped |
+| **Dashboard: liabilities panel** | Dev 4 | Scrollable severity-sorted anomaly list. Replaced activity log. | ✅ Shipped |
+| **SSE streaming** | Dev 5 | FastAPI `signal_bus` → React `EventSource` — incremental anomaly display during analysis. | ✅ Shipped |
 
-### Tier 2 — Should ship (high-value, code deadline: Day 2 10:30 AM)
+### Tier 2 — Should ship
 
-| Feature | Owner | Description | Complexity |
-|---------|-------|-------------|------------|
-| **What-If simulation** | Dev 3 | Sliders modify `whatif_params` in state, re-invoke graph, display side-by-side comparison. | Medium |
-| **Cross-provider highlighting** | Dev 4 | Activity log marks corroborations that cross the Gemini/GPT-4o-mini boundary. | Low |
-| **Cascade animation** | Dev 4 | Pulse animation traveling along active cascade chains from trigger to end-state. | Medium |
+| Feature | Owner | Description | Status |
+|---------|-------|-------------|--------|
+| **What-If simulation** | Dev 3 | `POST /api/whatif` — modifies domain severities, re-scores, returns comparison briefing. | ✅ Shipped (backend only) |
+| **Cross-provider highlighting** | Dev 4 | Visualise Gemini ↔ GPT-4o-mini boundary in the dashboard. | ❌ Not shipped |
+| **Cascade animation** | Dev 4 | Pulse animation along active chains. | ❌ Not shipped |
 
-### Tier 3 — Stretch (demo polish, only if Tiers 1-2 are solid)
+### Tier 3 — Stretch
 
-| Feature | Owner | Description | Complexity |
-|---------|-------|-------------|------------|
-| **Alert toasts** | Dev 4 | Toast notifications when cascade probability crosses severity threshold. | Low |
-| **LangGraph trace visualization** | Dev 5 | Show which nodes are active and which edges fired during graph execution. | Medium |
-| **Multiple simultaneous cascades** | Dev 3 | Dashboard rendering 2+ cascade chains simultaneously. | Medium |
+| Feature | Owner | Description | Status |
+|---------|-------|-------------|--------|
+| **Alert toasts** | Dev 4 | Toast notifications at severity thresholds. | ❌ Not shipped |
+| **LangGraph trace visualization** | Dev 5 | Live node/edge activity during graph execution. | ❌ Not shipped |
+| **Multiple simultaneous cascades** | Dev 3 | Dashboard renders 2+ chains simultaneously. | ✅ Shipped — React Flow renders all active chains |
 
 ### Feasibility analysis — why this ships in time
 
@@ -313,7 +330,7 @@ No LLM. Pure NetworkX BFS with probability multiplication. This is intentional �
 
 1. **Backend agents are already done.** All six specialist nodes produce structured `AgentReport` outputs from synthetic data. Gemini and GPT-4o-mini integrations are tested. This is the part most hackathon teams are still building at midnight — we finished it Saturday afternoon.
 
-2. **The critical remaining work is well-scoped.** The Head Supervisor's conditional routing is a known LangGraph pattern (`add_conditional_edges` + `supervisor_router`). The cascade mapper is deterministic NetworkX BFS — no LLM variance, no prompt debugging. These are engineering problems with clear solutions, not open-ended research.
+2. **The orchestration work was well-scoped.** The conditional routing is a known LangGraph pattern (`add_conditional_edges`). The LLM cascade expander follows a clear prompt/parse/prune loop with hard depth limits. Both are engineering problems with clear solutions, not open-ended research.
 
 3. **Five people eliminates the frontend bottleneck.** The most common hackathon failure mode is "backend works but dashboard isn't ready." With a dedicated frontend dev (Dev 4) and an integration dev (Dev 5) who handles SSE + deployment, the frontend track runs in parallel with zero dependency on the orchestration track.
 
@@ -321,13 +338,11 @@ No LLM. Pure NetworkX BFS with probability multiplication. This is intentional �
 
 5. **We've already validated the hardest integration point.** Gemini and GPT-4o-mini both produce outputs that parse into the same Pydantic `AgentReport` schema. The cross-provider schema mismatch risk — the scariest feasibility question — is already resolved.
 
-**Honest risks that remain:**
+**How risks were resolved:**
 
-- The Head Supervisor's corroboration routing is the single hardest remaining piece. If it takes longer than expected, we simplify: supervisor does one pass (no corroboration loop), reads all six reports, and routes directly to cascade mapper. Corroboration becomes a Tier 2 feature.
-- D3 cascade graph visualization could eat more time than allocated. Dev 4 builds the table fallback *first* and only upgrades to D3 if time permits.
-- End-to-end integration (backend → SSE → frontend) always has surprises. Dev 5's entire role is handling these surprises.
-
-**Dashboard contingency:** If D3 animated graph visualization runs over time, we fall back to a structured table view of cascade chains (node → node → node with probabilities) rendered in plain React. The cascade data is the same — only the visualization changes. The table fallback can be built in 30 minutes. The D3 graph is a better demo, but the table is a better plan.
+- The corroboration loop was simplified to a single-pass cross-validation in `HeadAgent._cross_validate()` using a static `CORROBORATION_MAP`. This proved sufficient and removed the complexity of iterative re-queries.
+- D3 cascade graph was replaced with React Flow (`@xyflow/react`), which provided interactive graph rendering out of the box with less custom code.
+- End-to-end integration worked via `signal_bus.py` for SSE and `asyncio.to_thread()` for the blocking LangGraph invocation.
 
 ---
 
@@ -335,12 +350,12 @@ No LLM. Pure NetworkX BFS with probability multiplication. This is intentional �
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| Orchestration | **LangGraph** `StateGraph` | Typed state, conditional edges, parallel fan-out via `Send`, `MemorySaver` checkpointing. The right primitive for graph-structured agent orchestration. |
-| AI (primary) | **Gemini 2.5 Flash** via `google-genai` SDK | 5 specialist nodes + supervisor + briefing. JSON mode for structured output. |
+| Orchestration | **LangGraph** `StateGraph` | Typed state, conditional edges, parallel fan-out, loop-capable cascade expander. The right primitive for graph-structured agent orchestration. |
+| AI (primary) | **Gemini 2.5 Pro** via `google-genai` SDK | 5 specialist nodes + head_agent + cascade expander. JSON mode for structured output. |
 | AI (finance) | **GPT-4o-mini** via `openai` SDK | Finance node only. `response_format={"type": "json_object"}`, `temperature=0.1`. |
 | Backend | **Python + FastAPI** | Async-native, Pydantic v2 for type-safe I/O, SSE via `sse-starlette`. |
-| Frontend | **React + D3.js** | D3 for cascade graph. React for dashboard state and panels. |
-| Deployment | **Vercel** (frontend) + **Railway** (backend) | Free tiers, <5 minute deploy. |
+| Frontend | **React + React Flow** | `@xyflow/react` for cascade chain graph. React for dashboard state and panels. |
+| Deployment | **Caddy** (reverse proxy) + **Railway** | Single Railway service; Caddy serves built frontend + proxies API. |
 
 ---
 
@@ -349,83 +364,61 @@ No LLM. Pure NetworkX BFS with probability multiplication. This is intentional �
 ### LangGraph graph construction
 
 ```python
-import google.genai as genai
-from openai import OpenAI
+builder = StateGraph(OrchestratorState)
 
-gemini_client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+for domain, agent in specialists.items():
+    builder.add_node(domain, _make_specialist_node(agent))
 
-workflow = StateGraph(DEADPOOLState)
+builder.add_node("head_agent",       _make_head_node(head_agent))
+builder.add_node("cascade_expander", _make_cascade_expander_node())
+builder.add_node("format_output",    _format_output_node)
 
-# Each node owns its model client
-workflow.add_node("people", people_node)          # Gemini
-workflow.add_node("finance", finance_node)        # GPT-4o-mini
-workflow.add_node("infra", infra_node)            # Gemini
-workflow.add_node("product", product_node)        # Gemini
-workflow.add_node("legal", legal_node)            # Gemini
-workflow.add_node("code_audit", code_audit_node)  # Gemini
-workflow.add_node("head_supervisor", head_supervisor_node)  # Gemini
-workflow.add_node("cascade_mapper", cascade_mapper_node)    # deterministic
-workflow.add_node("briefing", briefing_node)      # Gemini
+# Fan-out: START → all specialists in parallel
+for domain in specialists:
+    builder.add_edge(START, domain)
 
-workflow.add_conditional_edges(START, initial_fanout)
-for s in ["people","finance","infra","product","legal","code_audit"]:
-    workflow.add_edge(s, "head_supervisor")
-workflow.add_conditional_edges("head_supervisor", supervisor_router)
-workflow.add_edge("cascade_mapper", "briefing")
-workflow.add_edge("briefing", END)
+# Fan-in: all specialists → head_agent (barrier join)
+for domain in specialists:
+    builder.add_edge(domain, "head_agent")
 
-app = workflow.compile(checkpointer=MemorySaver())
+# Conditional: head_agent → cascade_expander OR format_output
+builder.add_conditional_edges("head_agent", _after_head_agent,
+    {"cascade_expander": "cascade_expander", "format_output": "format_output"})
+
+# Conditional loop: cascade_expander → itself OR format_output
+builder.add_conditional_edges("cascade_expander", _after_cascade_expander,
+    {"cascade_expander": "cascade_expander", "format_output": "format_output"})
+
+builder.add_edge("format_output", END)
+graph = builder.compile()
 ```
 
 ### Specialist node pattern (Gemini)
 
 ```python
-def people_node(state: DEADPOOLState) -> dict:
-    data = load_json("team_activity.json")
-    entity_context = get_entity_context(state, "people")
-    prompt = build_people_prompt(data, entity_context)
-
-    response = gemini_client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config=genai.types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=AgentReport
-        )
-    )
-    report = AgentReport.model_validate_json(response.text)
-    return {"anomalies": report.anomalies, "domain_reports": {"people": report}}
+def _make_specialist_node(agent):
+    def node(_state: OrchestratorState) -> dict:
+        report: AgentReport = agent.run()   # loads data, calls Gemini, returns AgentReport
+        return {"specialist_reports": [report]}
+    return node
 ```
 
 ### Finance node (GPT-4o-mini)
 
-```python
-def finance_node(state: DEADPOOLState) -> dict:
-    transactions = load_csv("deadpool_finance_data.csv")
-    pipeline = load_csv("deadpool_revenue_pipeline.csv")
-    funding = load_csv("deadpool_funding_runway.csv")
-    entity_context = get_entity_context(state, "finance")
-    whatif = state.get("whatif_params")
+FinanceAgent is a standalone class that uses the OpenAI client internally:
 
-    response = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": FINANCE_SYSTEM_PROMPT},
-            {"role": "user", "content": build_finance_prompt(
-                transactions, pipeline, funding, entity_context, whatif)}
-        ],
-        response_format={"type": "json_object"},
-        temperature=0.1
-    )
-    report = AgentReport.model_validate_json(response.choices[0].message.content)
-    report.model_provider = "openai/gpt-4o-mini"
-    return {"anomalies": report.anomalies, "domain_reports": {"finance": report}}
+```python
+class FinanceAgent:
+    def run(self) -> AgentReport:
+        # Loads 3 CSV files with pandas
+        # Calls GPT-4o-mini with response_format={"type": "json_object"}
+        # Returns AgentReport with Anomaly list
+        ...
 ```
 
 ### Agent interaction flow
 
-The full flow (parallel fan-out → supervisor reads → conditional corroboration → cascade mapping → briefing) is detailed in the Architecture section above. The key implementation detail: steps [3]–[6] in that flow are the Head Supervisor's conditional routing — each step is a LangGraph edge, not a function call. The graph structure *is* the control flow.
+The full flow (parallel fan-out → head_agent → cascade expander loop → format_output) is detailed in the Architecture section above. The key implementation detail: the loop between cascade_expander and itself, and the conditional exit to format_output, are LangGraph edges — not function calls. The graph structure *is* the control flow.
 
 ---
 
@@ -507,7 +500,7 @@ Step 6 │ FINANCE NODE (GPT-4o-mini)
        │ Cascade probability: 0.19 | Time to impact: 75 days | Impact: $1.9M+
 ```
 
-**Head Supervisor briefing:**
+**Head Agent FounderBriefing:**
 
 > "Your lead backend engineer has been disengaging for five weeks, and she's the only person who can ship the payments feature that Nexus Corp's contract requires by April 15. The Code Audit node found an unpatched critical vulnerability in the same service. If the deadline is missed, Nexus Corp can walk — taking 42% of your revenue. That drops your runway below three months and triggers the down-round clause. Talk to Sarah Chen today. Start knowledge transfer this week. Contact Nexus Corp about a deadline extension before April 1."
 
@@ -616,7 +609,7 @@ The six pre-seeded cascade paths cover common startup failure modes. But compani
 }
 ```
 
-The cascade mapper's BFS engine is path-agnostic — it traverses whatever edges exist in the dependency graph. Custom paths are just new edges added to the NetworkX graph. This means DEADPOOL's intelligence grows with the customer's domain knowledge: the more cascade paths they define, the more failure modes the system can detect.
+The cascade expander is path-agnostic — it uses Gemini to reason about any starting thread, not a fixed graph. Custom paths could be injected as initial threads with pre-set probabilities. This means DEADPOOL's intelligence grows with the customer's domain knowledge: the more precise the seeding, the richer the expansion.
 
 **Cascade path marketplace (future vision):** Companies in similar industries share failure modes. Post-hackathon, we envision a community library of anonymized cascade path templates — "SaaS Revenue Concentration Pack," "Compliance-Heavy Fintech Pack." This creates a network effect: every contributed cascade path makes the platform better for all customers.
 
@@ -651,18 +644,14 @@ DEADPOOL doesn't replace existing tools — it connects them. A company keeps us
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|-----------|
-| **Infinite corroboration loop** | Medium | High — system hangs | `iteration` counter in state; max 2 passes before routing to cascade mapper |
-| **Gemini returns malformed JSON** | Medium | Medium — node fails | Pydantic parsing with fallback to empty anomaly list; node never crashes the graph |
-| **GPT-4o-mini Finance node timeout** | Low | High — breaks demo | 10s timeout; fallback: inject last-known Finance report from checkpoint state |
-| **Schema mismatch across providers** | Low | High — state corruption | All nodes output identical Pydantic `Anomaly` schema; validated before state write |
-| **D3 graph visualization overruns time budget** | Medium | Medium — demo quality | **Fallback: structured table view** of cascade chains in plain React. Same data, simpler render. Buildable in 30 minutes. |
-| **Synthetic data triggers no anomalies** | Low | High — empty demo | Data engineered with known cascade signals; fallback: severity floor of 0.5 for demo mode |
-| **Full integration sprint fails (Day 1 5–7 PM)** | Low | Critical — nothing works | Each specialist node is independently testable. If full graph doesn't compile, demo individual agent outputs + manually narrate the cascade chain. Ugly but functional. |
-| **WiFi drops during live demo** | Medium | Medium — demo pauses | Pre-cache last graph execution result in frontend local state. Demo runs from cached state if backend is unreachable. Briefing and cascade chain display from cache. |
-| **Projector/display issues** | Low | Low | Backup: screen-share from laptop. Secondary backup: screenshots in slide deck. |
-| **Audience doesn't understand cascade in 60 seconds** | Medium | High — judges confused | Demo script opens with the *story* (engineer leaves → contract breaks → company dies) before showing the graph. Narrative first, visualization second. Rehearsed 3x. |
-
-**Contingency priority:** The riskiest item is the D3 visualization eating too much time. We commit to having the table fallback working by Day 1 midnight. D3 animated graph is a Day 2 upgrade — attempted only if Tiers 1 are solid.
+| **Cascade expander runs indefinitely** | Mitigated | `MAX_CASCADE_DEPTH = 5` hard stop; conditional edge checks both depth AND active_threads |
+| **Gemini returns malformed JSON** | Mitigated | `_llm_next_step` has JSON extraction fallback; head_agent briefing has FounderBriefing fallback with raw text |
+| **GPT-4o-mini Finance node timeout** | Mitigated | FastAPI wraps in `asyncio.to_thread()`; error captured per-agent in `run_all_agents` without crashing others |
+| **Schema mismatch across providers** | Resolved | All nodes output identical Pydantic `AgentReport`/`Anomaly` schema; validated before state write |
+| **React Flow graph with many nodes** | Low | MiniMap + Controls provided; fitView called on load; zooms out automatically |
+| **Synthetic data triggers no anomalies** | Resolved | Data engineered with known cascade signals; verified end-to-end |
+| **WiFi drops during live demo** | Medium | `useDeadpool` caches last authoritative response in React state; dashboard remains interactive after analysis completes |
+| **Audience doesn't understand cascade in 60 seconds** | Medium | Demo script opens with the *story* (engineer leaves → contract breaks → company dies) before showing the graph. Narrative first, visualization second. |
 
 ---
 
@@ -670,16 +659,16 @@ DEADPOOL doesn't replace existing tools — it connects them. A company keeps us
 
 ### PostgresSaver — production checkpointer
 
-One-line swap from hackathon to production:
+The current hackathon version compiles the graph without a checkpointer (stateless per-request execution). Adding persistence is a one-line swap:
 
 ```python
-# Hackathon
-app = workflow.compile(checkpointer=MemorySaver())
+# Current (hackathon — stateless)
+graph = builder.compile()
 
-# Production
+# Production — durable cross-cycle memory
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 pool = AsyncConnectionPool(conninfo=os.environ["DATABASE_URL"])
-app = workflow.compile(checkpointer=AsyncPostgresSaver(pool))
+graph = builder.compile(checkpointer=AsyncPostgresSaver(pool))
 ```
 
 Enables durable cross-cycle memory, crash recovery (graph resumes from last checkpoint), and SQL-queryable audit history.
@@ -696,7 +685,7 @@ result = await app.ainvoke(state, config={"configurable": {"thread_id": "company
 
 | Phase | Architecture | Scale | What changes |
 |-------|-------------|-------|-------------|
-| Hackathon | All nodes in-process, `asyncio` concurrency | 1 company | Nothing — this is what ships |
+| Hackathon | All nodes in-process, `asyncio.to_thread()` wraps LangGraph `graph.invoke()` | 1 company | Nothing — this is what ships |
 | Early production | Specialist nodes as FastAPI microservices behind load balancer | 10–50 companies | Node function body swaps from direct API call to HTTP client call. Graph structure unchanged. |
 | Growth | Kubernetes HPA on request queue depth per service | 100–5,000 companies | Each specialist service autoscales independently. Finance (GPT-4o-mini) and Gemini services scale on different profiles. |
 | Enterprise | Dedicated graph instances per enterprise customer, shared specialist service pool | 5,000+ companies | Graph compilation per tenant with customer-specific cascade paths. Specialist services are stateless and shared. |
@@ -741,42 +730,40 @@ Backend agent nodes and frontend scaffold are done. We are now in the **agent co
 
 **Completed earlier today (for context — not claiming credit for hackathon-time work):**
 - ✅ Repo setup, FastAPI + React scaffold, deployment pipeline
-- ✅ DEADPOOLState TypedDict, Pydantic schemas, entity key constants
+- ✅ OrchestratorState TypedDict, Pydantic schemas (Anomaly, AgentReport, CascadeChain, FounderBriefing, RiskScore)
 - ✅ All 6 specialist agent nodes (Gemini × 5 + GPT-4o-mini × 1) producing AgentReport outputs
 - ✅ Synthetic data files loaded and verified
 - ✅ Gemini + OpenAI API integrations tested
 
 **Now – 8:00 PM (agent collaboration sprint):**
 - Dev 1 + Dev 2: Tune specialist prompts — ensure cross_reference_hints are populated correctly in anomaly outputs. Test that entity keys match across agents.
-- Dev 3: **Head Supervisor node** — build the LangGraph StateGraph, implement `supervisor_router`, wire conditional edges, implement corroboration loop with iteration guard. This is the hardest remaining piece.
-- Dev 4: **Dashboard: table-based cascade view** (the guaranteed fallback). Risk score display. Briefing panel. Activity log component shell.
-- Dev 5: **SSE streaming** — FastAPI SSE endpoint, React SSE client, wire one dummy event end-to-end.
+- Dev 3: **LangGraph orchestrator** — build `orchestrator.py` with head_agent node, cascade_expander loop, conditional edges, format_output node.
+- Dev 4: **Dashboard: Overview page** — risk score display, BriefingPanel, FlawsPanel (liabilities). AgentsPanel with status cards.
+- Dev 5: **SSE streaming** — `signal_bus.py`, FastAPI SSE endpoint, React `EventSource` client.
 
 **8:00 – 10:00 PM (cascade detection sprint):**
-- Dev 3: **Cascade mapper** — NetworkX BFS, probability multiplication, `TRIGGER_MAP`, chain pruning at 0.25 threshold. Wire into LangGraph graph after Head Supervisor.
-- Dev 1 + Dev 2: **Integration testing** — invoke full graph with `app.invoke()`, verify the primary cascade fires (People → Code Audit → Infra → Legal → Finance). Debug entity key mismatches, schema parsing failures, corroboration routing errors.
-- Dev 4: **D3 cascade graph** — start the upgrade from table view. Color-coded nodes, edge thickness, basic click-to-expand.
-- Dev 5: Wire SSE to real graph output. Dashboard receives live cascade chains and briefings. Deploy current state to Railway + Vercel.
+- Dev 3: **LLM cascade expander** — `_llm_next_step`, `_apply_rules`, probability pruning, depth loop. Wire into LangGraph graph after head_agent.
+- Dev 1 + Dev 2: **Integration testing** — invoke full graph with `graph.invoke()`, verify the primary cascade fires (People → Code Audit → Infra → Legal → Finance). Debug entity key mismatches, schema parsing failures.
+- Dev 4: **React Flow cascade graph** — Cascade Chains page, CascadeChainPanel with domain-colored nodes, animated edges, MiniMap.
+- Dev 5: Wire SSE to real graph output. Deploy to Railway with Caddy reverse proxy.
 
 **10:00 PM – midnight (buffer + polish):**
 - All: Fix whatever broke in integration. If primary cascade works end-to-end:
-  - Dev 3: Refine corroboration loop — test multi-step routing
-  - Dev 4: Continue D3 polish
-  - Dev 5: Landing page with signup form
+  - Dev 3: What-If simulation endpoint
+  - Dev 4: React Flow polish, fitView, domain legend
+  - Dev 5: Deployment stability, pre-cache demo state
 - If primary cascade does NOT work:
   - Dev 3 + Dev 1 + Dev 2: All-hands on cascade detection debugging
-  - Dev 4: Ensure table fallback renders whatever data exists
-  - Dev 5: Ensure deployment is stable
 
-**Tier 1 must be functional before anyone sleeps.** The definition of "functional": `app.invoke()` produces a CascadeChain, the dashboard renders it (table or D3), and the risk score + briefing display.
+**Tier 1 must be functional before anyone sleeps.** The definition of "functional": `graph.invoke()` produces cascade nodes/edges, the React Flow dashboard renders them, and the risk score + FounderBriefing display.
 
 ### Day 2 — Polish and demo prep (9:00 AM – 2:30 PM)
 
 **9:00 – 10:30 AM:**
 - Dev 1: What-If simulation mode (Tier 2) — only if Tier 1 is solid.
 - Dev 2: Prompt refinement — ensure noise signals (Greenleaf overdue invoices, normal developer vacation) don't trigger false cascades.
-- Dev 3: Cross-provider highlighting in activity log. Second cascade detection (CVE → compliance → legal).
-- Dev 4: D3 cascade graph polish (if started last night) or cascade animation (Tier 2).
+- Dev 3: Cross-provider highlighting in dashboard. Second cascade detection (CVE → compliance → legal).
+- Dev 4: React Flow polish (if started last night) or cascade animation (Tier 2).
 - Dev 5: Drive signups — LinkedIn post with demo GIF, hackathon Slack sharing, in-person demos to other teams.
 
 **10:30 AM – 12:00 PM:**
@@ -796,7 +783,7 @@ Backend agent nodes and frontend scaffold are done. We are now in the **agent co
 "Startups don't die from one thing. They die from a chain reaction nobody saw coming. We built DEADPOOL — seven AI agents, two model providers, one mission: see the kill chain before it kills you."
 
 **0:30 – 0:50 | Architecture.**
-Show LangGraph graph. "Six specialists monitor every layer of your company. Five on Gemini, one on GPT-4o-mini — because when agents on different model families independently agree, that's a stronger signal than one model agreeing with itself. One Head Supervisor connects them via conditional graph edges."
+Show LangGraph graph. "Six specialists monitor every layer of your company. Five on Gemini 2.5 Pro, one on GPT-4o-mini — because when agents on different model families independently agree, that's a stronger signal than one model agreeing with itself. A LangGraph orchestrator connects them via conditional edges, then loops a cascade expander to trace exactly how failure propagates."
 
 **0:50 – 1:50 | Live cascade.**
 Walk through cascade on dashboard. "People Agent detected a 94% commit drop. Code Audit confirmed the vulnerability. Legal flagged the contract deadline. Then Finance — running on GPT-4o-mini, separate data — independently calculated: 42% revenue vanishes, runway drops to 2.5 months, down-round triggers. Two model families, different data, same conclusion. Click any node — see exactly why each agent flagged it."
@@ -820,7 +807,7 @@ Show landing page + signup count. "[X] founders signed up in 20 hours."
 
 **Quantified impact:** $1.4M average cascade cost. 230x ROI. <60 second time-to-insight vs. weeks-to-never. $204M TAM.
 
-**Production-ready architecture:** `MemorySaver` → `PostgresSaver` is one line. Multi-tenant is a `thread_id`. Specialist nodes extract to microservices by swapping the function body. API costs at 2.2% of revenue at 5,000 companies.
+**Production-ready architecture:** Stateless → `PostgresSaver` is one line. Multi-tenant is a `thread_id`. Specialist nodes extract to microservices by swapping the function body. API costs at 2.2% of revenue at 5,000 companies.
 
 **Honest feasibility:** We scope to what ships in 24 hours. Tier 1 features are the commitment. Code will match the plan. We don't scaffold 10 features and ship 3.
 
@@ -844,11 +831,11 @@ Show landing page + signup count. "[X] founders signed up in 20 hours."
 
 ## Request for Hacks alignment
 
-**RFH #02 — Agents That Hire Agents:** Head Supervisor dynamically routes to specialists via conditional edges — including across model providers. The `supervisor_router` is the hiring decision.
+**RFH #02 — Agents That Hire Agents:** The LangGraph orchestrator dynamically routes between specialist nodes and the cascade expander via conditional edges — including across model providers. The routing functions are the hiring decisions.
 
-**RFH #04 — Intent as Code:** The cascade dependency graph is operational intent as configuration. `DEADPOOLState` carries company priorities through every node.
+**RFH #04 — Intent as Code:** The cascade dependency graph is operational intent as configuration. `OrchestratorState` carries company risk context through every node.
 
-**RFH #05 — The Product That Builds Itself:** `MemorySaver` checkpoints compound across cycles. The supervisor adjusts probabilities based on which signals proved predictive.
+**RFH #05 — The Product That Builds Itself:** The cascade expander loop iteratively deepens the consequence graph each cycle. Cross-domain probability boosts (CORROBORATION_MAP, _apply_rules) encode learned risk patterns.
 
 **RFH #07 — The One-Person Billion-Dollar Company:** Seven agents, two providers, one unified briefing. A founder's virtual COO.
 
@@ -857,27 +844,26 @@ Show landing page + signup count. "[X] founders signed up in 20 hours."
 ## Success criteria
 
 ### Tier 1 (must achieve — code will be measured against these)
-- All 7 LangGraph nodes running with structured outputs writing to `DEADPOOLState`
-- LangGraph conditional edges driving cross-node routing (visible in activity log)
-- Primary cascade detected spanning 4+ domains crossing the Gemini → GPT-4o-mini boundary
-- Dashboard displaying: cascade graph (table or D3), risk score, briefing, activity log
-- SSE streaming live updates from backend to frontend
-- Landing page live with signup form
-- 50+ landing page signups
+- ✅ All 6 LangGraph specialist nodes + head_agent + cascade_expander + format_output running with structured outputs writing to `OrchestratorState`
+- ✅ LangGraph conditional edges driving cascade loop (cascade_expander ↔ format_output)
+- ✅ Primary cascade detected spanning 4+ domains, crossing Gemini → GPT-4o-mini boundary
+- ✅ Dashboard displaying: React Flow cascade graph, risk score, FounderBriefing, liabilities panel
+- ✅ SSE streaming live anomaly updates from backend to frontend during analysis
 
 ### Tier 2 (should achieve)
-- What-If simulation mode with slider-driven graph re-invocation
-- Cross-provider corroboration highlighted in activity log
-- D3 animated cascade graph (upgrade from table fallback)
+- ✅ What-If simulation mode — `POST /api/whatif` backend endpoint working
+- ❌ Cross-provider corroboration highlighted in dashboard — not shipped
+- ❌ Cascade animation — not shipped
 
 ### Tier 3 (stretch)
-- Alert toast notifications
-- Multiple simultaneous cascade rendering
-- LangGraph execution trace visualization
+- ❌ Alert toast notifications — not shipped
+- ✅ Multiple simultaneous cascade rendering — React Flow renders all activeChains
+- ❌ LangGraph execution trace visualization — not shipped
 
 ---
 
 *DEADPOOL — Dependency Evaluation And Downstream Prediction Of Operational Liabilities.*
 *Built at the yconic New England Inter-Collegiate AI Hackathon — March 28-29, 2026.*
 *Track: AI Innovation Hack · Request for Hacks: #02, #04, #05, #07*
-*Powered by: Google Gemini 2.5 Flash + OpenAI GPT-4o-mini + LangGraph*
+*Powered by: Google Gemini 2.5 Pro + OpenAI GPT-4o-mini + LangGraph*
+*Frontend: React 19 + Vite 6 + React Flow (@xyflow/react)*
