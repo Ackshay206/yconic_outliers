@@ -1,104 +1,104 @@
-## METADATA
-company,product,period_start,period_end,granularity,weeks
-Brainrot Inc.,Brainrot — Gen Z Social Media Platform,2026-01-05,2026-03-28,weekly,12
-
-## GLOBAL METRICS
-section,week_start,monthly_active_users,weekly_active_users,daily_active_users_avg,new_signups,churn_count,churn_rate,creator_accounts_active,creator_deactivations,nps_score,csat_score,videos_uploaded,avg_session_duration_sec
-global_metrics,2026-01-05,248000,86400,14200,4800,1550,0.018,2180,12,42,4.3,38400,264
-global_metrics,2026-01-12,261000,89200,14800,5200,1620,0.018,2260,14,44,4.4,41200,272
-global_metrics,2026-01-19,275000,91800,15300,5600,1580,0.017,2340,11,43,4.3,43800,278
-global_metrics,2026-01-26,289000,94600,15900,6100,1640,0.017,2420,15,41,4.2,46200,274
-global_metrics,2026-02-02,302000,93200,15400,5400,2100,0.022,2470,28,38,4.0,44800,262
-global_metrics,2026-02-09,312000,90800,14800,4800,2680,0.030,2490,42,33,3.7,42100,248
-global_metrics,2026-02-16,320000,87400,14100,4200,3400,0.039,2480,56,26,3.4,38600,232
-global_metrics,2026-02-23,328000,83600,13200,3600,4100,0.049,2440,74,19,3.0,34800,214
-global_metrics,2026-03-02,334000,79200,12400,3100,4900,0.062,2380,98,12,2.7,30400,196
-global_metrics,2026-03-09,338000,74400,11500,2600,5800,0.078,2290,128,4,2.4,26200,178
-global_metrics,2026-03-16,340000,69200,10600,2200,6600,0.095,-2,2.1,22400,162,2160,148
-global_metrics,2026-03-23,338000,63800,9700,1800,7400,0.116,-14,1.8,18800,142,2010,132
-
-## FEATURE METRICS
-section,feature_name,linked_service,week_start,sessions,unique_users,avg_session_duration_sec,completion_rate,error_rate_user_facing,rage_clicks,drop_off_rate
-feature_metrics,For You Feed,feed-service,2026-01-05,312000,78400,186.0,0.92,0.003,420,0.08
-feature_metrics,For You Feed,feed-service,2026-01-12,324000,81200,192.0,0.93,0.003,390,0.07
-feature_metrics,For You Feed,feed-service,2026-01-19,335000,83800,194.0,0.93,0.002,380,0.07
-feature_metrics,For You Feed,feed-service,2026-01-26,348000,86400,190.0,0.92,0.003,410,0.08
-feature_metrics,For You Feed,feed-service,2026-02-02,338000,84200,178.0,0.90,0.008,680,0.10
-feature_metrics,For You Feed,feed-service,2026-02-09,318000,80400,164.0,0.86,0.018,1240,0.14
-feature_metrics,For You Feed,feed-service,2026-02-16,294000,74800,148.0,0.81,0.034,2180,0.19
-feature_metrics,For You Feed,feed-service,2026-02-23,268000,68200,132.0,0.74,0.058,3420,0.26
-feature_metrics,For You Feed,feed-service,2026-03-02,238000,60800,114.0,0.66,0.086,4960,0.34
-feature_metrics,For You Feed,feed-service,2026-03-09,206000,52400,98.0,0.57,0.112,6800,0.42
-feature_metrics,For You Feed,feed-service,2026-03-16,174000,44200,82.0,0.48,0.138,8400,0.51
-feature_metrics,For You Feed,feed-service,2026-03-23,142000,36800,68.0,0.38,0.164,10200,0.60
-feature_metrics,Branded Content Beta,feed-service,2026-01-05,1800,420,240.0,0.78,0.022,14,0.18
-feature_metrics,Branded Content Beta,feed-service,2026-01-12,2100,480,252.0,0.80,0.020,12,0.16
-feature_metrics,Branded Content Beta,feed-service,2026-01-19,2400,540,260.0,0.82,0.018,10,0.15
-feature_metrics,Branded Content Beta,feed-service,2026-01-26,2600,590,256.0,0.81,0.019,11,0.16
-feature_metrics,Branded Content Beta,feed-service,2026-02-02,2200,480,228.0,0.74,0.032,22,0.22
-feature_metrics,Branded Content Beta,feed-service,2026-02-09,1800,380,198.0,0.66,0.054,38,0.30
-feature_metrics,Branded Content Beta,feed-service,2026-02-16,1400,290,172.0,0.58,0.082,56,0.38
-feature_metrics,Branded Content Beta,feed-service,2026-02-23,1000,210,148.0,0.48,0.118,78,0.48
-feature_metrics,Branded Content Beta,feed-service,2026-03-02,720,150,118.0,0.38,0.162,94,0.56
-feature_metrics,Branded Content Beta,feed-service,2026-03-09,480,98,92.0,0.28,0.214,112,0.65
-feature_metrics,Branded Content Beta,feed-service,2026-03-16,320,64,72.0,0.20,0.268,98,0.74
-feature_metrics,Branded Content Beta,feed-service,2026-03-23,180,38,54.0,0.14,0.324,82,0.82
-feature_metrics,Creator Dashboard,creator-dashboard,2026-01-05,8400,2080,310.0,0.88,0.008,32,0.12
-feature_metrics,Creator Dashboard,creator-dashboard,2026-01-12,8800,2160,318.0,0.89,0.007,28,0.11
-feature_metrics,Creator Dashboard,creator-dashboard,2026-01-19,9100,2240,322.0,0.89,0.007,26,0.11
-feature_metrics,Creator Dashboard,creator-dashboard,2026-01-26,9400,2320,320.0,0.88,0.008,30,0.12
-feature_metrics,Creator Dashboard,creator-dashboard,2026-02-02,9200,2280,314.0,0.87,0.009,34,0.13
-feature_metrics,Creator Dashboard,creator-dashboard,2026-02-09,9000,2220,308.0,0.87,0.010,36,0.13
-feature_metrics,Creator Dashboard,creator-dashboard,2026-02-16,8800,2160,304.0,0.86,0.011,38,0.14
-feature_metrics,Creator Dashboard,creator-dashboard,2026-02-23,8500,2080,298.0,0.86,0.012,40,0.14
-feature_metrics,Creator Dashboard,creator-dashboard,2026-03-02,8200,1980,290.0,0.85,0.013,42,0.15
-feature_metrics,Creator Dashboard,creator-dashboard,2026-03-09,7900,1880,284.0,0.84,0.014,44,0.15
-feature_metrics,Creator Dashboard,creator-dashboard,2026-03-16,7600,1780,278.0,0.84,0.015,46,0.16
-feature_metrics,Creator Dashboard,creator-dashboard,2026-03-23,7300,1680,272.0,0.83,0.016,48,0.16
-feature_metrics,Direct Messages,notification-service,2026-01-05,42000,28400,124.0,0.94,0.004,110,0.06
-feature_metrics,Direct Messages,notification-service,2026-01-12,44200,29800,128.0,0.94,0.004,105,0.06
-feature_metrics,Direct Messages,notification-service,2026-01-19,46000,31000,126.0,0.94,0.003,98,0.06
-feature_metrics,Direct Messages,notification-service,2026-01-26,47800,32200,130.0,0.94,0.004,108,0.06
-feature_metrics,Direct Messages,notification-service,2026-02-02,47200,31800,128.0,0.93,0.005,120,0.07
-feature_metrics,Direct Messages,notification-service,2026-02-09,46400,31200,126.0,0.93,0.005,116,0.07
-feature_metrics,Direct Messages,notification-service,2026-02-16,45600,30600,124.0,0.93,0.005,122,0.07
-feature_metrics,Direct Messages,notification-service,2026-02-23,44800,30000,122.0,0.93,0.006,128,0.07
-feature_metrics,Direct Messages,notification-service,2026-03-02,43600,29200,120.0,0.92,0.006,132,0.08
-feature_metrics,Direct Messages,notification-service,2026-03-09,42200,28200,118.0,0.92,0.006,136,0.08
-feature_metrics,Direct Messages,notification-service,2026-03-16,40600,27000,116.0,0.92,0.007,140,0.08
-feature_metrics,Direct Messages,notification-service,2026-03-23,39000,25800,114.0,0.91,0.007,144,0.08
-feature_metrics,Creator Onboarding,api-gateway,2026-01-05,3200,1400,480.0,0.86,0.006,8,0.14
-feature_metrics,Creator Onboarding,api-gateway,2026-01-12,3400,1480,488.0,0.87,0.005,6,0.13
-feature_metrics,Creator Onboarding,api-gateway,2026-01-19,3600,1560,492.0,0.87,0.005,7,0.13
-feature_metrics,Creator Onboarding,api-gateway,2026-01-26,3800,1640,486.0,0.86,0.006,8,0.14
-feature_metrics,Creator Onboarding,api-gateway,2026-02-02,3600,1540,478.0,0.85,0.007,10,0.15
-feature_metrics,Creator Onboarding,api-gateway,2026-02-09,3400,1440,472.0,0.85,0.007,10,0.15
-feature_metrics,Creator Onboarding,api-gateway,2026-02-16,3200,1340,466.0,0.84,0.008,12,0.16
-feature_metrics,Creator Onboarding,api-gateway,2026-02-23,3000,1240,460.0,0.84,0.008,12,0.16
-feature_metrics,Creator Onboarding,api-gateway,2026-03-02,2800,1140,454.0,0.83,0.009,14,0.17
-feature_metrics,Creator Onboarding,api-gateway,2026-03-09,2600,1040,448.0,0.83,0.009,14,0.17
-feature_metrics,Creator Onboarding,api-gateway,2026-03-16,2400,940,440.0,0.82,0.010,16,0.18
-feature_metrics,Creator Onboarding,api-gateway,2026-03-23,2200,840,432.0,0.82,0.010,16,0.18
-
-## SUPPORT TICKETS
+## METADATA,,,,,,,,,,,,,
+company,product,period_start,period_end,granularity,weeks,,,,,,,,
+Brainrot Inc.,Brainrot — Gen Z Social Media Platform,1/5/26,3/28/26,weekly,12,,,,,,,,
+,,,,,,,,,,,,,
+## GLOBAL METRICS,,,,,,,,,,,,,
+section,week_start,monthly_active_users,weekly_active_users,daily_active_users_avg,new_signups,churn_count,churn_rate,creator_accounts_active,creator_deactivations,nps_score,csat_score,posts_uploaded,avg_session_duration_sec
+global_metrics,1/5/26,248000,86400,14200,4800,1550,0.018,2180,12,42,4.3,38400,264
+global_metrics,1/12/26,261000,89200,14800,5200,1620,0.018,2260,14,44,4.4,41200,272
+global_metrics,1/19/26,275000,91800,15300,5600,1580,0.017,2340,11,43,4.3,43800,278
+global_metrics,1/26/26,289000,94600,15900,6100,1640,0.017,2420,15,41,4.2,46200,274
+global_metrics,2/2/26,302000,93200,15400,5400,2100,0.022,2470,28,38,4,44800,262
+global_metrics,2/9/26,312000,90800,14800,4800,2680,0.03,2490,42,33,3.7,42100,248
+global_metrics,2/16/26,320000,87400,14100,4200,3400,0.039,2480,56,26,3.4,38600,232
+global_metrics,2/23/26,328000,83600,13200,3600,4100,0.049,2440,74,19,3,34800,214
+global_metrics,3/2/26,334000,79200,12400,3100,4900,0.062,2380,98,12,2.7,30400,196
+global_metrics,3/9/26,338000,74400,11500,2600,5800,0.078,2290,128,4,2.4,26200,178
+global_metrics,3/16/26,340000,69200,10600,2200,6600,0.095,-2,2.1,22400,162,2160,148
+global_metrics,3/23/26,338000,63800,9700,1800,7400,0.116,-14,1.8,18800,142,2010,132
+,,,,,,,,,,,,,
+## FEATURE METRICS,,,,,,,,,,,,,
+section,feature_name,linked_service,week_start,sessions,unique_users,avg_session_duration_sec,completion_rate,error_rate_user_facing,rage_clicks,drop_off_rate,,,
+feature_metrics,For You Feed,feed-service,1/5/26,312000,78400,186,0.92,0.003,420,0.08,,,
+feature_metrics,For You Feed,feed-service,1/12/26,324000,81200,192,0.93,0.003,390,0.07,,,
+feature_metrics,For You Feed,feed-service,1/19/26,335000,83800,194,0.93,0.002,380,0.07,,,
+feature_metrics,For You Feed,feed-service,1/26/26,348000,86400,190,0.92,0.003,410,0.08,,,
+feature_metrics,For You Feed,feed-service,2/2/26,338000,84200,178,0.9,0.008,680,0.1,,,
+feature_metrics,For You Feed,feed-service,2/9/26,318000,80400,164,0.86,0.018,1240,0.14,,,
+feature_metrics,For You Feed,feed-service,2/16/26,294000,74800,148,0.81,0.034,2180,0.19,,,
+feature_metrics,For You Feed,feed-service,2/23/26,268000,68200,132,0.74,0.058,3420,0.26,,,
+feature_metrics,For You Feed,feed-service,3/2/26,238000,60800,114,0.66,0.086,4960,0.34,,,
+feature_metrics,For You Feed,feed-service,3/9/26,206000,52400,98,0.57,0.112,6800,0.42,,,
+feature_metrics,For You Feed,feed-service,3/16/26,174000,44200,82,0.48,0.138,8400,0.51,,,
+feature_metrics,For You Feed,feed-service,3/23/26,142000,36800,68,0.38,0.164,10200,0.6,,,
+feature_metrics,Branded Content Beta,feed-service,1/5/26,1800,420,240,0.78,0.022,14,0.18,,,
+feature_metrics,Branded Content Beta,feed-service,1/12/26,2100,480,252,0.8,0.02,12,0.16,,,
+feature_metrics,Branded Content Beta,feed-service,1/19/26,2400,540,260,0.82,0.018,10,0.15,,,
+feature_metrics,Branded Content Beta,feed-service,1/26/26,2600,590,256,0.81,0.019,11,0.16,,,
+feature_metrics,Branded Content Beta,feed-service,2/2/26,2200,480,228,0.74,0.032,22,0.22,,,
+feature_metrics,Branded Content Beta,feed-service,2/9/26,1800,380,198,0.66,0.054,38,0.3,,,
+feature_metrics,Branded Content Beta,feed-service,2/16/26,1400,290,172,0.58,0.082,56,0.38,,,
+feature_metrics,Branded Content Beta,feed-service,2/23/26,1000,210,148,0.48,0.118,78,0.48,,,
+feature_metrics,Branded Content Beta,feed-service,3/2/26,720,150,118,0.38,0.162,94,0.56,,,
+feature_metrics,Branded Content Beta,feed-service,3/9/26,480,98,92,0.28,0.214,112,0.65,,,
+feature_metrics,Branded Content Beta,feed-service,3/16/26,320,64,72,0.2,0.268,98,0.74,,,
+feature_metrics,Branded Content Beta,feed-service,3/23/26,180,38,54,0.14,0.324,82,0.82,,,
+feature_metrics,Creator Dashboard,creator-dashboard,1/5/26,8400,2080,310,0.88,0.008,32,0.12,,,
+feature_metrics,Creator Dashboard,creator-dashboard,1/12/26,8800,2160,318,0.89,0.007,28,0.11,,,
+feature_metrics,Creator Dashboard,creator-dashboard,1/19/26,9100,2240,322,0.89,0.007,26,0.11,,,
+feature_metrics,Creator Dashboard,creator-dashboard,1/26/26,9400,2320,320,0.88,0.008,30,0.12,,,
+feature_metrics,Creator Dashboard,creator-dashboard,2/2/26,9200,2280,314,0.87,0.009,34,0.13,,,
+feature_metrics,Creator Dashboard,creator-dashboard,2/9/26,9000,2220,308,0.87,0.01,36,0.13,,,
+feature_metrics,Creator Dashboard,creator-dashboard,2/16/26,8800,2160,304,0.86,0.011,38,0.14,,,
+feature_metrics,Creator Dashboard,creator-dashboard,2/23/26,8500,2080,298,0.86,0.012,40,0.14,,,
+feature_metrics,Creator Dashboard,creator-dashboard,3/2/26,8200,1980,290,0.85,0.013,42,0.15,,,
+feature_metrics,Creator Dashboard,creator-dashboard,3/9/26,7900,1880,284,0.84,0.014,44,0.15,,,
+feature_metrics,Creator Dashboard,creator-dashboard,3/16/26,7600,1780,278,0.84,0.015,46,0.16,,,
+feature_metrics,Creator Dashboard,creator-dashboard,3/23/26,7300,1680,272,0.83,0.016,48,0.16,,,
+feature_metrics,Direct Messages,notification-service,1/5/26,42000,28400,124,0.94,0.004,110,0.06,,,
+feature_metrics,Direct Messages,notification-service,1/12/26,44200,29800,128,0.94,0.004,105,0.06,,,
+feature_metrics,Direct Messages,notification-service,1/19/26,46000,31000,126,0.94,0.003,98,0.06,,,
+feature_metrics,Direct Messages,notification-service,1/26/26,47800,32200,130,0.94,0.004,108,0.06,,,
+feature_metrics,Direct Messages,notification-service,2/2/26,47200,31800,128,0.93,0.005,120,0.07,,,
+feature_metrics,Direct Messages,notification-service,2/9/26,46400,31200,126,0.93,0.005,116,0.07,,,
+feature_metrics,Direct Messages,notification-service,2/16/26,45600,30600,124,0.93,0.005,122,0.07,,,
+feature_metrics,Direct Messages,notification-service,2/23/26,44800,30000,122,0.93,0.006,128,0.07,,,
+feature_metrics,Direct Messages,notification-service,3/2/26,43600,29200,120,0.92,0.006,132,0.08,,,
+feature_metrics,Direct Messages,notification-service,3/9/26,42200,28200,118,0.92,0.006,136,0.08,,,
+feature_metrics,Direct Messages,notification-service,3/16/26,40600,27000,116,0.92,0.007,140,0.08,,,
+feature_metrics,Direct Messages,notification-service,3/23/26,39000,25800,114,0.91,0.007,144,0.08,,,
+feature_metrics,Creator Onboarding,api-gateway,1/5/26,3200,1400,480,0.86,0.006,8,0.14,,,
+feature_metrics,Creator Onboarding,api-gateway,1/12/26,3400,1480,488,0.87,0.005,6,0.13,,,
+feature_metrics,Creator Onboarding,api-gateway,1/19/26,3600,1560,492,0.87,0.005,7,0.13,,,
+feature_metrics,Creator Onboarding,api-gateway,1/26/26,3800,1640,486,0.86,0.006,8,0.14,,,
+feature_metrics,Creator Onboarding,api-gateway,2/2/26,3600,1540,478,0.85,0.007,10,0.15,,,
+feature_metrics,Creator Onboarding,api-gateway,2/9/26,3400,1440,472,0.85,0.007,10,0.15,,,
+feature_metrics,Creator Onboarding,api-gateway,2/16/26,3200,1340,466,0.84,0.008,12,0.16,,,
+feature_metrics,Creator Onboarding,api-gateway,2/23/26,3000,1240,460,0.84,0.008,12,0.16,,,
+feature_metrics,Creator Onboarding,api-gateway,3/2/26,2800,1140,454,0.83,0.009,14,0.17,,,
+feature_metrics,Creator Onboarding,api-gateway,3/9/26,2600,1040,448,0.83,0.009,14,0.17,,,
+feature_metrics,Creator Onboarding,api-gateway,3/16/26,2400,940,440,0.82,0.01,16,0.18,,,
+feature_metrics,Creator Onboarding,api-gateway,3/23/26,2200,840,432,0.82,0.01,16,0.18,,,
+,,,,,,,,,,,,,
+## SUPPORT TICKETS,,,,,,,,,,,,,
 section,week_start,total_tickets,cat_feed_quality,cat_content_moderation,cat_creator_account,cat_branded_content_tools,cat_login_auth,cat_billing,cat_other,avg_resolution_hours,escalation_count,sentiment_score,repeat_contact_rate
-support_tickets,2026-01-05,68,8,6,10,4,14,12,14,3.4,2,0.80,0.06
-support_tickets,2026-01-12,62,6,5,9,3,13,11,15,3.1,1,0.82,0.05
-support_tickets,2026-01-19,72,9,7,11,5,14,12,14,3.6,2,0.79,0.06
-support_tickets,2026-01-26,74,10,8,12,4,13,13,14,3.5,2,0.78,0.07
-support_tickets,2026-02-02,118,32,22,18,8,14,12,12,5.4,6,0.64,0.14
-support_tickets,2026-02-09,168,54,38,24,12,14,12,14,7.8,12,0.52,0.22
-support_tickets,2026-02-16,224,78,52,32,18,14,13,17,10.6,18,0.42,0.30
-support_tickets,2026-02-23,288,104,68,40,24,14,14,24,14.2,26,0.34,0.38
-support_tickets,2026-03-02,362,138,86,48,32,14,14,30,18.8,36,0.26,0.46
-support_tickets,2026-03-09,442,174,108,56,40,14,14,36,24.2,48,0.20,0.52
-support_tickets,2026-03-16,528,212,134,64,48,14,14,42,30.8,62,0.14,0.58
-support_tickets,2026-03-23,618,252,162,72,56,14,14,48,38.4,78,0.09,0.64
-
-## COHORT RETENTION
-section,cohort_month,month_1_retention,month_2_retention,month_3_retention
-cohort_retention,2025-10,0.78,0.65,0.58
-cohort_retention,2025-11,0.76,0.63,0.52
-cohort_retention,2025-12,0.74,0.58,0.44
-cohort_retention,2026-01,0.72,0.48,
-cohort_retention,2026-02,0.54,,
+support_tickets,1/5/26,68,8,6,10,4,14,12,14,3.4,2,0.8,0.06
+support_tickets,1/12/26,62,6,5,9,3,13,11,15,3.1,1,0.82,0.05
+support_tickets,1/19/26,72,9,7,11,5,14,12,14,3.6,2,0.79,0.06
+support_tickets,1/26/26,74,10,8,12,4,13,13,14,3.5,2,0.78,0.07
+support_tickets,2/2/26,118,32,22,18,8,14,12,12,5.4,6,0.64,0.14
+support_tickets,2/9/26,168,54,38,24,12,14,12,14,7.8,12,0.52,0.22
+support_tickets,2/16/26,224,78,52,32,18,14,13,17,10.6,18,0.42,0.3
+support_tickets,2/23/26,288,104,68,40,24,14,14,24,14.2,26,0.34,0.38
+support_tickets,3/2/26,362,138,86,48,32,14,14,30,18.8,36,0.26,0.46
+support_tickets,3/9/26,442,174,108,56,40,14,14,36,24.2,48,0.2,0.52
+support_tickets,3/16/26,528,212,134,64,48,14,14,42,30.8,62,0.14,0.58
+support_tickets,3/23/26,618,252,162,72,56,14,14,48,38.4,78,0.09,0.64
+,,,,,,,,,,,,,
+## COHORT RETENTION,,,,,,,,,,,,,
+section,cohort_month,month_1_retention,month_2_retention,month_3_retention,,,,,,,,,
+cohort_retention,2025-10,0.78,0.65,0.58,,,,,,,,,
+cohort_retention,2025-11,0.76,0.63,0.52,,,,,,,,,
+cohort_retention,2025-12,0.74,0.58,0.44,,,,,,,,,
+cohort_retention,2026-01,0.72,0.48,,,,,,,,,,
+cohort_retention,2026-02,0.54,,,,,,,,,,,
