@@ -16,6 +16,7 @@ import google.genai as genai
 from google.genai import types as genai_types
 
 from models import Anomaly, AgentReport, CascadeChain, FounderBriefing, RiskScore, WhatIfScenario
+from utils.parsing import strip_markdown_fences
 
 logger = logging.getLogger("deadpool.head_agent")
 
@@ -290,13 +291,7 @@ class HeadAgent:
 
         raw = self._call_gemini(prompt, system_prompt=SYSTEM_PROMPT)
         try:
-            # Strip markdown code fences if present
-            clean = raw.strip()
-            if clean.startswith("```"):
-                clean = clean.split("```")[1]
-                if clean.startswith("json"):
-                    clean = clean[4:]
-            data = json.loads(clean.strip())
+            data = json.loads(strip_markdown_fences(raw))
             return FounderBriefing(**data)
         except Exception as e:
             logger.warning("[HeadAgent] Failed to parse briefing JSON (%s), using fallback.", e)

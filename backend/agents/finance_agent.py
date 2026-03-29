@@ -14,8 +14,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-import re
-import uuid
 from datetime import datetime
 from pathlib import Path
 
@@ -25,6 +23,7 @@ import pandas as pd
 from openai import OpenAI
 
 from models import Anomaly, AgentReport
+from utils.parsing import parse_anomaly_list
 
 DATA_DIR = Path(__file__).parent.parent / "data" / "csv"
 
@@ -166,43 +165,10 @@ class FinanceAgent:
 
     def _parse_anomalies(self, raw: str) -> list[Anomaly]:
         """
-        Parse GPT-4o-mini's response into a validated list of ``Anomaly`` objects.
+        Parse GPT-4o-mini's response into a validated list of Anomaly objects.
 
-        GPT with ``json_object`` response mode is guaranteed to return valid JSON
-        but may wrap the anomaly array in a top-level key (e.g., ``{"anomalies": [...]}``)
-        rather than returning a bare array. This method unwraps common wrapper keys
-        before deserialising.
+        GPT with json_object response mode is guaranteed to return valid JSON
+        but may wrap the anomaly array in a top-level key (e.g. {"anomalies": [...]})
+        rather than a bare array. parse_anomaly_list handles both cases.
         """
-        text = re.sub(r"```(?:json)?\s*", "", raw).strip().rstrip("`").strip()
-
-        # GPT-4o-mini with json_object mode may wrap the array in a key
-        try:
-            parsed = json.loads(text)
-        except json.JSONDecodeError:
-            return []
-
-        # Unwrap {"anomalies": [...]} or {"results": [...]} if needed
-        if isinstance(parsed, dict):
-            for key in ("anomalies", "results", "data", "items"):
-                if key in parsed and isinstance(parsed[key], list):
-                    parsed = parsed[key]
-                    break
-            else:
-                # Try any list value
-                for v in parsed.values():
-                    if isinstance(v, list):
-                        parsed = v
-                        break
-                else:
-                    return []
-
-        anomalies: list[Anomaly] = []
-        for item in parsed:
-            if "id" not in item or not item["id"]:
-                item["id"] = f"finance_{uuid.uuid4().hex[:8]}"
-            item["agent_domain"] = "finance"
-            try:
-                anomalies.append(Anomaly(**item))
-            except Exception as exc:
-                logger.warning("[finance] Skipping malformed anomaly: %s", exc)
-        return anomalies
+        return parse_anomaly_list(raw, self.domain)

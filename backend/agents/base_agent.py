@@ -11,14 +11,13 @@ from __future__ import annotations
 import json
 import logging
 import os
-import re
-import uuid
 from datetime import datetime
 
 import google.genai as genai
 from google.genai import types as genai_types
 
 from models import Anomaly, AgentReport
+from utils.parsing import parse_anomaly_list
 
 logger = logging.getLogger("deadpool.base_agent")
 
@@ -124,30 +123,7 @@ class BaseAgent:
         Extract a JSON array from the model's response and deserialize into Anomaly objects.
         Handles markdown code fences and extraneous text.
         """
-        text = re.sub(r"```(?:json)?\s*", "", raw).strip().rstrip("`").strip()
-
-        start = text.find("[")
-        end = text.rfind("]")
-        if start == -1 or end == -1:
-            return []
-
-        array_str = text[start: end + 1]
-        try:
-            raw_list = json.loads(array_str)
-        except json.JSONDecodeError:
-            return []
-
-        anomalies: list[Anomaly] = []
-        for item in raw_list:
-            if "id" not in item or not item["id"]:
-                item["id"] = f"{self.domain}_{uuid.uuid4().hex[:8]}"
-            item["agent_domain"] = self.domain
-            try:
-                anomalies.append(Anomaly(**item))
-            except Exception as exc:
-                logger.warning("[%s] Skipping malformed anomaly: %s", self.domain, exc)
-
-        return anomalies
+        return parse_anomaly_list(raw, self.domain)
 
     def _summarize_data(self, data: dict) -> str:
         keys = list(data.keys())
