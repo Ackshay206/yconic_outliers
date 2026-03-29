@@ -287,6 +287,63 @@ def _make_cascade_expander_node():
 
 
 # ---------------------------------------------------------------------------
+# Bounty scoring — inline, no extra LLM calls
+# ---------------------------------------------------------------------------
+
+# How reversible each domain is (0 = permanent, 1 = fully reversible)
+_DOMAIN_REVERSIBILITY: dict[str, float] = {
+    "people":     0.10,
+    "finance":    0.45,
+    "legal":      0.30,
+    "infra":      0.70,
+    "product":    0.55,
+    "code_audit": 0.60,
+}
+
+# Rough fix-cost baseline per domain (USD) — used when no better estimate exists
+_DOMAIN_FIX_COST: dict[str, float] = {
+    "people":     15000,
+    "finance":     5000,
+    "legal":      20000,
+    "infra":       8000,
+    "product":     6000,
+    "code_audit":  4000,
+}
+
+def _compute_bounty(nodes: list[dict]) -> list[dict]:
+    """
+    Enrich each node with bountyValue (0-100), costToFix, and costOfIgnoring.
+    Uses only data already present on the node — no extra LLM calls.
+    """
+    scores: list[float] = []
+    for node in nodes:
+        prob        = float(node.get("cascadeProbability", 0))   # 0-1
+        domain      = node.get("domain", "unknown")
+        reversibility = _DOMAIN_REVERSIBILITY.get(domain, 0.5)
+        cost_to_fix   = _DOMAIN_FIX_COST.get(domain, 10000)
+        # Expected loss: assume $500k baseline financial impact scaled by probability
+        cost_of_ignoring = prob * 500_000
+
+        raw = (
+            (cost_of_ignoring)
+            * (prob ** 1.5)                          # non-linear severity weight
+            * (1 + (1 - reversibility))              # irreversibility multiplier
+            / (cost_to_fix + 1)                      # ROI denominator
+        )
+        node["costToFix"]      = cost_to_fix
+        node["costOfIgnoring"] = round(cost_of_ignoring, 2)
+        scores.append(raw)
+
+    # Normalise to 0-100
+    min_s, max_s = min(scores, default=0), max(scores, default=1)
+    span = max_s - min_s or 1
+    for node, raw in zip(nodes, scores):
+        node["bountyValue"] = round((raw - min_s) / span * 100, 1)
+
+    return nodes
+
+
+# ---------------------------------------------------------------------------
 # Format output node — assembles the final dashboard JSON
 # ---------------------------------------------------------------------------
 
@@ -336,6 +393,19 @@ def _format_output_node(state: OrchestratorState) -> dict:
             "prob":    prob,
         })
 
+    # Enrich nodes with bounty fields
+    cascade_nodes = _compute_bounty(cascade_nodes)
+
+    # Build prioritised action queue sorted by bountyValue descending
+    bounty_ranking = sorted(
+        [{"nodeId": n["id"], "title": n["title"], "domain": n["domain"],
+          "bountyValue": n["bountyValue"], "costToFix": n["costToFix"],
+          "costOfIgnoring": n["costOfIgnoring"]}
+         for n in cascade_nodes],
+        key=lambda x: x["bountyValue"],
+        reverse=True,
+    )[:10]
+
     dashboard = {
         "riskScore":      risk_score.score if risk_score else 0,
         "trend":          risk_score.trend if risk_score else "stable",
@@ -343,6 +413,7 @@ def _format_output_node(state: OrchestratorState) -> dict:
         "nodes":          cascade_nodes,
         "edges":          cascade_edges,
         "activeChains":   active_chains,
+        "bountyRanking":  bounty_ranking,
     }
 
     return {"dashboard": dashboard}
