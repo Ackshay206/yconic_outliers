@@ -1,0 +1,65 @@
+record_type,date,field,value,detail,threshold,status,notes
+funding_round,2025-09-01,round_name,Pre-Seed,Angel Syndicate (Lead: Kevin Tran),,closed,"SAFE note. $175K at implied $1.75M cap. Kevin is ex-Snap exec, connected to Gen Z creator ecosystem."
+funding_round,2025-09-01,amount,175000.00,,,closed,
+funding_round,2025-09-01,instrument,SAFE,,,closed,
+funding_round,2025-09-01,valuation_cap,1750000.00,,,closed,
+funding_round,2025-11-01,round_name,Seed,"Velocity Capital (Lead: Jenna Okafor)",,closed,"Priced round. $800K at $4.2M pre-money. Velocity thesis: Gen Z social platforms with AI-native content moderation."
+funding_round,2025-11-01,amount,800000.00,,,closed,
+funding_round,2025-11-01,instrument,Priced Round,,,closed,
+funding_round,2025-11-01,post_money_valuation,5000000.00,,,closed,
+investor_clause,2025-11-01,clause_name,Anti-dilution (full ratchet),Velocity Capital seed agreement - Section 5.2,runway_months < 3,safe,Triggers if runway drops below 3 months before Series A close
+investor_clause,2025-11-01,trigger_metric,runway_months,,3.0,safe,
+investor_clause,2025-11-01,consequence,"Investor converts remaining SAFE at 50% discount with 2x liquidation preference and full board seat",,,safe,Founder diluted below control threshold. Jenna Okafor takes board control.
+investor_clause,2025-11-01,clause_name,Information rights,Velocity Capital - Section 8.1,,compliant,Quarterly financials and board updates required
+investor_clause,2025-11-01,clause_name,Pro-rata rights,Kevin Tran SAFE - standard,,safe,Right to maintain ownership % in next round
+monthly_summary,2025-09-30,total_revenue,0.00,Pre-revenue — building beta,,,
+monthly_summary,2025-09-30,total_expenses,16340.00,2 founders + initial cloud/api costs,,,
+monthly_summary,2025-09-30,net_burn,16340.00,,,,
+monthly_summary,2025-09-30,cash_balance,158745.00,,,,
+monthly_summary,2025-09-30,runway_months,9.7,,6.0,safe,
+monthly_summary,2025-10-31,total_revenue,0.00,Pre-revenue,,,
+monthly_summary,2025-10-31,total_expenses,23849.00,Added Engineer 1 + more infra,,,
+monthly_summary,2025-10-31,net_burn,23849.00,,,,
+monthly_summary,2025-10-31,cash_balance,134896.00,,,,"Pre-seed cash dwindling. Seed round imminent. Viral TikTok buzz about Brainrot concept."
+monthly_summary,2025-10-31,runway_months,5.7,,6.0,warning,Below 6-month threshold pre-seed
+monthly_summary,2025-11-30,total_revenue,0.00,Pre-revenue,,,Post-seed cash infusion
+monthly_summary,2025-11-30,total_expenses,60188.00,Rapid hiring post-seed,,,
+monthly_summary,2025-11-30,net_burn,60188.00,,,,
+monthly_summary,2025-11-30,cash_balance,874708.00,,,,
+monthly_summary,2025-11-30,runway_months,14.5,,6.0,safe,Healthy post-seed. Beta invite list at 80K.
+monthly_summary,2025-12-31,total_revenue,1200.00,First Brainrot Pro subs,,,80 paying users
+monthly_summary,2025-12-31,total_expenses,68080.00,Full team + beta traffic costs,,,
+monthly_summary,2025-12-31,net_burn,66880.00,,,,
+monthly_summary,2025-12-31,cash_balance,800728.00,,,,
+monthly_summary,2025-12-31,runway_months,12.0,,6.0,safe,Beta hit 100K signups. Creator momentum building.
+monthly_summary,2026-01-31,total_revenue,1800.00,120 Brainrot Pro subscribers,,,
+monthly_summary,2026-01-31,total_expenses,97650.00,12-person team + video CDN scaling,,,
+monthly_summary,2026-01-31,net_burn,95850.00,,,,
+monthly_summary,2026-01-31,cash_balance,704978.00,,,,
+monthly_summary,2026-01-31,runway_months,7.4,,6.0,safe,"250K MAU. VibeCheck deal in verbal commit. Things look good."
+monthly_summary,2026-02-28,total_revenue,2100.00,140 subs - growth decelerating,,,Feed quality decline noticed
+monthly_summary,2026-02-28,total_expenses,89840.00,"Eng 3 commit drop noted. Video CDN costs climbing.",,,
+monthly_summary,2026-02-28,net_burn,87740.00,,,,
+monthly_summary,2026-02-28,cash_balance,615338.00,,,,
+monthly_summary,2026-02-28,runway_months,7.0,,6.0,safe,Approaching threshold. Creator churn starting.
+monthly_summary,2026-03-28,total_revenue,2400.00,160 subs - churn offsetting new,,,Feed degradation + content moderation gaps hurting creator trust
+monthly_summary,2026-03-28,total_expenses,82830.00,"Eng 3 on unpaid leave. Still burning hard on video CDN.",,,
+monthly_summary,2026-03-28,net_burn,80430.00,,,,
+monthly_summary,2026-03-28,cash_balance,534708.00,,,,
+monthly_summary,2026-03-28,runway_months,6.6,,6.0,monitoring,"*** If VibeCheck deal lost: no revenue inflection. 340K MAU but no monetization path. Pure burn."
+runway_scenario,2026-03-28,scenario_name,Base case (no VibeCheck),Current trajectory without enterprise brand revenue,,monitoring,
+runway_scenario,2026-03-28,monthly_burn,80430.00,Current net burn rate,,,
+runway_scenario,2026-03-28,monthly_revenue,2400.00,Brainrot Pro subscriptions only,,,Likely declining due to feed degradation + creator exodus
+runway_scenario,2026-03-28,net_monthly_burn,78030.00,,,,
+runway_scenario,2026-03-28,cash_balance,534708.00,,,,
+runway_scenario,2026-03-28,runway_months,6.9,,6.0,monitoring,
+runway_scenario,2026-03-28,scenario_name,VibeCheck deal closes (best case),Enterprise brand revenue begins May,,safe,
+runway_scenario,2026-03-28,additional_monthly_revenue,43000.00,VibeCheck Media monthly value,,,
+runway_scenario,2026-03-28,net_monthly_burn,35030.00,78030 - 43000,,,
+runway_scenario,2026-03-28,runway_months,15.3,,6.0,safe,Deal closing extends runway dramatically + validates brand monetization model
+runway_scenario,2026-03-28,scenario_name,VibeCheck lost + creator churn accelerates (worst case),No brand revenue + creator/user exodus to Fizz,,critical,
+runway_scenario,2026-03-28,monthly_revenue,1200.00,Brainrot Pro declining as top creators leave for Fizz,,,
+runway_scenario,2026-03-28,net_monthly_burn,79230.00,Burn unchanged - revenue negligible,,,
+runway_scenario,2026-03-28,runway_months,6.7,,6.0,warning,
+runway_scenario,2026-03-28,months_to_trigger,6.7,Months until runway < 3 (investor clause),3.0,warning,*** ~3.7 months until down-round clause triggers if no revenue inflection
+runway_scenario,2026-03-28,drip_culture_overdue_impact,12000.00,Two invoices totaling $12K uncollected,,,Cash tied up in AR dispute with Drip Culture Agency

@@ -1,6 +1,9 @@
 """
 Head Agent — orchestrates all specialist agents, cross-validates anomalies,
 maps cascades, and generates plain-language founder briefings.
+
+Model: Gemini 2.5 Pro (Google) — largest context window for cross-domain synthesis.
+Requires GOOGLE_API_KEY environment variable.
 """
 from __future__ import annotations
 
@@ -9,13 +12,13 @@ import os
 import uuid
 from datetime import datetime
 
-import anthropic
+import google.genai as genai
+from google.genai import types as genai_types
 
 from models import Anomaly, AgentReport, CascadeChain, RiskScore, WhatIfScenario
 from cascade_mapper import map_cascade, _urgency
 
-# Requires ANTHROPIC_API_KEY environment variable
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+MODEL = "gemini-2.5-pro"
 
 # Which domains should corroborate a given trigger domain
 CORROBORATION_MAP: dict[str, list[str]] = {
@@ -47,12 +50,8 @@ Respond in valid JSON only."""
 
 class HeadAgent:
     def __init__(self, specialist_agents: dict):
-        """
-        specialist_agents: dict mapping domain name → specialist agent instance
-        e.g. {"people": PeopleAgent(), "finance": FinanceAgent(), ...}
-        """
         self.specialists = specialist_agents
-        self.client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
         self.active_cascades: list[CascadeChain] = []
         self.last_risk_score: RiskScore | None = None
 
@@ -61,21 +60,11 @@ class HeadAgent:
     # ------------------------------------------------------------------
 
     def analyze(self, all_anomalies: list[Anomaly]) -> RiskScore:
-        """
-        Full analysis cycle:
-        1. Cross-validate anomalies with corroborating specialists
-        2. Map cascade chains
-        3. Rank by urgency
-        4. Generate founder briefing
-        5. Return RiskScore
-        """
         if not all_anomalies:
             return self._empty_risk_score()
 
-        # Step 1: Cross-validate
         validated = self._cross_validate(all_anomalies)
 
-        # Step 2: Map cascades (deduplicate by trigger anomaly)
         seen_triggers: set[str] = set()
         chains: list[CascadeChain] = []
         for anomaly in validated:
@@ -84,17 +73,12 @@ class HeadAgent:
                 chains.append(chain)
                 seen_triggers.add(anomaly.id)
 
-        # Step 3: Rank by urgency, keep top 3
         chains.sort(key=lambda c: c.urgency_score, reverse=True)
         top_cascades = chains[:3]
 
-        # Step 4: Compute composite risk score (0-100)
         risk_score = self._compute_risk_score(validated, top_cascades)
-
-        # Step 5: Generate briefing
         briefing = self._generate_briefing(validated, top_cascades, risk_score)
 
-        # Attach briefing to each chain
         for chain in top_cascades:
             chain.head_agent_briefing = briefing
 
@@ -114,16 +98,11 @@ class HeadAgent:
     # ------------------------------------------------------------------
 
     def simulate_whatif(self, scenario: WhatIfScenario) -> WhatIfScenario:
-        """
-        Re-run analysis with modified parameters for a what-if scenario.
-        """
-        # Collect current anomalies from specialist last reports
         base_anomalies: list[Anomaly] = []
         for agent in self.specialists.values():
-            if agent.last_report:
+            if hasattr(agent, "last_report") and agent.last_report:
                 base_anomalies.extend(agent.last_report.anomalies)
 
-        # Apply scenario modifiers to anomaly severities
         modified = list(base_anomalies)
         params = scenario.parameters
 
@@ -146,9 +125,8 @@ class HeadAgent:
 
         simulated_result = self.analyze(modified)
 
-        # Build comparison briefing
         current_score = self.last_risk_score.score if self.last_risk_score else 0.0
-        comparison = self._call_claude(
+        comparison = self._call_gemini(
             f"Compare these two risk states and write a 2-sentence comparison:\n"
             f"CURRENT risk score: {current_score}\n"
             f"SIMULATED risk score ({scenario.scenario_type}): {simulated_result.score}\n"
@@ -167,11 +145,6 @@ class HeadAgent:
     # ------------------------------------------------------------------
 
     def _cross_validate(self, anomalies: list[Anomaly]) -> list[Anomaly]:
-        """
-        For each anomaly, check if corroborating agents have flagged related issues.
-        Raise severity for corroborated anomalies, reduce for isolated ones.
-        """
-        # Build a lookup of domain → anomaly titles for quick cross-reference
         domain_signals: dict[str, list[str]] = {}
         for a in anomalies:
             domain_signals.setdefault(a.agent_domain, []).append(a.title.lower())
@@ -194,12 +167,6 @@ class HeadAgent:
         return validated
 
     def _compute_risk_score(self, anomalies: list[Anomaly], cascades: list[CascadeChain]) -> float:
-        """
-        Composite risk score 0–100 based on:
-        - Top cascade urgency scores
-        - Average anomaly severity
-        - Number of high-severity anomalies
-        """
         if not anomalies and not cascades:
             return 0.0
 
@@ -217,7 +184,6 @@ class HeadAgent:
         cascades: list[CascadeChain],
         risk_score: float,
     ) -> str:
-        """Ask Claude to generate a plain-language founder briefing."""
         anomaly_summaries = [
             f"[{a.agent_domain.upper()}] {a.title} (severity={a.severity:.2f})"
             for a in sorted(anomalies, key=lambda x: x.severity, reverse=True)[:10]
@@ -239,16 +205,18 @@ class HeadAgent:
             "No jargon. No bullet points. Just clear prose."
         )
 
-        return self._call_claude(prompt)
+        return self._call_gemini(prompt)
 
-    def _call_claude(self, prompt: str) -> str:
-        message = self.client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=1024,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
+    def _call_gemini(self, prompt: str) -> str:
+        response = self.client.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=genai_types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                max_output_tokens=1024,
+            ),
         )
-        return message.content[0].text
+        return response.text
 
     def _empty_risk_score(self) -> RiskScore:
         return RiskScore(
