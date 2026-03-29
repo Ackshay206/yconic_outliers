@@ -110,6 +110,7 @@ You are a startup risk cascade analyst. Given the currently active causal thread
 in a startup, identify the next set of consequences.
 
 Rules:
+- Return the next set of consequence scenarios (as a JSON array; do not wrap in prose).
 - For each consequence, assign a probability (0-100) that it materializes.
 - Where two or more active threads combine to accelerate a consequence, list 
   all contributing causes and reflect the acceleration in a higher probability.
@@ -138,7 +139,7 @@ Respond ONLY with a JSON array. Each element:
         ),
     )
 
-    raw = response.text.strip()
+    raw = (response.text or "").strip()
     try:
         result = json.loads(raw)
     except json.JSONDecodeError:

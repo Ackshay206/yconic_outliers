@@ -101,7 +101,7 @@ class BaseAgent:
                 max_output_tokens=16384,
             ),
         )
-        return response.text
+        return response.text or ""
 
     def _parse_anomalies(self, raw: str) -> list[Anomaly]:
         """

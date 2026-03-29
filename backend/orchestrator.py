@@ -33,13 +33,13 @@ if TYPE_CHECKING:
     from langgraph.graph.state import CompiledStateGraph
 
 from models import AgentReport, Anomaly, RiskScore
-from cascade_mapper import _llm_next_step, _apply_rules
+from cascade_mapper import PROB_THRESHOLD, _llm_next_step, _apply_rules
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
-MAX_CASCADE_DEPTH = 3    # run cascade expander exactly 3 times
+MAX_CASCADE_DEPTH = 5    # run cascade expander up to 5 times (depth budget)
 
 DOMAIN_AGENT_NAMES: dict[str, str] = {
     "people":     "People Agent",
@@ -220,15 +220,21 @@ def _make_cascade_expander_node():
         new_visited: list[str]  = []
         new_threads: list[dict] = []
 
-        for idx, c in enumerate(consequences):
-            cause = c.get("cause", "").strip()
+        added_idx = 0
+        for c in consequences:
+            cause = (c.get("cause") or "").strip()
             if not cause or cause in visited:
                 continue
 
             prob = float(c.get("probability", 0))
             prob = _apply_rules(domains_present, prob)
 
-            nid    = _node_id(cause, depth + 1, idx)
+            # If the next-step cascading probability is below the threshold,
+            # stop expanding this branch.
+            if prob < PROB_THRESHOLD:
+                continue
+
+            nid    = _node_id(cause, depth + 1, added_idx)
             domain = _infer_domain(cause)
 
             visited.add(cause)
@@ -244,7 +250,7 @@ def _make_cascade_expander_node():
                 "agentName":          DOMAIN_AGENT_NAMES.get(domain, "Agent"),
                 "evidence":           "",
                 "cascadeProbability": round(prob / 100.0, 4),
-                "position":           {"x": (depth + 1) * 300, "y": idx * 200 + 100},
+                "position":           {"x": (depth + 1) * 300, "y": added_idx * 200 + 100},
             })
 
             # Build edges — prefer matching contributing_causes, fallback to all parents
@@ -266,6 +272,8 @@ def _make_cascade_expander_node():
                     "cause":       cause,
                     "probability": prob,
                 })
+
+            added_idx += 1
 
         return {
             "active_threads": new_threads,
@@ -307,7 +315,7 @@ def _format_output_node(state: OrchestratorState) -> dict:
         return _dfs_chain(children[0], path + [children[0]]) if children else path
 
     active_chains: list[dict] = []
-    for i, root_id in enumerate(root_ids[:3]):
+    for i, root_id in enumerate(root_ids[:8]):
         path_ids = _dfs_chain(root_id, [root_id])
         titles   = [node_by_id[n]["title"]  for n in path_ids if n in node_by_id]
         domains  = [node_by_id[n]["domain"] for n in path_ids if n in node_by_id]
@@ -320,8 +328,9 @@ def _format_output_node(state: OrchestratorState) -> dict:
 
         prob = node_by_id[path_ids[-1]]["cascadeProbability"] if path_ids and path_ids[-1] in node_by_id else 0.0
 
+        label_sep = " \u2192 "
         active_chains.append({
-            "label":   f"Cascade #{i + 1} \u2014 {' \u2192 '.join(unique_labels)}",
+            "label":   f"Cascade #{i + 1} \u2014 {label_sep.join(unique_labels)}",
             "chain":   titles,
             "domains": domains,
             "prob":    prob,
@@ -349,8 +358,8 @@ def _after_head_agent(state: OrchestratorState) -> str:
 
 
 def _after_cascade_expander(state: OrchestratorState) -> str:
-    """Loop exactly MAX_CASCADE_DEPTH times."""
-    if state.get("depth", 0) < MAX_CASCADE_DEPTH:
+    """Keep expanding while we still have expandable threads and depth budget."""
+    if state.get("depth", 0) < MAX_CASCADE_DEPTH and state.get("active_threads"):
         return "cascade_expander"
     return "format_output"
 
