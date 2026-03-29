@@ -91,12 +91,12 @@ DEADPOOL runs as a **LangGraph `StateGraph`**. Six specialist nodes are domain e
 | Node | Model | Rationale |
 |------|-------|-----------|
 | Head Agent | Gemini 2.5 Pro | Cross-validates all 6 reports, computes risk score, generates FounderBriefing in one pass |
-| People Agent | Gemini 2.5 Pro | Pattern recognition on 12-week developer activity time series |
+| People Agent | Gemini 2.5 Flash | Pattern recognition on 12-week developer activity time series |
 | Finance Agent | **GPT-4o-mini** | Most structured workload — CSV parsing, arithmetic, threshold checks. GPT-4o-mini excels at structured extraction at low latency. Creates cross-provider corroboration signal. |
-| Infra Agent | Gemini 2.5 Pro | System metrics correlation and degradation pattern detection |
-| Product Agent | Gemini 2.5 Pro | Sentiment analysis on support tickets and engagement trends |
-| Legal Agent | Gemini 2.5 Pro | Contract clause comprehension and compliance deadline tracking |
-| Code Audit Agent | Gemini 2.5 Pro | Dependency tree analysis, CVE matching, bus factor calculation |
+| Infra Agent | Gemini 2.5 Flash | System metrics correlation and degradation pattern detection |
+| Product Agent | Gemini 2.5 Flash | Sentiment analysis on support tickets and engagement trends |
+| Legal Agent | Gemini 2.5 Flash | Contract clause comprehension and compliance deadline tracking |
+| Code Audit Agent | Gemini 2.5 Flash | Dependency tree analysis, CVE matching, bus factor calculation |
 | Cascade Expander | Gemini 2.5 Pro | LLM-driven consequence expansion — asks "what happens next?" for all active threads collectively, enabling cross-cause acceleration detection |
 
 ```
@@ -313,15 +313,11 @@ LLM-driven consequence expansion via the `_llm_next_step` function in `cascade_m
 | Feature | Owner | Description | Status |
 |---------|-------|-------------|--------|
 | **What-If simulation** | Dev 3 | `POST /api/whatif` — modifies domain severities, re-scores, returns comparison briefing. | ✅ Shipped (backend only) |
-| **Cross-provider highlighting** | Dev 4 | Visualise Gemini ↔ GPT-4o-mini boundary in the dashboard. | ❌ Not shipped |
-| **Cascade animation** | Dev 4 | Pulse animation along active chains. | ❌ Not shipped |
 
 ### Tier 3 — Stretch
 
 | Feature | Owner | Description | Status |
 |---------|-------|-------------|--------|
-| **Alert toasts** | Dev 4 | Toast notifications at severity thresholds. | ❌ Not shipped |
-| **LangGraph trace visualization** | Dev 5 | Live node/edge activity during graph execution. | ❌ Not shipped |
 | **Multiple simultaneous cascades** | Dev 3 | Dashboard renders 2+ chains simultaneously. | ✅ Shipped — React Flow renders all active chains |
 
 ### Feasibility analysis — why this ships in time

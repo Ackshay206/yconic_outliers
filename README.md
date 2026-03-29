@@ -5,7 +5,7 @@
 > *Seven AI agents. Two model providers. One mission: see the kill chain before it kills your startup.*
 
 Built at the **yconic New England Inter-Collegiate AI Hackathon** — March 28–29, 2026
-Track: AI Innovation Hack · Powered by: **Google Gemini 2.5 Pro** + **OpenAI GPT-4o-mini** + **LangGraph**
+Track: AI Innovation Hack · Powered by: **Google Gemini 2.5 Flash/Pro** + **OpenAI GPT-4o-mini** + **LangGraph**
 
 **Live deployment:**
 - Frontend: https://outstanding-essence-production.up.railway.app/
@@ -182,8 +182,7 @@ yconic_outliers/
     │       └── AnomalyCard.jsx
     │
     ├── hooks/
-    │   ├── useDeadpool.js          # Main hook — SSE + POST /api/head-agent/analyze + all state
-    │   └── useCascaseAnimation.js  # Cascade animation controller (unused in production)
+    │   └── useDeadpool.js          # Main hook — SSE + POST /api/head-agent/analyze + all state
     │
     ├── utils/
     │   ├── formatter.js            # Number/date formatting
@@ -372,7 +371,7 @@ Contains two functions used by the LangGraph orchestrator's cascade expander nod
   - `infra+product`: +15 — infra failures manifest in product
   - Caps at 99 to keep LLM output meaningful.
 
-The `CascadeMapperAgent` class and `_build_cascade` function also exist in this file but are not used in the main pipeline.
+The `_build_cascade` function also exists in this file but is not used in the main pipeline.
 
 #### Signal Bus: `backend/signal_bus.py`
 
