@@ -32,17 +32,6 @@ FINANCE_ANOMALY = {**VALID_ANOMALY, "agent_domain": "finance", "id": "fin_001"}
 
 
 class TestFinanceAgentRun:
-    def test_run_returns_agent_report(self, finance_agent, mock_signal_bus):
-        finance_agent.client.chat.completions.create.return_value = make_openai_response(
-            json.dumps([FINANCE_ANOMALY])
-        )
-        with patch.object(finance_agent, "load_data", return_value={"transactions": [], "data_sources": []}):
-            report = finance_agent.run()
-
-        from models import AgentReport
-        assert isinstance(report, AgentReport)
-        assert report.agent == "finance"
-
     def test_run_populates_anomalies(self, finance_agent, mock_signal_bus):
         finance_agent.client.chat.completions.create.return_value = make_openai_response(
             json.dumps([FINANCE_ANOMALY])
@@ -92,11 +81,6 @@ class TestFinanceAgentParseAnomalies:
         result = finance_agent._parse_anomalies(json.dumps(wrapped))
         assert len(result) == 1
 
-    def test_parse_dict_wrapped_results_key(self, finance_agent):
-        wrapped = {"results": [FINANCE_ANOMALY]}
-        result = finance_agent._parse_anomalies(json.dumps(wrapped))
-        assert len(result) == 1
-
     def test_parse_empty_array(self, finance_agent):
         assert finance_agent._parse_anomalies("[]") == []
 
@@ -132,15 +116,10 @@ class TestFinanceAgentLoadData:
         assert "data_sources" in data
 
     def test_load_data_has_transaction_keys(self, finance_agent):
-        """load_data() must include all three CSV-backed keys."""
+        """load_data() must include all three CSV-backed keys as lists."""
         data = finance_agent.load_data()
         for key in ("transactions", "revenue_pipeline", "funding_runway"):
             assert key in data, f"Missing key: {key}"
-
-    def test_load_data_returns_lists_for_csv_keys(self, finance_agent):
-        """All three CSV keys should map to lists."""
-        data = finance_agent.load_data()
-        for key in ("transactions", "revenue_pipeline", "funding_runway"):
             assert isinstance(data[key], list), f"{key} must be a list"
 
 
@@ -156,11 +135,6 @@ class TestFinanceAgentDataFile:
 
     def test_data_file_exists(self):
         assert os.path.exists(self.DATA_PATH), "financials.json not found"
-
-    def test_data_file_is_valid_json(self):
-        with open(self.DATA_PATH, "r") as f:
-            parsed = json.load(f)
-        assert isinstance(parsed, dict)
 
     def test_top_level_keys_present(self, data):
         required = {

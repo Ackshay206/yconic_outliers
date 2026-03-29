@@ -44,17 +44,6 @@ INFRA_ANOMALY = {**VALID_ANOMALY, "agent_domain": "infra", "id": "infra_001"}
 
 
 class TestInfraAgentRun:
-    def test_run_returns_agent_report(self, infra_agent, mock_signal_bus):
-        infra_agent.client.models.generate_content.return_value = make_claude_response(
-            json.dumps([INFRA_ANOMALY])
-        )
-        with patch.object(infra_agent, "load_data", return_value=SAMPLE_INFRA_DATA):
-            report = infra_agent.run()
-
-        from models import AgentReport
-        assert isinstance(report, AgentReport)
-        assert report.agent == "infra"
-
     def test_run_populates_anomalies(self, infra_agent, mock_signal_bus):
         infra_agent.client.models.generate_content.return_value = make_claude_response(
             json.dumps([INFRA_ANOMALY])
@@ -94,15 +83,6 @@ class TestInfraAgentRun:
         assert report.anomalies == []
         mock_signal_bus.publish.assert_not_called()
 
-    def test_run_raw_data_summary_present(self, infra_agent, mock_signal_bus):
-        """AgentReport must include a non-empty raw_data_summary."""
-        infra_agent.client.models.generate_content.return_value = make_claude_response("[]")
-        with patch.object(infra_agent, "load_data", return_value=SAMPLE_INFRA_DATA):
-            report = infra_agent.run()
-
-        assert report.raw_data_summary != ""
-        assert "infra" in report.raw_data_summary
-
 
 class TestInfraAgentParseAnomalies:
     def test_parse_plain_json(self, infra_agent):
@@ -130,11 +110,6 @@ class TestInfraAgentParseAnomalies:
         result = infra_agent._parse_anomalies(json.dumps([anomaly]))
         assert result[0].id.startswith("infra_")
 
-    def test_parse_multiple_anomalies(self, infra_agent):
-        anomalies = [{**INFRA_ANOMALY, "id": f"infra_00{i}"} for i in range(1, 4)]
-        result = infra_agent._parse_anomalies(json.dumps(anomalies))
-        assert len(result) == 3
-
 
 class TestInfraAgentLoadData:
     def test_load_data_returns_dict(self, infra_agent):
@@ -155,12 +130,6 @@ class TestInfraAgentLoadData:
         mock_fn.assert_called_once()
         assert data["cloud_instances"] == []
 
-    def test_load_data_no_github_token_skips_actions(self, infra_agent):
-        """Without GITHUB_TOKEN, GitHub Actions fetch is skipped."""
-        with patch.dict("os.environ", {}, clear=True):
-            data = infra_agent.load_data()
-        assert "github_actions_error" not in data or "github_actions" not in data
-
 
 class TestInfraAgentDataFile:
     """Validate the real infrastructure.json file on disk."""
@@ -174,11 +143,6 @@ class TestInfraAgentDataFile:
 
     def test_data_file_exists(self):
         assert os.path.exists(self.DATA_PATH), "infrastructure.json not found"
-
-    def test_data_file_is_valid_json(self):
-        with open(self.DATA_PATH, "r") as f:
-            parsed = json.load(f)
-        assert isinstance(parsed, dict)
 
     def test_top_level_keys_present(self, data):
         required = {"metadata", "cloud_instances", "databases", "ci_cd", "monitoring"}

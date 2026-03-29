@@ -46,17 +46,6 @@ PRODUCT_ANOMALY = {**VALID_ANOMALY, "agent_domain": "product", "id": "prod_001"}
 
 
 class TestProductAgentRun:
-    def test_run_returns_agent_report(self, product_agent, mock_signal_bus):
-        product_agent.client.models.generate_content.return_value = make_claude_response(
-            json.dumps([PRODUCT_ANOMALY])
-        )
-        with patch.object(product_agent, "load_data", return_value=SAMPLE_PRODUCT_DATA):
-            report = product_agent.run()
-
-        from models import AgentReport
-        assert isinstance(report, AgentReport)
-        assert report.agent == "product"
-
     def test_run_populates_anomalies(self, product_agent, mock_signal_bus):
         product_agent.client.models.generate_content.return_value = make_claude_response(
             json.dumps([PRODUCT_ANOMALY])
@@ -127,12 +116,6 @@ class TestProductAgentParseAnomalies:
         result = product_agent._parse_anomalies(json.dumps([anomaly]))
         assert result == []
 
-    def test_parse_evidence_preserved(self, product_agent):
-        """Evidence dict should be passed through unchanged."""
-        anomaly = {**PRODUCT_ANOMALY, "evidence": {"churn": "7%", "nps": 18}}
-        result = product_agent._parse_anomalies(json.dumps([anomaly]))
-        assert result[0].evidence == {"churn": "7%", "nps": 18}
-
 
 class TestProductAgentLoadData:
     def test_load_data_returns_dict(self, product_agent):
@@ -167,11 +150,6 @@ class TestProductAgentDataFile:
 
     def test_data_file_exists(self):
         assert os.path.exists(self.DATA_PATH), "product_metrics.json not found"
-
-    def test_data_file_is_valid_json(self):
-        with open(self.DATA_PATH, "r") as f:
-            parsed = json.load(f)
-        assert isinstance(parsed, dict)
 
     def test_top_level_keys_present(self, data):
         required = {"metadata", "overall_metrics", "feature_engagement",

@@ -124,7 +124,7 @@ class LegalAgent(BaseAgent):
             import logging
             logging.getLogger("primp").setLevel(logging.ERROR)
             from ddgs import DDGS
-            with DDGS() as ddgs:
+            with DDGS() as ddgs:  
                 for query in queries:
                     hits = list(ddgs.text(query, max_results=2))
                     for hit in hits:

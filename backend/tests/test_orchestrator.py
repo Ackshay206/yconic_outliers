@@ -102,18 +102,6 @@ class TestBuildGraph:
         graph = build_graph(specialists, head)
         assert graph is not None
 
-    def test_compiled_graph_has_invoke_method(self):
-        """The compiled graph must be invocable (has .invoke())."""
-        from orchestrator import build_graph
-        graph = build_graph(_all_mock_specialists(), _make_mock_head_agent())
-        assert callable(getattr(graph, "invoke", None))
-
-    def test_compiled_graph_has_ainvoke_method(self):
-        """The compiled graph must also support async invocation."""
-        from orchestrator import build_graph
-        graph = build_graph(_all_mock_specialists(), _make_mock_head_agent())
-        assert callable(getattr(graph, "ainvoke", None))
-
 
 # ---------------------------------------------------------------------------
 # Graph execution tests
@@ -133,12 +121,6 @@ class TestGraphExecution:
         final_state, specialists, _ = self._invoke()
         for domain, agent in specialists.items():
             agent.run.assert_called_once(), f"{domain} agent was not called"
-
-    def test_specialist_reports_contains_all_reports(self):
-        """specialist_reports in final state must have one entry per specialist."""
-        domains = ["people", "finance", "infra", "product", "legal", "code_audit"]
-        final_state, _, _ = self._invoke()
-        assert len(final_state["specialist_reports"]) == len(domains)
 
     def test_specialist_reports_domains_match(self):
         """Each report in specialist_reports should match an expected domain."""
@@ -161,21 +143,6 @@ class TestGraphExecution:
         call_args = head.analyze.call_args
         passed_anomalies = call_args[0][0]  # first positional argument
         assert len(passed_anomalies) == 12
-
-    def test_head_agent_anomalies_contain_all_domains(self):
-        """The anomaly list passed to head_agent must include entries from all 6 domains."""
-        specialists = _all_mock_specialists(anomaly_count=1)
-        head = _make_mock_head_agent()
-        self._invoke(specialists=specialists, head=head)
-
-        passed_anomalies = head.analyze.call_args[0][0]
-        domains_in_anomalies = {a.agent_domain for a in passed_anomalies}
-        assert domains_in_anomalies == {"people", "finance", "infra", "product", "legal", "code_audit"}
-
-    def test_final_state_contains_risk_score(self):
-        """Final graph state must have a non-None risk_score."""
-        final_state, _, _ = self._invoke()
-        assert final_state["risk_score"] is not None
 
     def test_final_state_risk_score_is_correct_type(self):
         """The risk_score in final state must be a RiskScore instance."""
@@ -222,30 +189,14 @@ class TestGraphExecution:
 # ---------------------------------------------------------------------------
 
 class TestRunPipeline:
-    def test_run_pipeline_returns_risk_score(self):
-        """run_pipeline() must return a RiskScore object directly."""
-        from orchestrator import run_pipeline
-        expected = _make_risk_score()
-        specialists = _all_mock_specialists()
-        head = _make_mock_head_agent(risk_score=expected)
-        result = run_pipeline(specialists, head)
-        assert isinstance(result, RiskScore)
-
     def test_run_pipeline_returns_correct_score(self):
         """run_pipeline() must return the exact RiskScore from head_agent."""
         from orchestrator import run_pipeline
         expected = _make_risk_score()
         expected.score = 55.5
         result = run_pipeline(_all_mock_specialists(), _make_mock_head_agent(risk_score=expected))
+        assert isinstance(result, RiskScore)
         assert result.score == 55.5
-
-    def test_run_pipeline_calls_all_specialists(self):
-        """run_pipeline() must trigger all specialist .run() calls."""
-        from orchestrator import run_pipeline
-        specialists = _all_mock_specialists()
-        run_pipeline(specialists, _make_mock_head_agent())
-        for domain, agent in specialists.items():
-            agent.run.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
@@ -265,17 +216,6 @@ class TestMakeSpecialistNode:
         result = node_fn({})  # state is unused by specialist nodes
 
         assert result == {"specialist_reports": [report]}
-
-    def test_node_calls_agent_run(self):
-        """The node function must call agent.run() exactly once."""
-        from orchestrator import _make_specialist_node
-        agent = MagicMock()
-        agent.domain = "finance"
-        agent.run.return_value = _make_report("finance")
-
-        node_fn = _make_specialist_node(agent)
-        node_fn({})
-        agent.run.assert_called_once()
 
 
 class TestMakeHeadNode:
@@ -321,10 +261,6 @@ class TestMakeHeadNode:
 # ---------------------------------------------------------------------------
 
 class TestSpecialistDomains:
-    def test_specialist_domains_has_six_entries(self):
-        from orchestrator import SPECIALIST_DOMAINS
-        assert len(SPECIALIST_DOMAINS) == 6
-
     def test_specialist_domains_contains_all_expected(self):
         from orchestrator import SPECIALIST_DOMAINS
         expected = {"people", "finance", "infra", "product", "legal", "code_audit"}

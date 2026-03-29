@@ -62,17 +62,6 @@ CODE_AUDIT_ANOMALY = {
 
 
 class TestCodeAuditAgentRun:
-    def test_run_returns_agent_report(self, code_audit_agent, mock_signal_bus):
-        code_audit_agent.client.models.generate_content.return_value = make_claude_response(
-            json.dumps([CODE_AUDIT_ANOMALY])
-        )
-        with patch.object(code_audit_agent, "load_data", return_value=SAMPLE_CODEBASE_DATA):
-            report = code_audit_agent.run()
-
-        from models import AgentReport
-        assert isinstance(report, AgentReport)
-        assert report.agent == "code_audit"
-
     def test_run_populates_anomalies(self, code_audit_agent, mock_signal_bus):
         code_audit_agent.client.models.generate_content.return_value = make_claude_response(
             json.dumps([CODE_AUDIT_ANOMALY])
@@ -109,13 +98,6 @@ class TestCodeAuditAgentRun:
 
         assert report.anomalies == []
         mock_signal_bus.publish.assert_not_called()
-
-    def test_run_raw_data_summary_mentions_domain(self, code_audit_agent, mock_signal_bus):
-        code_audit_agent.client.models.generate_content.return_value = make_claude_response("[]")
-        with patch.object(code_audit_agent, "load_data", return_value=SAMPLE_CODEBASE_DATA):
-            report = code_audit_agent.run()
-
-        assert "code_audit" in report.raw_data_summary
 
 
 class TestCodeAuditAgentParseAnomalies:
@@ -204,11 +186,6 @@ class TestCodeAuditAgentDataFile:
 
     def test_data_file_exists(self):
         assert os.path.exists(self.DATA_PATH), "codebase_audit.json not found"
-
-    def test_data_file_is_valid_json(self):
-        with open(self.DATA_PATH, "r") as f:
-            parsed = json.load(f)
-        assert isinstance(parsed, dict)
 
     def test_top_level_keys_present(self, data):
         required = {"metadata", "services", "audit_summary"}

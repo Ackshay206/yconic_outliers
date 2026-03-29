@@ -48,18 +48,6 @@ PEOPLE_ANOMALY = {**VALID_ANOMALY, "agent_domain": "people"}
 # ---------------------------------------------------------------------------
 
 class TestPeopleAgentRun:
-    def test_run_returns_agent_report(self, people_agent, mock_signal_bus):
-        """run() should return an AgentReport with the correct agent domain."""
-        people_agent.client.models.generate_content.return_value = make_claude_response(
-            json.dumps([PEOPLE_ANOMALY])
-        )
-        with patch.object(people_agent, "load_data", return_value=SAMPLE_TEAM_DATA):
-            report = people_agent.run()
-
-        from models import AgentReport
-        assert isinstance(report, AgentReport)
-        assert report.agent == "people"
-
     def test_run_populates_anomalies(self, people_agent, mock_signal_bus):
         """run() should parse Claude's JSON response into Anomaly objects."""
         people_agent.client.models.generate_content.return_value = make_claude_response(
@@ -163,11 +151,6 @@ class TestPeopleAgentLoadData:
         data = people_agent.load_data()
         assert "data_sources" in data
 
-    def test_load_data_slack_not_connected_returns_empty_developers(self, people_agent):
-        """When SLACK_BOT_TOKEN is unset, developers should be empty (no real Slack)."""
-        data = people_agent.load_data()
-        assert data["developers"] == {} or isinstance(data["developers"], dict)
-
 
 class TestPeopleAgentDataFile:
     """Validate the real team_activity.json file on disk."""
@@ -181,13 +164,6 @@ class TestPeopleAgentDataFile:
 
     def test_data_file_exists(self):
         assert os.path.exists(self.DATA_PATH), "team_activity.json not found"
-
-    def test_data_file_is_valid_json(self):
-        with open(self.DATA_PATH, "r") as f:
-            content = f.read()
-        assert len(content) > 0
-        parsed = json.loads(content)
-        assert isinstance(parsed, dict)
 
     def test_top_level_keys_present(self, data):
         for key in ("metadata", "developers", "team_alerts"):

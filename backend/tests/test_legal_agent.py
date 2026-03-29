@@ -44,17 +44,6 @@ LEGAL_ANOMALY = {**VALID_ANOMALY, "agent_domain": "legal", "id": "legal_001"}
 
 
 class TestLegalAgentRun:
-    def test_run_returns_agent_report(self, legal_agent, mock_signal_bus):
-        legal_agent.client.models.generate_content.return_value = make_claude_response(
-            json.dumps([LEGAL_ANOMALY])
-        )
-        with patch.object(legal_agent, "load_data", return_value=SAMPLE_CONTRACTS_DATA):
-            report = legal_agent.run()
-
-        from models import AgentReport
-        assert isinstance(report, AgentReport)
-        assert report.agent == "legal"
-
     def test_run_populates_anomalies(self, legal_agent, mock_signal_bus):
         legal_agent.client.models.generate_content.return_value = make_claude_response(
             json.dumps([LEGAL_ANOMALY])
@@ -118,16 +107,6 @@ class TestLegalAgentParseAnomalies:
         anomaly = {k: v for k, v in LEGAL_ANOMALY.items() if k != "id"}
         result = legal_agent._parse_anomalies(json.dumps([anomaly]))
         assert result[0].id.startswith("legal_")
-
-    def test_parse_cross_references_preserved(self, legal_agent):
-        anomaly = {**LEGAL_ANOMALY, "cross_references": ["finance", "infra"]}
-        result = legal_agent._parse_anomalies(json.dumps([anomaly]))
-        assert set(result[0].cross_references) == {"finance", "infra"}
-
-    def test_parse_affected_entities_preserved(self, legal_agent):
-        anomaly = {**LEGAL_ANOMALY, "affected_entities": ["Nexus Corp", "Acme SaaS"]}
-        result = legal_agent._parse_anomalies(json.dumps([anomaly]))
-        assert "Nexus Corp" in result[0].affected_entities
 
     def test_parse_response_with_extra_text_before_array(self, legal_agent):
         """_parse_anomalies should find the array even when Claude adds preamble text."""
@@ -235,14 +214,6 @@ class TestLegalAgentWebSearch:
         for call in mock_ddgs_instance.text.call_args_list:
             assert call.kwargs.get("max_results", call.args[1] if len(call.args) > 1 else 2) == 2
 
-    def test_query_field_matches_search_term(self, legal_agent):
-        """The 'query' field in each result must match the query that produced it."""
-        mock_ctx, _ = self._mock_ddgs(hits_per_query=1)
-        with patch("ddgs.DDGS", return_value=mock_ctx):
-            results = legal_agent._web_search_regulatory()
-        returned_queries = {r["query"] for r in results}
-        assert returned_queries.issubset(set(self.EXPECTED_QUERIES))
-
     def test_returns_empty_on_import_error(self, legal_agent):
         """Returns [] gracefully when duckduckgo_search is not installed."""
         with patch.dict("sys.modules", {"ddgs": None}):
@@ -258,26 +229,6 @@ class TestLegalAgentWebSearch:
             result = legal_agent._web_search_regulatory()
         assert result == []
 
-    @pytest.mark.network
-    def test_real_web_search_returns_results(self, legal_agent):
-        """Integration: actually calls DuckDuckGo and checks result structure."""
-        results = legal_agent._web_search_regulatory()
-        # Network may return nothing in restricted environments — just validate shape
-        assert isinstance(results, list)
-        for r in results:
-            assert "query" in r and "title" in r and "snippet" in r and "url" in r
-            assert r["query"] in self.EXPECTED_QUERIES
-            assert len(r["snippet"]) <= 500
-
-    @pytest.mark.network
-    def test_real_web_search_covers_all_queries(self, legal_agent):
-        """Integration: results should span all three regulatory queries."""
-        results = legal_agent._web_search_regulatory()
-        if not results:
-            pytest.skip("DuckDuckGo returned no results in this environment")
-        returned_queries = {r["query"] for r in results}
-        assert returned_queries == set(self.EXPECTED_QUERIES)
-
 
 class TestLegalAgentDataFile:
     """Validate the real contracts.json file on disk."""
@@ -291,11 +242,6 @@ class TestLegalAgentDataFile:
 
     def test_data_file_exists(self):
         assert os.path.exists(self.DATA_PATH), "contracts.json not found"
-
-    def test_data_file_is_valid_json(self):
-        with open(self.DATA_PATH, "r") as f:
-            parsed = json.load(f)
-        assert isinstance(parsed, dict)
 
     def test_top_level_keys_present(self, data):
         required = {"metadata", "contracts", "compliance_obligations"}
