@@ -9,9 +9,16 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(name)s  %(levelname)s  %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -99,7 +106,7 @@ async def health():
 @app.get("/api/slack/status", tags=["Integrations"])
 async def slack_status():
     """Check whether the Slack API integration is connected and healthy."""
-    from slack_client import slack
+    from utils.slack_client import slack
     return slack.status()
 
 

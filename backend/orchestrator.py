@@ -17,8 +17,11 @@ produced by each parallel branch before head_agent reads them.
 """
 from __future__ import annotations
 
+import logging
 import operator
 from typing import TYPE_CHECKING, Annotated, Optional
+
+logger = logging.getLogger("deadpool.orchestrator")
 
 from langgraph.graph import StateGraph, START, END
 from typing_extensions import TypedDict
@@ -50,7 +53,9 @@ def _make_specialist_node(agent):
     and appends its AgentReport to the shared state list.
     """
     def node(_state: OrchestratorState) -> dict:
+        logger.info("[%s] starting", agent.domain)
         report: AgentReport = agent.run()
+        logger.info("[%s] done — %d anomalies found", agent.domain, len(report.anomalies))
         return {"specialist_reports": [report]}
     node.__name__ = f"run_{agent.domain}"
     return node
@@ -65,7 +70,11 @@ def _make_head_node(head_agent):
         all_anomalies: list[Anomaly] = []
         for report in state["specialist_reports"]:
             all_anomalies.extend(report.anomalies)
+        logger.info("[head_agent] starting — %d total anomalies across %d reports",
+                    len(all_anomalies), len(state["specialist_reports"]))
         risk_score: RiskScore = head_agent.analyze(all_anomalies)
+        logger.info("[head_agent] done — score=%.1f severity=%s",
+                    risk_score.score, risk_score.severity_level)
         return {"risk_score": risk_score}
     node.__name__ = "run_head_agent"
     return node
@@ -131,10 +140,12 @@ def run_pipeline(specialists: dict, head_agent) -> RiskScore:
     This is a synchronous wrapper suitable for use with asyncio.to_thread()
     when called from an async FastAPI endpoint.
     """
+    logger.info("Pipeline starting — agents: %s", list(specialists.keys()))
     graph = build_graph(specialists, head_agent)
     initial_state: OrchestratorState = {
         "specialist_reports": [],
         "risk_score": None,
     }
     final_state = graph.invoke(initial_state)
+    logger.info("Pipeline complete")
     return final_state["risk_score"]

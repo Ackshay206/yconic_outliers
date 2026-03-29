@@ -4,7 +4,7 @@ Pydantic v2 models for DEADPOOL — the startup risk monitoring system.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -40,14 +40,21 @@ class CascadeChain(BaseModel):
     time_to_impact_days: int
     financial_impact: float  # USD
     urgency_score: float
-    head_agent_briefing: str
+    head_agent_briefing: str | None = None  # deprecated — use RiskScore.briefing
+
+
+class FounderBriefing(BaseModel):
+    summary: str            # 2-3 sentences on the highest-priority risk
+    timeline: str           # e.g. "50 days to financial impact"
+    recommended_action: str # ONE specific action the founder should take now
 
 
 class RiskScore(BaseModel):
     score: float = Field(ge=0.0, le=100.0)
-    trend: str  # "increasing" | "stable" | "decreasing"
+    severity_level: Literal["low", "medium", "high", "critical"]
+    trend: Literal["increasing", "stable", "decreasing"]
     top_cascades: list[CascadeChain]
-    briefing: str
+    briefing: FounderBriefing
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 

@@ -15,8 +15,8 @@ from datetime import datetime
 import google.genai as genai
 from google.genai import types as genai_types
 
-from models import Anomaly, AgentReport, CascadeChain, RiskScore, WhatIfScenario
-from cascade_mapper import map_cascade, _urgency
+from models import Anomaly, AgentReport, CascadeChain, FounderBriefing, RiskScore, WhatIfScenario
+from utils.cascade_mapper import map_cascade, _urgency
 
 MODEL = "gemini-2.5-pro"
 
@@ -84,12 +84,10 @@ class HeadAgent:
         risk_score = self._compute_risk_score(validated, top_cascades)
         briefing = self._generate_briefing(validated, top_cascades, risk_score)
 
-        for chain in top_cascades:
-            chain.head_agent_briefing = briefing
-
         self.active_cascades = chains
         result = RiskScore(
             score=risk_score,
+            severity_level=self._score_to_severity(risk_score),
             trend="increasing" if risk_score > 60 else "stable",
             top_cascades=top_cascades,
             briefing=briefing,
@@ -131,12 +129,13 @@ class HeadAgent:
         simulated_result = self.analyze(modified)
 
         current_score = self.last_risk_score.score if self.last_risk_score else 0.0
+        current_summary = self.last_risk_score.briefing.summary if self.last_risk_score else "N/A"
         comparison = self._call_gemini(
             f"Compare these two risk states and write a 2-sentence comparison:\n"
             f"CURRENT risk score: {current_score}\n"
             f"SIMULATED risk score ({scenario.scenario_type}): {simulated_result.score}\n"
-            f"Current briefing: {self.last_risk_score.briefing if self.last_risk_score else 'N/A'}\n"
-            f"Simulated briefing: {simulated_result.briefing}\n"
+            f"Current briefing: {current_summary}\n"
+            f"Simulated briefing: {simulated_result.briefing.summary}\n"
             "Respond with plain text only.",
             system_prompt=BRIEFING_SYSTEM_PROMPT,
         )
@@ -189,7 +188,7 @@ class HeadAgent:
         anomalies: list[Anomaly],
         cascades: list[CascadeChain],
         risk_score: float,
-    ) -> str:
+    ) -> FounderBriefing:
         anomaly_summaries = [
             f"[{a.agent_domain.upper()}] {a.title} (severity={a.severity:.2f})"
             for a in sorted(anomalies, key=lambda x: x.severity, reverse=True)[:10]
@@ -206,12 +205,39 @@ class HeadAgent:
             f"Risk score: {risk_score:.0f}/100\n\n"
             f"Top anomalies:\n" + "\n".join(anomaly_summaries) + "\n\n"
             f"Top cascade chains:\n" + "\n".join(cascade_summaries) + "\n\n"
-            "Write a 3-5 sentence plain-language briefing for the founder. "
-            "Name the risk, state the timeline, and recommend ONE specific action. "
-            "No jargon. No bullet points. Just clear prose."
+            "Respond with valid JSON only, using exactly this structure:\n"
+            '{"summary": "2-3 sentences describing the top risk and its cause", '
+            '"timeline": "specific timeframe e.g. 50 days to financial impact", '
+            '"recommended_action": "ONE specific action the founder should take today"}'
         )
 
-        return self._call_gemini(prompt, system_prompt=BRIEFING_SYSTEM_PROMPT)
+        raw = self._call_gemini(prompt, system_prompt=SYSTEM_PROMPT)
+        try:
+            # Strip markdown code fences if present
+            clean = raw.strip()
+            if clean.startswith("```"):
+                clean = clean.split("```")[1]
+                if clean.startswith("json"):
+                    clean = clean[4:]
+            data = json.loads(clean.strip())
+            return FounderBriefing(**data)
+        except Exception as e:
+            print(f"[HeadAgent] Failed to parse briefing JSON ({e}), using fallback.")
+            # Best-effort: return raw text as summary
+            return FounderBriefing(
+                summary=raw[:500] if raw else "Analysis complete.",
+                timeline=f"{cascades[0].time_to_impact_days} days to impact" if cascades else "See cascade chains.",
+                recommended_action="Review the top cascade chains above and address the highest urgency item.",
+            )
+
+    def _score_to_severity(self, score: float) -> str:
+        if score >= 75:
+            return "critical"
+        if score >= 50:
+            return "high"
+        if score >= 25:
+            return "medium"
+        return "low"
 
     def _call_gemini(self, prompt: str, system_prompt: str = SYSTEM_PROMPT) -> str:
         for attempt in range(3):
@@ -239,8 +265,13 @@ class HeadAgent:
     def _empty_risk_score(self) -> RiskScore:
         return RiskScore(
             score=0.0,
+            severity_level="low",
             trend="stable",
             top_cascades=[],
-            briefing="No anomalies detected. All systems operating within normal parameters.",
+            briefing=FounderBriefing(
+                summary="No anomalies detected. All systems operating within normal parameters.",
+                timeline="No imminent risks identified.",
+                recommended_action="Continue monitoring. No action required at this time.",
+            ),
             timestamp=datetime.utcnow(),
         )
