@@ -1,13 +1,14 @@
 import React from "react";
-import Header        from "./components/layout/Header";
-import AgentsPanel   from "./components/AgentsPanel";
-import FlawsPanel    from "./components/FlawsPanel";
-import RiskIndex     from "./components/RiskIndex";
-import ErrorBoundary from "./components/ErrorBoundary";
+import Header         from "./components/layout/Header";
+import AgentsPanel    from "./components/AgentsPanel";
+import FlawsPanel     from "./components/FlawsPanel";
+import RiskIndex      from "./components/RiskIndex";
+import BriefingPanel  from "./components/BriefingPanel";
+import ErrorBoundary  from "./components/ErrorBoundary";
 import { useDeadpool } from "./hooks/useDeadpool";
 
 function AppInner() {
-  const { agentStatuses, anomalies, cascadeSteps, riskScore, running, error, runAnalysis } = useDeadpool();
+  const { agentStatuses, anomalies, cascadeSteps, riskScore, briefing, running, error, runAnalysis } = useDeadpool();
 
   return (
     <div style={{
@@ -58,6 +59,7 @@ function AppInner() {
           display: "flex", flexDirection: "column",
           padding: 24, gap: 24, overflow: "hidden",
         }}>
+          <BriefingPanel briefing={briefing} />
           <FlawsPanel anomalies={anomalies} />
           <div style={{ flexShrink: 0 }}>
             <RiskIndex score={riskScore} />

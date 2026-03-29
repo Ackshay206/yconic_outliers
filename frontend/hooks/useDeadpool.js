@@ -1,7 +1,7 @@
 // ─── hooks/useDeadpool.js ──────────────────────────────────────────────────────
 import { useState, useCallback } from "react";
 
-const BASE = "http://localhost:8000";
+const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
 
 const AGENT_NAMES = ["people", "finance", "infra", "product", "legal", "code_audit"];
 const INITIAL_STATUSES = Object.fromEntries(AGENT_NAMES.map(n => [n, "idle"]));
@@ -11,6 +11,7 @@ export function useDeadpool() {
   const [anomalies, setAnomalies]         = useState([]);
   const [cascadeSteps, setCascadeSteps]   = useState([]);
   const [riskScore, setRiskScore]         = useState(null);
+  const [briefing, setBriefing]           = useState(null);
   const [running, setRunning]             = useState(false);
   const [done, setDone]                   = useState(false);
   const [error, setError]                 = useState(null);
@@ -24,6 +25,7 @@ export function useDeadpool() {
     setAnomalies([]);
     setCascadeSteps([]);
     setRiskScore(null);
+    setBriefing(null);
     setAgentStatuses(Object.fromEntries(AGENT_NAMES.map(n => [n, "processing"])));
 
     try {
@@ -31,8 +33,9 @@ export function useDeadpool() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
-      // Risk score
+      // Risk score + briefing
       setRiskScore(data.score ?? null);
+      setBriefing(data.briefing ?? null);
 
       // Cascade steps from top cascade chain (CascadeChain.nodes, CascadeNode.title)
       const topCascade = data.top_cascades?.[0];
@@ -88,5 +91,5 @@ export function useDeadpool() {
     }
   }, [running]);
 
-  return { agentStatuses, anomalies, cascadeSteps, riskScore, running, done, error, runAnalysis };
+  return { agentStatuses, anomalies, cascadeSteps, riskScore, briefing, running, done, error, runAnalysis };
 }
