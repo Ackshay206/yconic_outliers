@@ -18,10 +18,10 @@ from conftest import VALID_ANOMALY, make_claude_response
 
 
 @pytest.fixture
-def infra_agent(mock_anthropic_client, mock_signal_bus):
+def infra_agent(mock_gemini_client, mock_signal_bus):
     from agents.infra_agent import InfraAgent
     agent = InfraAgent()
-    agent.client = mock_anthropic_client
+    agent.client = mock_gemini_client
     return agent
 
 
@@ -221,7 +221,7 @@ class TestInfraAgentDataFile:
     def test_metadata_has_cloud_provider(self, data):
         assert "cloud_provider" in data["metadata"]
 
-    @pytest.mark.usefixtures("mock_anthropic_client", "mock_signal_bus")
+    @pytest.mark.usefixtures("mock_gemini_client", "mock_signal_bus")
     def test_load_data_reads_real_file(self):
         """InfraAgent.load_data() must successfully parse infrastructure.json."""
         from agents.infra_agent import InfraAgent

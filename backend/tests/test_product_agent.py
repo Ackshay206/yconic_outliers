@@ -18,10 +18,10 @@ from conftest import VALID_ANOMALY, make_claude_response
 
 
 @pytest.fixture
-def product_agent(mock_anthropic_client, mock_signal_bus):
+def product_agent(mock_gemini_client, mock_signal_bus):
     from agents.product_agent import ProductAgent
     agent = ProductAgent()
-    agent.client = mock_anthropic_client
+    agent.client = mock_gemini_client
     return agent
 
 
@@ -214,7 +214,7 @@ class TestProductAgentDataFile:
     def test_churn_analysis_has_acceleration_flag(self, data):
         assert "churn_acceleration_flag" in data["churn_analysis"]
 
-    @pytest.mark.usefixtures("mock_anthropic_client", "mock_signal_bus")
+    @pytest.mark.usefixtures("mock_gemini_client", "mock_signal_bus")
     def test_load_data_reads_real_file(self):
         """ProductAgent.load_data() must successfully parse product_data.csv or fallback JSON."""
         from agents.product_agent import ProductAgent

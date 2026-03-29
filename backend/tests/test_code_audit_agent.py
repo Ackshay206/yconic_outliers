@@ -17,10 +17,10 @@ from conftest import VALID_ANOMALY, make_claude_response
 
 
 @pytest.fixture
-def code_audit_agent(mock_anthropic_client, mock_signal_bus):
+def code_audit_agent(mock_gemini_client, mock_signal_bus):
     from agents.code_audit_agent import CodeAuditAgent
     agent = CodeAuditAgent()
-    agent.client = mock_anthropic_client
+    agent.client = mock_gemini_client
     return agent
 
 
@@ -267,7 +267,7 @@ class TestCodeAuditAgentDataFile:
     def test_metadata_has_audit_date(self, data):
         assert "audit_date" in data["metadata"]
 
-    @pytest.mark.usefixtures("mock_anthropic_client", "mock_signal_bus")
+    @pytest.mark.usefixtures("mock_gemini_client", "mock_signal_bus")
     def test_load_data_reads_real_file(self):
         """Without GITHUB_TOKEN, CodeAuditAgent falls back to codebase_audit.json."""
         from agents.code_audit_agent import CodeAuditAgent

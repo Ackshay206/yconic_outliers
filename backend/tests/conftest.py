@@ -57,7 +57,7 @@ def mock_signal_bus():
 
 
 @pytest.fixture
-def mock_anthropic_client():
+def mock_gemini_client():
     """
     Patch google.genai.Client so no real API calls are made.
     Returns the mock client instance; tests set

@@ -22,10 +22,10 @@ from conftest import VALID_ANOMALY, make_claude_response
 # Fixture: a PeopleAgent with mocked Anthropic client
 # ---------------------------------------------------------------------------
 @pytest.fixture
-def people_agent(mock_anthropic_client, mock_signal_bus):
+def people_agent(mock_gemini_client, mock_signal_bus):
     from agents.people_agent import PeopleAgent
     agent = PeopleAgent()
-    agent.client = mock_anthropic_client
+    agent.client = mock_gemini_client
     return agent
 
 
@@ -226,7 +226,7 @@ class TestPeopleAgentDataFile:
     def test_developer_count_matches_metadata(self, data):
         assert len(data["developers"]) == data["metadata"]["team_size"]
 
-    @pytest.mark.usefixtures("mock_anthropic_client", "mock_signal_bus")
+    @pytest.mark.usefixtures("mock_gemini_client", "mock_signal_bus")
     def test_load_data_returns_expected_structure(self):
         """PeopleAgent.load_data() reads from Slack; returns dict with developers key."""
         from agents.people_agent import PeopleAgent

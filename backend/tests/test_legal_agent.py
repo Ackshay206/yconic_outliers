@@ -17,10 +17,10 @@ from conftest import VALID_ANOMALY, make_claude_response
 
 
 @pytest.fixture
-def legal_agent(mock_anthropic_client, mock_signal_bus):
+def legal_agent(mock_gemini_client, mock_signal_bus):
     from agents.legal_agent import LegalAgent
     agent = LegalAgent()
-    agent.client = mock_anthropic_client
+    agent.client = mock_gemini_client
     return agent
 
 
@@ -338,7 +338,7 @@ class TestLegalAgentDataFile:
     def test_metadata_has_reporting_date(self, data):
         assert "reporting_date" in data["metadata"]
 
-    @pytest.mark.usefixtures("mock_anthropic_client", "mock_signal_bus")
+    @pytest.mark.usefixtures("mock_gemini_client", "mock_signal_bus")
     def test_load_data_reads_real_file(self):
         """LegalAgent.load_data() falls back to contracts.json when no PDFs are present."""
         from agents.legal_agent import LegalAgent
