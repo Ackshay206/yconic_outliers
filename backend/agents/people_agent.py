@@ -39,6 +39,14 @@ FLAGGED THEMES (scan message text for mentions of):
 - Interpersonal conflict or tension
 - Deadline anxiety, impossible timelines, "this won't be done"
 
+CRITICAL PRIORITY — KEY ENGINEER DEPARTURE:
+A key engineer leaving is the single most dangerous event for an early-stage startup.
+Unlike financial or infra issues, it cannot be quickly reversed — there is no replacement pipeline,
+no knowledge transfer (KT), and institutional knowledge walks out permanently.
+If ANY anomaly signals an engineer resignation, burnout leading to departure, a solo contributor
+at risk, or a team member who is a single point of failure, treat it as MAXIMUM severity regardless
+of other scores. Surface it as the #1 risk in the briefing and recommend immediate founder action.
+
 ANOMALY PATTERNS:
 - Previously enthusiastic person becoming terse/passive = disengagement arc
 - Sudden spike in negative messages = trigger event
