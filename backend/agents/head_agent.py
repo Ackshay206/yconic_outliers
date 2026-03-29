@@ -45,7 +45,12 @@ When given a list of anomalies from multiple domains, you must:
 - Name the top 3 most urgent cascades
 - Write a briefing that names the risk, states the timeline, and recommends ONE specific action
 
-Respond in valid JSON only."""
+Respond in valid JSON only when asked for JSON."""
+
+BRIEFING_SYSTEM_PROMPT = """You are the Head Agent for DEADPOOL — a startup risk monitoring system.
+Your job is to write clear, plain-language briefings for startup founders.
+Be direct. Name the risk, state the timeline, and recommend ONE specific action.
+No jargon. No bullet points. No JSON. Just clear prose."""
 
 
 class HeadAgent:
@@ -132,7 +137,8 @@ class HeadAgent:
             f"SIMULATED risk score ({scenario.scenario_type}): {simulated_result.score}\n"
             f"Current briefing: {self.last_risk_score.briefing if self.last_risk_score else 'N/A'}\n"
             f"Simulated briefing: {simulated_result.briefing}\n"
-            "Respond with plain text only."
+            "Respond with plain text only.",
+            system_prompt=BRIEFING_SYSTEM_PROMPT,
         )
 
         scenario.modified_cascades = simulated_result.top_cascades
@@ -205,18 +211,30 @@ class HeadAgent:
             "No jargon. No bullet points. Just clear prose."
         )
 
-        return self._call_gemini(prompt)
+        return self._call_gemini(prompt, system_prompt=BRIEFING_SYSTEM_PROMPT)
 
-    def _call_gemini(self, prompt: str) -> str:
-        response = self.client.models.generate_content(
-            model=MODEL,
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                max_output_tokens=1024,
-            ),
-        )
-        return response.text
+    def _call_gemini(self, prompt: str, system_prompt: str = SYSTEM_PROMPT) -> str:
+        for attempt in range(3):
+            try:
+                response = self.client.models.generate_content(
+                    model=MODEL,
+                    contents=prompt,
+                    config=genai_types.GenerateContentConfig(
+                        system_instruction=system_prompt,
+                        max_output_tokens=8192,
+                        thinking_config=genai_types.ThinkingConfig(
+                            thinking_budget=1024,
+                        ),
+                    ),
+                )
+                if response.text:
+                    return response.text
+                print(f"[HeadAgent] Gemini returned empty (attempt {attempt + 1}/3, finish_reason={response.candidates[0].finish_reason if response.candidates else 'N/A'})")
+            except Exception as e:
+                print(f"[HeadAgent] Gemini call failed (attempt {attempt + 1}/3): {e}")
+            import time
+            time.sleep(2)
+        return "Unable to generate briefing at this time."
 
     def _empty_risk_score(self) -> RiskScore:
         return RiskScore(
