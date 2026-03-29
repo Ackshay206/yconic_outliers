@@ -22,6 +22,31 @@ from utils.parsing import parse_anomaly_list
 logger = logging.getLogger("deadpool.base_agent")
 
 
+def build_agent_report(
+    domain: str,
+    anomalies: list[Anomaly],
+    summary: str,
+) -> AgentReport:
+    """
+    Construct an AgentReport, cache it on the calling agent, publish anomalies
+    to the signal bus, and return it.
+
+    Extracted so FinanceAgent (which does not extend BaseAgent) can reuse the
+    same report-build-and-publish pattern without duplicating the logic.
+    """
+    from signal_bus import bus
+
+    report = AgentReport(
+        agent=domain,
+        anomalies=anomalies,
+        raw_data_summary=summary,
+        timestamp=datetime.utcnow(),
+    )
+    for anomaly in anomalies:
+        bus.publish(anomaly)
+    return report
+
+
 class BaseAgent:
     """Abstract base class for specialist agents."""
 
@@ -84,19 +109,8 @@ class BaseAgent:
         anomalies = self._parse_anomalies(raw_response)
 
         summary = self._summarize_data(data)
-        report = AgentReport(
-            agent=self.domain,
-            anomalies=anomalies,
-            raw_data_summary=summary,
-            timestamp=datetime.utcnow(),
-        )
+        report = build_agent_report(self.domain, anomalies, summary)
         self.last_report = report
-
-        # Publish to signal bus
-        from signal_bus import bus
-        for anomaly in anomalies:
-            bus.publish(anomaly)
-
         return report
 
     # ------------------------------------------------------------------

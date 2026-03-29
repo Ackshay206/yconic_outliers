@@ -14,7 +14,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-from datetime import datetime
 from pathlib import Path
 
 logger = logging.getLogger("deadpool.finance_agent")
@@ -23,6 +22,7 @@ import pandas as pd
 from openai import OpenAI
 
 from models import Anomaly, AgentReport
+from agents.base_agent import build_agent_report
 from utils.parsing import parse_anomaly_list
 
 DATA_DIR = Path(__file__).parent.parent / "data" / "csv"
@@ -149,18 +149,8 @@ class FinanceAgent:
 
         keys = list(data.keys())
         summary = f"finance data loaded — keys: {keys}, transactions: {len(data.get('transactions', []))}"
-        report = AgentReport(
-            agent=self.domain,
-            anomalies=anomalies,
-            raw_data_summary=summary,
-            timestamp=datetime.utcnow(),
-        )
+        report = build_agent_report(self.domain, anomalies, summary)
         self.last_report = report
-
-        from signal_bus import bus
-        for anomaly in anomalies:
-            bus.publish(anomaly)
-
         return report
 
     def _parse_anomalies(self, raw: str) -> list[Anomaly]:
