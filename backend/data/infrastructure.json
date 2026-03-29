@@ -1,120 +1,247 @@
 {
   "metadata": {
-    "company": "Acme SaaS",
+    "company": "brainrot",
     "period": "2026-02-14 to 2026-03-28",
-    "reporting_date": "2026-03-28"
+    "reporting_date": "2026-03-28",
+    "environment": "production",
+    "cloud_provider": "AWS",
+    "region_primary": "us-east-1",
+    "region_failover": "us-west-2"
   },
-  "services": [
+  "cloud_instances": [
     {
-      "name": "payments-service",
-      "owner": "Sarah Chen",
-      "criticality": "critical",
-      "description": "Handles all payment processing, Payments API v2 in development",
-      "weekly_metrics": [
-        { "week": "2026-02-14", "deploys": 8, "uptime_pct": 99.92, "p50_response_ms": 142, "p99_response_ms": 380, "error_rate_pct": 0.08, "ci_pass_rate": 0.96 },
-        { "week": "2026-02-21", "deploys": 6, "uptime_pct": 99.89, "p50_response_ms": 155, "p99_response_ms": 410, "error_rate_pct": 0.11, "ci_pass_rate": 0.94 },
-        { "week": "2026-02-28", "deploys": 3, "uptime_pct": 99.81, "p50_response_ms": 178, "p99_response_ms": 490, "error_rate_pct": 0.18, "ci_pass_rate": 0.91 },
-        { "week": "2026-03-07", "deploys": 1, "uptime_pct": 99.74, "p50_response_ms": 201, "p99_response_ms": 560, "error_rate_pct": 0.27, "ci_pass_rate": 0.87 },
-        { "week": "2026-03-14", "deploys": 0, "uptime_pct": 99.68, "p50_response_ms": 228, "p99_response_ms": 670, "error_rate_pct": 0.41, "ci_pass_rate": 0.83 },
-        { "week": "2026-03-21", "deploys": 0, "uptime_pct": 99.61, "p50_response_ms": 264, "p99_response_ms": 810, "error_rate_pct": 0.58, "ci_pass_rate": 0.79 }
-      ],
-      "feature_progress": {
-        "feature": "Payments API v2",
-        "completion_pct": 34,
-        "deadline": "2026-04-15",
-        "days_remaining": 18,
-        "projected_completion_days": 49,
-        "projected_delay_days": 31,
-        "blockers": ["No deploys in 2 weeks", "Sarah Chen disengagement", "Unpatched CVE-2026-4821"]
-      }
+      "id": "i-0a3f9c12b4e567890",
+      "name": "brainrot-api-prod-1",
+      "role": "api",
+      "type": "t3.medium",
+      "vcpus": 2,
+      "memory_gb": 4,
+      "region": "us-east-1",
+      "availability_zone": "us-east-1a",
+      "os": "Amazon Linux 2023",
+      "status": "running",
+      "monthly_cost_usd": 30.37,
+      "launched_at": "2026-02-14T08:00:00Z"
     },
     {
-      "name": "auth-service",
-      "owner": "Marcus Williams",
-      "criticality": "critical",
-      "description": "Authentication and authorization for all users",
-      "weekly_metrics": [
-        { "week": "2026-02-14", "deploys": 5, "uptime_pct": 99.98, "p50_response_ms": 28, "p99_response_ms": 95, "error_rate_pct": 0.02, "ci_pass_rate": 0.99 },
-        { "week": "2026-02-21", "deploys": 6, "uptime_pct": 99.97, "p50_response_ms": 31, "p99_response_ms": 98, "error_rate_pct": 0.02, "ci_pass_rate": 0.98 },
-        { "week": "2026-02-28", "deploys": 4, "uptime_pct": 99.99, "p50_response_ms": 27, "p99_response_ms": 89, "error_rate_pct": 0.01, "ci_pass_rate": 0.99 },
-        { "week": "2026-03-07", "deploys": 5, "uptime_pct": 99.97, "p50_response_ms": 29, "p99_response_ms": 92, "error_rate_pct": 0.02, "ci_pass_rate": 0.99 },
-        { "week": "2026-03-14", "deploys": 7, "uptime_pct": 99.98, "p50_response_ms": 28, "p99_response_ms": 91, "error_rate_pct": 0.02, "ci_pass_rate": 0.98 },
-        { "week": "2026-03-21", "deploys": 5, "uptime_pct": 99.99, "p50_response_ms": 27, "p99_response_ms": 88, "error_rate_pct": 0.01, "ci_pass_rate": 0.99 }
-      ]
+      "id": "i-0b4a8d23c5f678901",
+      "name": "brainrot-api-prod-2",
+      "role": "api",
+      "type": "t3.medium",
+      "vcpus": 2,
+      "memory_gb": 4,
+      "region": "us-east-1",
+      "availability_zone": "us-east-1b",
+      "os": "Amazon Linux 2023",
+      "status": "running",
+      "monthly_cost_usd": 30.37,
+      "launched_at": "2026-02-21T08:00:00Z"
     },
     {
-      "name": "user-service",
-      "owner": "Marcus Williams",
-      "criticality": "high",
-      "description": "User profiles, preferences, and account management",
-      "weekly_metrics": [
-        { "week": "2026-02-14", "deploys": 4, "uptime_pct": 99.95, "p50_response_ms": 45, "p99_response_ms": 180, "error_rate_pct": 0.04, "ci_pass_rate": 0.97 },
-        { "week": "2026-02-21", "deploys": 5, "uptime_pct": 99.94, "p50_response_ms": 47, "p99_response_ms": 185, "error_rate_pct": 0.05, "ci_pass_rate": 0.96 },
-        { "week": "2026-02-28", "deploys": 4, "uptime_pct": 99.96, "p50_response_ms": 44, "p99_response_ms": 176, "error_rate_pct": 0.03, "ci_pass_rate": 0.98 },
-        { "week": "2026-03-07", "deploys": 5, "uptime_pct": 99.95, "p50_response_ms": 46, "p99_response_ms": 182, "error_rate_pct": 0.04, "ci_pass_rate": 0.97 },
-        { "week": "2026-03-14", "deploys": 4, "uptime_pct": 99.97, "p50_response_ms": 43, "p99_response_ms": 174, "error_rate_pct": 0.03, "ci_pass_rate": 0.98 },
-        { "week": "2026-03-21", "deploys": 5, "uptime_pct": 99.94, "p50_response_ms": 47, "p99_response_ms": 186, "error_rate_pct": 0.05, "ci_pass_rate": 0.96 }
-      ]
+      "id": "i-0c5b9e34d6a789012",
+      "name": "brainrot-web-prod-1",
+      "role": "web",
+      "type": "t3.small",
+      "vcpus": 2,
+      "memory_gb": 2,
+      "region": "us-east-1",
+      "availability_zone": "us-east-1a",
+      "os": "Amazon Linux 2023",
+      "status": "running",
+      "monthly_cost_usd": 15.18,
+      "launched_at": "2026-02-14T08:00:00Z"
     },
     {
-      "name": "analytics-service",
-      "owner": "Tom Fischer",
-      "criticality": "medium",
-      "description": "Usage analytics and reporting",
-      "weekly_metrics": [
-        { "week": "2026-02-14", "deploys": 3, "uptime_pct": 99.88, "p50_response_ms": 210, "p99_response_ms": 820, "error_rate_pct": 0.12, "ci_pass_rate": 0.93 },
-        { "week": "2026-02-21", "deploys": 4, "uptime_pct": 99.91, "p50_response_ms": 198, "p99_response_ms": 780, "error_rate_pct": 0.09, "ci_pass_rate": 0.95 },
-        { "week": "2026-02-28", "deploys": 3, "uptime_pct": 99.87, "p50_response_ms": 215, "p99_response_ms": 840, "error_rate_pct": 0.13, "ci_pass_rate": 0.92 },
-        { "week": "2026-03-07", "deploys": 4, "uptime_pct": 99.90, "p50_response_ms": 204, "p99_response_ms": 800, "error_rate_pct": 0.10, "ci_pass_rate": 0.94 },
-        { "week": "2026-03-14", "deploys": 3, "uptime_pct": 99.89, "p50_response_ms": 208, "p99_response_ms": 815, "error_rate_pct": 0.11, "ci_pass_rate": 0.93 },
-        { "week": "2026-03-21", "deploys": 4, "uptime_pct": 99.92, "p50_response_ms": 201, "p99_response_ms": 790, "error_rate_pct": 0.09, "ci_pass_rate": 0.95 }
-      ]
+      "id": "i-0d6c0f45e7b890123",
+      "name": "brainrot-web-prod-2",
+      "role": "web",
+      "type": "t3.small",
+      "vcpus": 2,
+      "memory_gb": 2,
+      "region": "us-east-1",
+      "availability_zone": "us-east-1c",
+      "os": "Amazon Linux 2023",
+      "status": "running",
+      "monthly_cost_usd": 15.18,
+      "launched_at": "2026-02-28T08:00:00Z"
     },
     {
-      "name": "notification-service",
-      "owner": "Aisha Rahman",
-      "criticality": "medium",
-      "description": "Email and in-app notifications",
-      "weekly_metrics": [
-        { "week": "2026-02-14", "deploys": 2, "uptime_pct": 99.78, "p50_response_ms": 310, "p99_response_ms": 1100, "error_rate_pct": 0.22, "ci_pass_rate": 0.91 },
-        { "week": "2026-02-21", "deploys": 3, "uptime_pct": 99.82, "p50_response_ms": 295, "p99_response_ms": 1050, "error_rate_pct": 0.19, "ci_pass_rate": 0.93 },
-        { "week": "2026-02-28", "deploys": 2, "uptime_pct": 99.75, "p50_response_ms": 320, "p99_response_ms": 1150, "error_rate_pct": 0.24, "ci_pass_rate": 0.90 },
-        { "week": "2026-03-07", "deploys": 3, "uptime_pct": 99.80, "p50_response_ms": 305, "p99_response_ms": 1080, "error_rate_pct": 0.21, "ci_pass_rate": 0.92 },
-        { "week": "2026-03-14", "deploys": 2, "uptime_pct": 99.77, "p50_response_ms": 314, "p99_response_ms": 1120, "error_rate_pct": 0.23, "ci_pass_rate": 0.91 },
-        { "week": "2026-03-21", "deploys": 3, "uptime_pct": 99.83, "p50_response_ms": 298, "p99_response_ms": 1060, "error_rate_pct": 0.20, "ci_pass_rate": 0.93 }
-      ]
-    },
-    {
-      "name": "billing-service",
-      "owner": "Sarah Chen",
-      "criticality": "critical",
-      "description": "Subscription billing, invoicing, and revenue recognition",
-      "weekly_metrics": [
-        { "week": "2026-02-14", "deploys": 4, "uptime_pct": 99.95, "p50_response_ms": 88, "p99_response_ms": 290, "error_rate_pct": 0.04, "ci_pass_rate": 0.97 },
-        { "week": "2026-02-21", "deploys": 3, "uptime_pct": 99.92, "p50_response_ms": 94, "p99_response_ms": 320, "error_rate_pct": 0.07, "ci_pass_rate": 0.95 },
-        { "week": "2026-02-28", "deploys": 2, "uptime_pct": 99.87, "p50_response_ms": 108, "p99_response_ms": 370, "error_rate_pct": 0.12, "ci_pass_rate": 0.92 },
-        { "week": "2026-03-07", "deploys": 1, "uptime_pct": 99.80, "p50_response_ms": 131, "p99_response_ms": 430, "error_rate_pct": 0.19, "ci_pass_rate": 0.88 },
-        { "week": "2026-03-14", "deploys": 0, "uptime_pct": 99.71, "p50_response_ms": 162, "p99_response_ms": 510, "error_rate_pct": 0.28, "ci_pass_rate": 0.84 },
-        { "week": "2026-03-21", "deploys": 0, "uptime_pct": 99.62, "p50_response_ms": 198, "p99_response_ms": 640, "error_rate_pct": 0.39, "ci_pass_rate": 0.80 }
-      ]
+      "id": "i-0e7d1a56f8c901234",
+      "name": "brainrot-db-primary",
+      "role": "database",
+      "type": "t3.medium",
+      "vcpus": 2,
+      "memory_gb": 4,
+      "region": "us-east-1",
+      "availability_zone": "us-east-1a",
+      "os": "Amazon Linux 2023",
+      "status": "running",
+      "monthly_cost_usd": 30.37,
+      "launched_at": "2026-02-14T08:00:00Z"
     }
   ],
-  "infrastructure_alerts": [
+  "auto_scaling_groups": [
     {
-      "alert": "payments-service: 0 deploys in last 14 days — feature delivery stalled",
-      "severity": "critical",
-      "service": "payments-service"
+      "name": "brainrot-api-asg",
+      "service": "api",
+      "min_instances": 1,
+      "max_instances": 6,
+      "desired_instances": 2,
+      "current_instances": 2,
+      "scaling_policy": "target-tracking",
+      "target_cpu_pct": 60,
+      "cooldown_seconds": 180,
+      "launch_template": "brainrot-api-lt-v3",
+      "load_balancer": "brainrot-api-alb"
     },
     {
-      "alert": "billing-service: 0 deploys in last 14 days — degrading error rate (0.39%)",
-      "severity": "high",
-      "service": "billing-service"
-    },
-    {
-      "alert": "payments-service: Payments API v2 at 34% completion with 18 days to deadline",
-      "severity": "critical",
-      "service": "payments-service",
-      "deadline": "2026-04-15"
+      "name": "brainrot-web-asg",
+      "service": "web",
+      "min_instances": 1,
+      "max_instances": 8,
+      "desired_instances": 2,
+      "current_instances": 2,
+      "scaling_policy": "target-tracking",
+      "target_cpu_pct": 55,
+      "cooldown_seconds": 120,
+      "launch_template": "brainrot-web-lt-v2",
+      "load_balancer": "brainrot-web-alb"
     }
-  ]
-}
+  ],
+  "load_balancers": [
+    {
+      "name": "brainrot-api-alb",
+      "type": "application",
+      "dns": "brainrot-api-alb-1234567890.us-east-1.elb.amazonaws.com",
+      "scheme": "internet-facing",
+      "target_group": "brainrot-api-tg",
+      "health_check_path": "/api/health",
+      "health_check_interval_seconds": 30,
+      "healthy_threshold": 2,
+      "unhealthy_threshold": 3,
+      "monthly_cost_usd": 16.20
+    },
+    {
+      "name": "brainrot-web-alb",
+      "type": "application",
+      "dns": "brainrot-web-alb-0987654321.us-east-1.elb.amazonaws.com",
+      "scheme": "internet-facing",
+      "target_group": "brainrot-web-tg",
+      "health_check_path": "/",
+      "health_check_interval_seconds": 30,
+      "healthy_threshold": 2,
+      "unhealthy_threshold": 3,
+      "monthly_cost_usd": 16.20
+    }
+  ],
+  "databases": [
+    {
+      "name": "brainrot-sqlite-primary",
+      "engine": "SQLite",
+      "orm": "Drizzle ORM",
+      "driver": "better-sqlite3",
+      "host_instance": "brainrot-db-primary",
+      "storage_type": "gp3",
+      "storage_gb": 20,
+      "backup_enabled": true,
+      "backup_retention_days": 7,
+      "backup_schedule": "0 2 * * *",
+      "replication": "none",
+      "tables": ["users", "posts", "comments", "likes"],
+      "row_counts": {
+        "users": 4821,
+        "posts": 31440,
+        "comments": 98712,
+        "likes": 214533
+      },
+      "db_size_mb": 312,
+      "avg_query_ms": 3.1,
+      "monthly_cost_usd": 4.50
+    }
+  ],
+  "cdn": {
+    "provider": "AWS CloudFront",
+    "distribution_id": "E1XYZ9ABCD1234",
+    "domain": "cdn.brainrot.app",
+    "origins": [
+      "brainrot-web-alb-0987654321.us-east-1.elb.amazonaws.com",
+      "brainrot-static-assets.s3.amazonaws.com"
+    ],
+    "edge_locations": ["us-east-1", "eu-west-1", "ap-southeast-1"],
+    "cache_hit_rate_pct": 84.7,
+    "total_requests_millions_per_month": 1.2,
+    "data_transfer_gb_per_month": 38.4,
+    "monthly_cost_usd": 9.10
+  },
+  "object_storage": [
+    {
+      "name": "brainrot-static-assets",
+      "provider": "AWS S3",
+      "region": "us-east-1",
+      "bucket": "brainrot-static-assets",
+      "purpose": "User-uploaded media, profile pictures, static build artifacts",
+      "versioning": false,
+      "public_access": false,
+      "cdn_backed": true,
+      "size_gb": 14.2,
+      "objects_count": 29450,
+      "monthly_cost_usd": 0.33
+    },
+    {
+      "name": "brainrot-db-backups",
+      "provider": "AWS S3",
+      "region": "us-east-1",
+      "bucket": "brainrot-db-backups",
+      "purpose": "Nightly SQLite database dump backups",
+      "versioning": true,
+      "public_access": false,
+      "cdn_backed": false,
+      "size_gb": 2.1,
+      "objects_count": 42,
+      "monthly_cost_usd": 0.05
+    }
+  ],
+  "networking": {
+    "vpc_id": "vpc-0a1b2c3d4e5f67890",
+    "vpc_cidr": "10.0.0.0/16",
+    "subnets": [
+      { "name": "public-us-east-1a", "cidr": "10.0.1.0/24", "az": "us-east-1a", "type": "public" },
+      { "name": "public-us-east-1b", "cidr": "10.0.2.0/24", "az": "us-east-1b", "type": "public" },
+      { "name": "public-us-east-1c", "cidr": "10.0.3.0/24", "az": "us-east-1c", "type": "public" },
+      { "name": "private-us-east-1a", "cidr": "10.0.11.0/24", "az": "us-east-1a", "type": "private" },
+      { "name": "private-us-east-1b", "cidr": "10.0.12.0/24", "az": "us-east-1b", "type": "private" }
+    ],
+    "nat_gateways": 1,
+    "internet_gateway": "igw-0f1e2d3c4b5a6789",
+    "security_groups": [
+      { "name": "brainrot-alb-sg", "inbound": ["443/tcp:0.0.0.0/0", "80/tcp:0.0.0.0/0"] },
+      { "name": "brainrot-app-sg", "inbound": ["3000/tcp:brainrot-alb-sg", "3001/tcp:brainrot-alb-sg"] },
+      { "name": "brainrot-db-sg", "inbound": ["22/tcp:brainrot-app-sg"] }
+    ]
+  },
+  "ci_cd": {
+    "provider": "GitHub Actions",
+    "pipeline_file": ".github/workflows/ci.yml",
+    "triggers": ["push:main", "pull_request"],
+    "stages": ["lint", "type-check", "test", "build", "deploy"],
+    "deployment_target": "AWS EC2 via CodeDeploy",
+    "average_pipeline_duration_minutes": 4.2,
+    "weekly_pipeline_runs": [
+      { "week": "2026-02-14", "runs": 24, "pass": 21, "fail": 3 },
+      { "week": "2026-02-21", "runs": 19, "pass": 18, "fail": 1 },
+      { "week": "2026-02-28", "runs": 14, "pass": 14, "fail": 0 },
+      { "week": "2026-03-07", "runs": 11, "pass": 11, "fail": 0 },
+      { "week": "2026-03-14", "runs": 8,  "pass": 8,  "fail": 0 },
+      { "week": "2026-03-21", "runs": 7,  "pass": 7,  "fail": 0 }
+    ]
+  },
+  "monitoring": {
+    "provider": "AWS CloudWatch",
+    "dashboards": ["brainrot-api-overview", "brainrot-web-overview", "brainrot-infra-health"],
+    "log_groups": [
+      "/aws/ec2/brainrot-api",
+      "/aws/ec2/brainrot-web",
+      "/aws/alb/brainrot-api-alb",
+      "/aws/alb/brainrot-web-alb"
+    ]
+  }}

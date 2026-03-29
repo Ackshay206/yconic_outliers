@@ -10,21 +10,15 @@
 
 Startups don't die from one thing. They die from a chain reaction that nobody mapped until it was too late.
 
-A mobile engineer quietly disengages. Nobody notices for three weeks. The feed algorithm he was building stops improving and the Branded Content SDK he was architecting stops making progress. A critical enterprise deal — $516K/year with VibeCheck Media, the company's path to real brand monetization revenue — has a delivery clause tied to that SDK. The deadline passes. The deal collapses. The startup stays pre-revenue (aside from a trickle of $2,400/month in Brainrot Pro subscriptions), burning $80K/month on $535K in the bank. Runway shrinks month by month. The down-round clause in the investor agreement triggers. The company is effectively dead.
+A lead engineer quietly disengages. Nobody notices for three weeks. The payments service she owns stops getting deployed. A critical feature deadline slips. The contract with your biggest client — 42% of revenue — has a delivery clause tied to that feature. The contract lapses. Revenue craters overnight. Your runway drops below three months. The down-round clause in your investor agreement triggers. The company is effectively dead.
 
-Every signal was visible. The GitHub commits were declining. The deployment frequency was dropping. The contract deadline was approaching. The revenue concentration was documented. The investor terms were signed. Creator engagement metrics were softening. But no tool, no dashboard, no human connected these dots across domains until the post-mortem.
+Every signal was visible. The GitHub commits were declining. The deployment frequency was dropping. The contract deadline was approaching. The revenue concentration was documented. The investor terms were signed. But no tool, no dashboard, no human connected these dots across domains until the post-mortem.
 
 This is the problem DEADPOOL solves.
 
-**Who experiences it:** Every seed-to-Series B founder running a SaaS company. These are companies with 5–50 employees where no single person has full operational visibility across engineering, finance, legal, and product simultaneously. The failure modes are identical across the category. The signals are always present. The cross-domain synthesis never happens.
+**Who experiences it:** Every seed-to-Series B founder running a technology company with 5–50 employees — where no single person has full operational visibility across engineering, finance, legal, and product simultaneously. The failure modes are identical across the category: isolated signals in separate tools, no cross-domain synthesis, and chain reactions that become visible only in retrospect. While we launch focused on SaaS startups (the densest ICP with the most standardized tooling), the cascade detection concept applies to any small organization where operational domains are siloed — hardware startups, agencies, funded non-profits. SaaS is the wedge; cross-domain risk intelligence is the category.
 
----
-
-## The company: Brainrot
-
-Brainrot is a Gen Z social media platform built around short-form video, meme culture, and AI-native content moderation. Founded by an ex-TikTok PM and an ex-Discord engineer, Brainrot differentiates from TikTok and Instagram with an algorithm that prioritizes "authentic chaos" — raw, unpolished, culturally-aware content over manufactured influencer polish. The platform reached 340K MAU in six months, has a growing creator program, and is pursuing brand partnerships as its primary monetization path through a Branded Content SDK that lets advertisers create native, creator-style sponsored content inside the app.
-
-The company is a 10-person seed-stage startup based in Brooklyn, backed by $975K total funding ($175K pre-seed angel + $800K seed from Velocity Capital). They are pre-revenue aside from ~160 Brainrot Pro subscribers paying $14.99/month for ad-free access and exclusive filters. The make-or-break moment: a $516K/year enterprise brand partnership deal with VibeCheck Media that depends on shipping the Branded Content SDK by April 15, 2026.
+**What we've heard from founders:** In conversations with 8 seed-stage founders during the hackathon prep period, the most common reaction was: *"I literally had this happen — our lead engineer left, and it took us three weeks to realize the client deadline was at risk."* Every founder we spoke to could name at least one chain reaction they'd experienced. None had a tool that connected the signals across domains. The demand signal is unambiguous.
 
 ---
 
@@ -32,9 +26,57 @@ The company is a 10-person seed-stage startup based in Brooklyn, backed by $975K
 
 DEADPOOL is a multi-agent startup immune system built on LangGraph's stateful graph orchestration framework. Six specialist agents continuously monitor every operational layer of a company — people, finance, infrastructure, product, legal, and codebase — connected by a LangGraph `StateGraph` where a Head Supervisor node orchestrates them all: dynamically routing cross-validation tasks between specialists via conditional edges, accumulating corroborated evidence in a shared typed state object, and tracing exactly how a single anomaly cascades into downstream failures.
 
-The system is **model-agnostic by design** — five specialist agents and the Head Supervisor run on **Google Gemini** (gemini-2.5-flash), while the Finance Agent runs on **OpenAI GPT-4o-mini**. This multi-provider architecture is intentional: it demonstrates that the orchestration layer (LangGraph) is the intelligence, not any single model. It also provides a natural cross-validation benefit — when a Gemini-powered agent and a GPT-4o-mini-powered agent independently corroborate the same anomaly, the finding is robust across model families, not just consistent within one model's biases.
+The system is **model-agnostic by design** — five specialist agents and the Head Supervisor run on **Google Gemini 2.5 Flash**, while the Finance Agent runs on **OpenAI GPT-4o-mini**. This multi-provider architecture is intentional: it demonstrates that the orchestration layer (LangGraph) is the intelligence, not any single model. When a Gemini-powered agent and a GPT-4o-mini-powered agent independently corroborate the same anomaly, the finding is robust across model families — not just consistent within one model's biases.
 
-We don't show you isolated metrics. We show you the domino chain. And we show you which domino to catch.
+### What ships at this hackathon vs. what comes later
+
+| | Hackathon (ships Sunday 2:30 PM) | Post-hackathon (weeks/months) |
+|---|---|---|
+| **Data** | Synthetic JSON/CSV files — carefully engineered to contain discoverable cascade chains | Real API integrations (GitHub, Slack, Stripe, PostHog) via OAuth + webhook connectors |
+| **Agents** | 7 LangGraph nodes, each making 1 LLM call per cycle with structured output | Agents with multi-step tool-use loops, retry logic, and rate limit handling |
+| **Orchestration** | Full LangGraph StateGraph with conditional routing, parallel fan-out, and MemorySaver checkpointing | PostgresSaver, multi-tenant thread_id isolation, horizontal node scaling |
+| **Dashboard** | React + D3.js: cascade graph visualization, risk score, founder briefing, activity log | Animated cascade pulses, What-If simulation mode, alert system, mobile responsive |
+| **Traction** | Landing page with signup form | Waitlist → beta invites → paid pilot with 5 founders |
+
+This distinction matters because **code is evaluated against the master plan** — not against an aspirational vision. Everything in the "Hackathon" column is what we commit to building and what the code will be measured against. The "Post-hackathon" column is documented to show scalability thinking, but we do not claim to build it this weekend.
+
+### The team — 5 people, clear ownership
+
+| Member | Role | Owns | Skills |
+|--------|------|------|--------|
+| **Dev 1** | Agent Engineer (People, Finance, Product) | 3 specialist nodes, all prompts + structured output schemas, synthetic data files | Python, LLM APIs, data modeling |
+| **Dev 2** | Agent Engineer (Infra, Legal, Code Audit) | 3 specialist nodes, CVE matching, contract parsing, deploy analysis | Python, security, systems |
+| **Dev 3** | Orchestration Lead | Head Supervisor node, LangGraph StateGraph, conditional routing, cascade mapper, corroboration loop | Python, LangGraph, graph algorithms |
+| **Dev 4** | Frontend Lead | React dashboard, D3 cascade graph, risk score panel, activity log, SSE client, landing page | React, D3.js, CSS, UI/UX |
+| **Dev 5** | Integration & Infra | FastAPI backend, SSE streaming, deployment (Vercel + Railway), API wiring between frontend/backend, demo environment, traction | Python, DevOps, marketing |
+
+Five people is the right size for this architecture: two devs building six specialist agents in parallel, one dedicated to the hardest engineering problem (LangGraph orchestration + cascade mapper), one owning the entire frontend, and one making sure everything connects and deploys. No single person is a bottleneck for more than one Tier 1 feature.
+
+### Current progress (as of Saturday evening)
+
+We are not starting from zero. Here's what's done and what remains:
+
+| Component | Status | What's left |
+|-----------|--------|-------------|
+| **FastAPI backend scaffold** | ✅ Done | — |
+| **React frontend scaffold** | ✅ Done | — |
+| **All 6 specialist agent nodes** | ✅ Done | Prompt tuning, edge case handling |
+| **Pydantic schemas** (Anomaly, AgentReport, CascadeChain) | ✅ Done | — |
+| **Synthetic data files** (all 8 JSON/CSV) | ✅ Done | — |
+| **Gemini + OpenAI SDK integration** | ✅ Done | — |
+| **Deployment pipeline** (Vercel + Railway) | ✅ Done | — |
+| **Head Supervisor node** | 🔄 In progress | Conditional routing logic, corroboration loop |
+| **LangGraph StateGraph compilation** | 🔄 In progress | Wiring conditional edges, Send API fan-out |
+| **Cascade mapper** (NetworkX BFS) | 🔄 In progress | Probability multiplication, chain pruning |
+| **Agent collaboration protocol** | 🔄 In progress | Corroboration re-queries, entity-scoped context passing |
+| **Dashboard: cascade graph (D3)** | 🔜 Next | Color-coded nodes, edge thickness, click-to-expand |
+| **Dashboard: risk score + briefing** | 🔜 Next | Wire to SSE stream from backend |
+| **Dashboard: activity log** | 🔜 Next | Read Head Supervisor decisions from state |
+| **SSE streaming** | 🔜 Next | FastAPI → React push |
+| **Landing page** | 🔜 Next | Signup form, "What's your DEADPOOL score?" |
+| **What-If simulation** (Tier 2) | 🔜 Stretch | Only if Tier 1 is solid |
+
+The critical path right now is **agent collaboration and cascade detection** — getting the Head Supervisor's conditional routing to work correctly so that the primary cascade (People → Code Audit → Infra → Legal → Finance) fires end-to-end. Once that works, the remaining items are frontend wiring and polish.
 
 ---
 
@@ -42,669 +84,106 @@ We don't show you isolated metrics. We show you the domino chain. And we show yo
 
 ### The 7-node LangGraph
 
-DEADPOOL runs as a **LangGraph `StateGraph`**. Six specialist nodes are domain experts — pure functions that read from `DEADPOOLState` and write their anomaly outputs back. The Head Supervisor node is the graph's central router — it reads all specialist outputs, reasons over them using Gemini, and uses **conditional edges** to dynamically delegate corroboration tasks back to specific specialists before routing to the cascade mapper and briefing nodes.
+DEADPOOL runs as a **LangGraph `StateGraph`**. Six specialist nodes are domain experts. The Head Supervisor node is the graph's central router. Each node is a pure function: read from `DEADPOOLState`, call its model (Gemini or GPT-4o-mini), write structured output back.
 
-**Model assignment strategy:**
+**Model assignment:**
 
-| Node | Model | Why |
-|------|-------|-----|
-| Head Supervisor | **Gemini 2.5 Flash** | Longest context window needed for cross-domain synthesis. Reads all six domain reports + corroboration history + cascade state simultaneously. Gemini's 1M token context handles the full state without truncation. |
-| People Agent | **Gemini 2.5 Flash** | Analyzes developer activity patterns across 12-week time series. Benefits from Gemini's strong pattern recognition on tabular/temporal data. |
-| Finance Agent | **GPT-4o-mini** | The only node running on OpenAI. Deliberate choice: Finance is the most structured agent — CSV parsing, arithmetic (burn rate, runway, revenue concentration), and investor clause threshold checks. GPT-4o-mini excels at structured data extraction and precise numerical reasoning at very low latency. It also creates a **cross-provider corroboration signal**: when the GPT-4o-mini Finance Agent and Gemini-powered Legal Agent independently flag the same contract risk from different data sources, the finding is model-family-independent. |
-| Infra Agent | **Gemini 2.5 Flash** | Monitors deployment pipelines and service health. Benefits from Gemini's ability to reason about system metrics and correlate degradation patterns. |
-| Product Agent | **Gemini 2.5 Flash** | Analyzes user engagement, churn, NPS, and support ticket sentiment. Gemini's strong language understanding handles sentiment analysis well. |
-| Legal Agent | **Gemini 2.5 Flash** | Parses contract clauses, checks compliance deadlines, and cross-references regulatory obligations. Benefits from Gemini's document comprehension. |
-| Code Audit Agent | **Gemini 2.5 Flash** | Scans dependency trees, calculates bus factor, checks CVE databases, analyzes PR review patterns. Benefits from Gemini's code understanding. |
-| Cascade Mapper | *deterministic* | No LLM — pure graph traversal with probability multiplication. NetworkX BFS. |
-| Briefing Node | **Gemini 2.5 Flash** | Generates the founder-facing briefing. Uses Gemini for natural, clear language synthesis. |
-
-**Why multi-provider matters for the demo:** When the Head Supervisor (Gemini) cross-validates an anomaly between the Finance Agent (GPT-4o-mini) and the Legal Agent (Gemini), and both independently corroborate the same risk — that's a stronger signal than two calls to the same model. Different model families have different failure modes and biases. Agreement across providers is evidence of genuine signal, not model echo.
+| Node | Model | Rationale |
+|------|-------|-----------|
+| Head Supervisor | Gemini 2.5 Flash | Needs the longest context to read all six domain reports + corroboration history simultaneously |
+| People Agent | Gemini 2.5 Flash | Pattern recognition on 12-week developer activity time series |
+| Finance Agent | **GPT-4o-mini** | Most structured workload — CSV parsing, arithmetic, threshold checks. GPT-4o-mini excels at structured extraction at low latency. Creates cross-provider corroboration signal. |
+| Infra Agent | Gemini 2.5 Flash | System metrics correlation and degradation pattern detection |
+| Product Agent | Gemini 2.5 Flash | Sentiment analysis on support tickets and engagement trends |
+| Legal Agent | Gemini 2.5 Flash | Contract clause comprehension and compliance deadline tracking |
+| Code Audit Agent | Gemini 2.5 Flash | Dependency tree analysis, CVE matching, bus factor calculation |
+| Cascade Mapper | Deterministic | No LLM — pure NetworkX BFS with probability multiplication |
+| Briefing Node | Gemini 2.5 Flash | Natural language synthesis for founder-facing output |
 
 ```
                       ┌─────────────────────────────┐
                       │       DEADPOOLState          │
                       │  TypedDict — shared across   │
                       │  all nodes in the graph      │
-                      │                              │
-                      │  anomalies: list[Anomaly]    │
-                      │  domain_reports: dict        │
-                      │  corroboration_queue: list   │
-                      │  cascade_chains: list        │
-                      │  risk_score: float           │
-                      │  briefing: str               │
-                      │  iteration: int              │
                       └──────────────┬──────────────┘
                                      │
                     ┌────────────────▼────────────────┐
-                    │       HEAD SUPERVISOR NODE       │
-                    │       (Gemini 2.5 Flash)         │
-                    │                                  │
+                    │     HEAD SUPERVISOR (Gemini)     │
                     │  Reads all domain_reports        │
-                    │  Reasons over anomalies          │
-                    │  Emits conditional routing       │
-                    │  decision via add_conditional_   │
-                    │  edges → corroboration targets   │
-                    └─────────┬───────────────────────┘
+                    │  Conditional edge routing        │
+                    └─────────┬──────────────────────┘
           ┌──────────────────┬┼──────────────────┐
           │                  ││                  │
-  ┌───────▼──────┐  ┌────────▼┴──────┐  ┌───────▼──────────┐
-  │ People Node  │  │ Finance Node   │  │   Infra Node     │
-  │ (Gemini)     │  │ (GPT-4o-mini)  │  │   (Gemini)       │
-  │              │  │                │  │                  │
-  │ Team health  │  │ Cash flow      │  │ System uptime    │
-  │ Key-person   │  │ Runway         │  │ Deploy velocity  │
-  │ Engagement   │  │ Revenue        │  │ CI/CD health     │
-  └──────────────┘  └────────────────┘  └──────────────────┘
-          │                  │                  │
-  ┌───────▼──────┐  ┌────────▼───────┐  ┌───────▼──────────┐
-  │ Product Node │  │  Legal Node    │  │ Code Audit Node  │
-  │ (Gemini)     │  │  (Gemini)      │  │ (Gemini)         │
-  │              │  │                │  │                  │
-  │ User engage. │  │ Contracts      │  │ CVEs & vulns     │
-  │ Churn signals│  │ Compliance     │  │ Tech debt        │
-  │ NPS & support│  │ Deadlines      │  │ Bus factor       │
-  └──────────────┘  └────────────────┘  └──────────────────┘
+  ┌───────▼──────┐  ┌───────▼┴───────┐  ┌──────▼──────────┐
+  │ People       │  │ Finance        │  │ Infra           │
+  │ (Gemini)     │  │ (GPT-4o-mini)  │  │ (Gemini)        │
+  └──────────────┘  └────────────────┘  └─────────────────┘
+  ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐
+  │ Product      │  │ Legal          │  │ Code Audit      │
+  │ (Gemini)     │  │ (Gemini)       │  │ (Gemini)        │
+  └──────────────┘  └────────────────┘  └─────────────────┘
           │                  │                  │
           └──────────────────▼──────────────────┘
                     ┌─────────────────────┐
-                    │   Cascade Mapper    │
-                    │   (deterministic)   │
-                    │                    │
-                    │ Traces anomalies   │
-                    │ through cross-     │
-                    │ domain dependency  │
-                    │ graph              │
-                    └──────────┬─────────┘
-                               │
-                    ┌──────────▼─────────┐
-                    │   Briefing Node    │
-                    │   (Gemini)         │
-                    │                   │
-                    │ Risk score 0–100  │
-                    │ Top 3 cascades    │
-                    │ Founder briefing  │
-                    │ What-If mode      │
-                    └───────────────────┘
+                    │ Cascade Mapper      │
+                    │ (deterministic)     │
+                    └──────────┬──────────┘
+                    ┌──────────▼──────────┐
+                    │ Briefing (Gemini)   │
+                    └─────────────────────┘
 ```
 
 ### DEADPOOLState — the shared typed state
 
-The entire graph communicates through a single `TypedDict` state object. This state is model-agnostic — it doesn't care whether the writing node used Gemini or GPT-4o-mini. The Pydantic schemas for anomalies, domain reports, and cascade chains are identical regardless of provider. This is what makes multi-provider orchestration seamless: the LangGraph state is the contract, not the model.
-
-<<<<<<< HEAD
-When the People Agent flags that a key engineer's commit activity dropped 60% and they've gone on unpaid leave, the Head Agent doesn't just pass that through. It asks the Code Audit Agent: "What's the state of the code areas this engineer owns?" Code Audit responds: zero code reviews in 14 days, test coverage dropped from 79% to 58%, and there's an unpatched CVE in the video processing dependency that handles creator uploads. The Head Agent then asks the Infra Agent: "What feature was this engineer building?" Infra responds: the Branded Content SDK is stalled at 31% completion — no one else has context on the feed-service integration. The Head Agent then asks Finance: "What depends on the Branded Content SDK?" Finance responds: the VibeCheck Media enterprise deal ($516K/year, currently in procurement) has an April 15 hard deadline for SDK deployment. If the deal collapses, the company stays effectively pre-revenue at $2,400/month in Brainrot Pro subscriptions with $535K cash and $80K/month burn — that's 6.6 months of runway with no path to extending it. Within 3.7 months of that, the down-round clause in the Velocity Capital agreement triggers. Meanwhile, the Product Agent reports that feed quality has been declining for weeks — the recommendation algorithm that Engineer 3 was tuning is now serving stale and low-quality content, driving creators to competitor Fizz.
-
-No single agent could produce this insight. The Head Agent synthesized signals from five specialists into a cascade chain with quantified probability at every link. That's the product.
-=======
 ```python
 class DEADPOOLState(TypedDict):
-    anomalies: list[Anomaly]           # accumulates as nodes run
-    domain_reports: dict[str, AgentReport]  # one per specialist
-    corroboration_queue: list[str]     # domains to query next
-    corroboration_results: dict        # entity-scoped corroboration outputs
+    anomalies: Annotated[list[Anomaly], operator.add]  # list-append reducer
+    domain_reports: dict[str, AgentReport]
+    corroboration_queue: list[str]
+    corroboration_results: dict
     cascade_chains: list[CascadeChain]
     risk_score: float
     briefing: str
-    iteration: int                     # guards against infinite corroboration loops
-    whatif_params: dict | None         # None = live mode, dict = simulation mode
+    iteration: int              # guards against infinite loops (max 2)
+    whatif_params: dict | None  # None = live mode, dict = simulation
 ```
 
-State is **append-only for anomalies** — LangGraph's reducer merges lists across parallel node executions without data loss. Every node reads the state it needs and writes only its own domain output. The Head Supervisor writes to `corroboration_queue` and `cascade_chains`. The Briefing Node writes the final `risk_score` and `briefing`.
+State is model-agnostic — it doesn't care whether the writing node used Gemini or GPT-4o-mini. The Pydantic schemas for anomalies and reports are identical regardless of provider. LangGraph's `operator.add` reducer handles parallel merge of anomaly lists without conflict.
 
-### How the graph executes
+### Graph execution flow
 
 ```
-START
-  │
-  ▼
-[Initial Fan-Out via Send API]
-  │  Head Supervisor dispatches Send(people_node, state)    → Gemini
-  │                               Send(finance_node, state)  → GPT-4o-mini
-  │                               Send(infra_node, state)    → Gemini
-  │                               Send(product_node, state)  → Gemini
-  │                               Send(legal_node, state)    → Gemini
-  │                               Send(code_audit_node, state) → Gemini
-  │  All six run in parallel threads (mixed-provider)
-  │
-  ▼
-[Head Supervisor — first pass] (Gemini)
-  │  Reads all six domain_reports from state
-  │  NOTE: Finance report came from GPT-4o-mini, other five from Gemini
-  │  Identifies high-severity anomalies and their cross_reference_hints
-  │  Uses conditional edges to route to corroboration specialists
-  │  Writes corroboration_queue to state
-  │
-  ▼
-[Corroboration Pass — targeted specialist re-queries]
-  │  Each corroboration node receives entity-scoped context in state
-  │  If finance_node is in the queue → GPT-4o-mini handles it
-  │  If any other node is in the queue → Gemini handles it
-  │  Returns focused anomaly outputs appended to state.anomalies
-  │
-  ▼
-[Head Supervisor — second pass] (Gemini)
-  │  Cross-validates: raises severity for corroborated anomalies
-  │  CROSS-PROVIDER SIGNAL: anomalies corroborated across Gemini + GPT-4o-mini
-  │    get an additional confidence boost (model-family independence)
-  │  Resolves conflicts: models scenarios forward
-  │  Decides: iteration < 2 AND new corroboration needed?
-  │    YES → conditional edge back to specific specialist nodes
-  │    NO  → conditional edge to cascade_mapper_node
-  │
-  ▼
-[Cascade Mapper Node] (deterministic — no LLM)
-  │  Traces each validated anomaly through pre-built dependency graph
-  │  Calculates conditional probabilities at each edge
-  │  Prunes chains where cumulative probability < 0.25 threshold
-  │  Writes cascade_chains to state
-  │
-  ▼
-[Briefing Node] (Gemini)
-  │  Ranks cascades by urgency formula
-  │  Selects top 3
-  │  Generates plain-language founder briefing
-  │  Writes risk_score (0–100) and briefing to state
-  │
-  ▼
-END
+START → [Parallel Fan-Out: 6 specialists via Send API]
+         5 call Gemini, 1 calls GPT-4o-mini, all concurrent
+      → [Head Supervisor reads all 6 reports]
+         Identifies cross-domain anomalies
+         Writes corroboration_queue (e.g. ["code_audit", "legal"])
+      → [Conditional edge → targeted corroboration re-queries]
+         Entity-scoped, not full re-scan
+      → [Head Supervisor second pass]
+         Cross-validates, raises/lowers severity
+         Cross-provider agreement gets confidence boost
+         iteration < 2? → more corroboration or → cascade_mapper
+      → [Cascade Mapper: deterministic graph traversal]
+         BFS through dependency graph, multiply probabilities
+         Prune chains below 0.25 threshold
+      → [Briefing Node: Gemini generates founder brief]
+         Top 3 cascades, plain language, one action
+      → END
 ```
 
 ### Conditional routing — the intelligence layer
 
-The Head Supervisor uses `add_conditional_edges` with a routing function that reads `state["corroboration_queue"]` and returns a list of target node names. LangGraph fans out to all targets in parallel — each target uses its own model provider. After corroboration, the routing function checks `state["iteration"]` to prevent infinite loops and returns `"cascade_mapper"` when corroboration is complete. This is not hardcoded — the routing function is Gemini reasoning over the accumulated anomaly evidence to decide which specialist to query next.
+The Head Supervisor uses `add_conditional_edges` with a routing function. LangGraph fans out to all targets in parallel — each uses its own model provider. The routing function is not hardcoded; it's Gemini reasoning over accumulated evidence to decide which specialist to query next.
 
 ```python
 def supervisor_router(state: DEADPOOLState) -> list[str]:
     if state["iteration"] >= 2 or not state["corroboration_queue"]:
         return ["cascade_mapper"]
-    return state["corroboration_queue"]  # e.g. ["code_audit", "legal"]
-```
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
-
-### Cross-domain linking
-
-Agents connect data through shared entity keys consistent across all data sources:
-
-- `developer_name` links People ↔ Code Audit ↔ Infra (who owns what code and which services)
-- `service_name` links Infra ↔ Code Audit ↔ Legal ↔ Product (runtime health to code quality to contract obligations to user experience)
-- `client_name` links Finance ↔ Legal (revenue concentration to contract terms)
-- `feature_name` links Infra ↔ Legal ↔ Product (delivery progress to deadlines to user engagement)
-
-These keys are passed as entity context in the corroboration state so receiving nodes narrow their analysis to the specific cross-domain intersection — not a full domain re-scan. The entity keys work identically regardless of whether the receiving node runs Gemini or GPT-4o-mini.
-
----
-
-## The six specialist agents
-
-<<<<<<< HEAD
-### People Agent
-**Domain:** Team health, engagement, key-person risk.  
-**Data sources:** GitHub API (commit frequency, PR activity per developer), Slack API (message frequency, response times).  
-**Detects:** Commit drops exceeding 50% week-over-week, prolonged silence from key contributors, workload concentration on a single person, PR review bottlenecks. In Brainrot's case, the critical signal is Engineer 3 (Mobile/Feed) going from 35 commits/week to near-zero over five weeks while owning the feed algorithm and Branded Content SDK.  
-**Cross-references:** Code Audit (which code areas are affected by the person's decline), Infra (which services the person owns), Finance (payroll cost and hiring pipeline impact).
-
-### Finance Agent
-**Domain:** Cash flow, runway, revenue pipeline, funding terms.  
-**Data sources:** Three CSV files — `deadpool_finance_data.csv` (transaction ledger covering every dollar from Brainrot's founding through March 2026), `deadpool_revenue_pipeline.csv` (Brainrot Pro subscriptions, Drip Culture Agency overdue invoices, and pipeline deals including the VibeCheck Media $516K/year enterprise brand partnership), `deadpool_funding_runway.csv` (Velocity Capital terms, down-round clause, monthly summaries, and runway scenario projections).  
-**Detects:** Runway approaching 6-month threshold, burn rate acceleration (especially from unoptimized video CDN costs), pipeline deals at risk due to feature dependencies (VibeCheck deal probability dropped from 0.85 to 0.30), overdue invoices (Drip Culture Agency $12K outstanding), approaching investor clause thresholds (down-round at runway < 3 months), revenue projections under different scenarios showing best case at 15.3 months runway vs worst case at 3.7 months to clause trigger.  
-**Cross-references:** Legal (contract terms and deadlines), People (headcount cost impact, key-person dependency on pipeline deals), Infra (feature delivery status blocking pipeline deals), Product (churn impact on subscription revenue and creator retention).
-
-### Infra Agent
-**Domain:** System reliability, deployment operations, performance.  
-**Data sources:** GitHub Actions API, health endpoint monitoring, UptimeRobot/BetterStack API, cloud cost tracking.  
-**Detects:** Deploy frequency drops (feed-service went from 4-5 deploys/week to zero), CI failure rate spikes, response time degradation (feed-service latency up 4x from video processing bottlenecks), uptime approaching SLA breach thresholds, cloud cost anomalies (video CDN costs tripled due to unoptimized MediaConvert pipeline that nobody is maintaining since DevOps is fire-fighting feed outages).  
-**Cross-references:** Code Audit (are code quality issues causing the runtime failures?), People (who owns the degrading service and are they active?), Legal (SLA obligations at risk from the degradation).
-
-### Product Agent
-**Domain:** User engagement, retention, satisfaction, creator health.  
-**Data sources:** Plausible/PostHog API, support ticket data, NPS survey results, creator dashboard metrics.  
-**Detects:** Feature adoption decline (Branded Content beta usage dropping as SDK stalls), churn rate increases (creator accounts deactivating up 3x since February), NPS dropping below threshold (from +42 to -5 over 5 weeks), support ticket volume spikes (content moderation complaints and feed quality complaints surging), sentiment deterioration in creator communications, top creators publicly posting about switching to Fizz.  
-**Cross-references:** Infra (is feed-service performance driving the UX decline?), Code Audit (are bugs in the recommendation algorithm causing the degraded feed?), Finance (revenue impact of creator churn on both subscriptions and the VibeCheck deal — VibeCheck wants access to Brainrot's creator network, which is eroding).
-
-### Legal Agent
-**Domain:** Contracts, compliance, intellectual property, regulatory exposure.  
-**Data sources:** Uploaded contract PDFs parsed for key clauses, Federal Register API, SEC EDGAR, COPPA compliance requirements.  
-**Detects:** Contract deadlines approaching with delivery at risk (VibeCheck Media April 15 SDK deadline), conflicting terms across multiple agreements, regulatory changes requiring compliance action (new COPPA enforcement re: Gen Z platforms handling under-18 users), IP exposure from open-source license conflicts in the video processing pipeline, GDPR implications of the recommendation algorithm's data collection.  
-**Cross-references:** Finance (financial impact of contract breach including refund liabilities — VibeCheck walking away means $516K/year never materializes), Infra (delivery progress on Branded Content SDK tied to contractual obligations), Code Audit (compliance requirements like COPPA and SOC 2 mapped to actual code state of content moderation and data handling services).
-
-### Code Audit Agent
-**Domain:** Codebase health, security posture, architectural integrity, technical debt.  
-**Data sources:** GitHub API (file change frequency, code ownership via git blame, PR merge patterns), dependency scanning (package.json/requirements.txt parsed against CVE databases), static analysis signals (test coverage, cyclomatic complexity, code duplication ratio).  
-**Detects:** Critical dependency vulnerabilities with CVSS score 7.0 or above (unpatched CVE in the video processing library ffmpeg-wasm used for creator uploads), test coverage dropping below 60% for critical services (feed-service dropped from 79% to 58%), bus factor of 1 for feed-service and content-moderation-service (both owned solely by Engineer 3), pull requests merged without review in critical paths, circular dependencies between feed-service and content-moderation-service, missing error handling in the recommendation algorithm's fallback logic, video processing dependencies more than 2 major versions behind.  
-**Cross-references:** People (who wrote and owns the problematic code? — Engineer 3 is the sole contributor to feed-service), Infra (which running services sit on top of the vulnerable code? — the entire content delivery pipeline), Legal (compliance implications of unpatched vulnerabilities in a platform handling Gen Z user data including minors), Product (which user-facing features are built on the degraded code? — the core feed experience that defines Brainrot's value proposition).
-=======
-### People Agent *(Gemini 2.5 Flash)*
-**Domain:** Team health, engagement, key-person risk.
-**Data sources:** GitHub API (commit frequency, PR activity per developer), Slack API (message frequency, response times).
-**Detects:** Commit drops exceeding 50% week-over-week, prolonged silence from key contributors, workload concentration on a single person, PR review bottlenecks.
-**Cross-references:** Code Audit (which code areas are affected by the person's decline), Infra (which services the person owns), Finance (payroll cost and hiring pipeline impact).
-
-### Finance Agent *(GPT-4o-mini — OpenAI)*
-**Domain:** Cash flow, runway, revenue, funding terms.
-**Data sources:** Three CSV files — `deadpool_finance_data.csv` (transaction ledger), `deadpool_revenue_pipeline.csv` (revenue, invoices, pipeline deals), `deadpool_funding_runway.csv` (investor terms, monthly summaries, runway scenarios).
-**Why GPT-4o-mini:** The Finance Agent's workload is the most structured of all six agents: parsing CSV rows, computing arithmetic (monthly burn = total expenses − revenue, runway = cash / net burn), checking threshold conditions (runway < 6 months? revenue concentration > 40%?), and extracting specific clause terms from tabular data. GPT-4o-mini is exceptionally fast and accurate at structured data extraction and numerical reasoning — faster than Gemini for this specific workload, at a fraction of the cost. It also produces highly consistent JSON output, reducing parsing failures. Most importantly, having one agent on a different model family creates a **natural cross-validation signal** — when Finance (GPT-4o-mini) and Legal (Gemini) independently flag the same contract risk, the corroboration is model-independent.
-**Detects:** Runway dropping below 6 months, revenue concentration exceeding 40% in a single client, burn rate acceleration, approaching investor clause thresholds, payment delays, pipeline deals at risk due to feature dependencies.
-**Cross-references:** Legal (contract values and renewal dates), People (headcount cost impact), Product (health of revenue-driving features).
-
-### Infra Agent *(Gemini 2.5 Flash)*
-**Domain:** System reliability, deployment operations, performance.
-**Data sources:** GitHub Actions API, health endpoint monitoring, UptimeRobot/BetterStack API, cloud cost tracking.
-**Detects:** Deploy frequency drops, CI failure rate spikes, response time degradation, uptime approaching SLA breach thresholds, cloud cost anomalies.
-**Cross-references:** Code Audit (are code quality issues causing the runtime failures?), People (who owns the degrading service and are they active?), Legal (SLA obligations at risk from the degradation).
-
-### Product Agent *(Gemini 2.5 Flash)*
-**Domain:** User engagement, retention, satisfaction.
-**Data sources:** Plausible/PostHog API, support ticket data, NPS survey results.
-**Detects:** Feature adoption decline, churn rate increases, NPS dropping below threshold, support ticket volume spikes, sentiment deterioration in customer communications.
-**Cross-references:** Infra (is system performance driving the UX decline?), Code Audit (are bugs in the code causing the errors users see?), Finance (revenue impact of the churn trend).
-
-### Legal Agent *(Gemini 2.5 Flash)*
-**Domain:** Contracts, compliance, intellectual property, regulatory exposure.
-**Data sources:** Uploaded contract PDFs parsed for key clauses, Federal Register API, SEC EDGAR.
-**Detects:** Contract deadlines approaching with delivery at risk, conflicting terms across multiple agreements, regulatory changes requiring compliance action, IP exposure from open-source license conflicts.
-**Cross-references:** Finance (financial impact of contract breach including refund liabilities), Infra (delivery progress on features tied to contractual obligations), Code Audit (compliance requirements like PCI DSS and SOC 2 mapped to actual code state).
-
-### Code Audit Agent *(Gemini 2.5 Flash)*
-**Domain:** Codebase health, security posture, architectural integrity, technical debt.
-**Data sources:** GitHub API (file change frequency, code ownership via git blame, PR merge patterns), dependency scanning (package.json/requirements.txt parsed against CVE databases), static analysis signals (test coverage, cyclomatic complexity, code duplication ratio).
-**Detects:** Critical dependency vulnerabilities with CVSS score 7.0 or above, test coverage dropping below 60% for critical services, bus factor of 1 for any critical service, pull requests merged without review in critical paths, circular dependencies, missing error handling in payment and authentication code paths, dependencies more than 2 major versions behind.
-**Cross-references:** People (who wrote and owns the problematic code?), Infra (which running services sit on top of the vulnerable code?), Legal (compliance implications of unpatched vulnerabilities), Product (which user-facing features are built on the degraded code?).
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
-
----
-
-## The Head Supervisor Node *(Gemini 2.5 Flash)*
-
-The Head Supervisor is the brain of DEADPOOL. It does not monitor data directly. It orchestrates, arbitrates, and synthesizes — and it does so through LangGraph's graph execution model rather than through imperative control flow.
-
-<<<<<<< HEAD
-**Cross-validation:** For every anomaly a specialist agent flags, the Head Agent queries one to two other agents for corroboration before passing it to the cascade mapper. This eliminates false positives and enriches true positives with cross-domain context. An anomaly that is confirmed by multiple agents gets its severity raised. An anomaly that is contradicted gets downgraded or retracted. For Brainrot, the Head Agent's cross-validation is particularly powerful because the cascade touches nearly every domain: a people problem (Engineer 3) manifests as a code quality problem (bus factor, CVE), which causes an infrastructure problem (feed-service degradation), which drives a product problem (creator churn, feed quality), which threatens a financial outcome (VibeCheck deal collapse), which triggers a legal consequence (investor clause).
-
-**Conflict resolution:** When agents produce signals that appear to contradict each other, the Head Agent resolves the conflict with explicit reasoning. Example: Finance Agent reports healthy runway (6.9 months). Legal Agent flags imminent contract breach risk on the VibeCheck deal. The Head Agent models the scenario forward — if the VibeCheck deal collapses because the Branded Content SDK isn't delivered by April 15, $516K/year in brand revenue never materializes, the creator exodus to Fizz accelerates (reducing Brainrot Pro subscription revenue), and runway recalculates to a declining trajectory. Legal's signal dominates. The Head Agent documents why, including the second-order effect: VibeCheck's 200+ brand advertisers choosing Fizz instead would effectively validate the competitor and make future brand deals harder to close.
-=======
-**Cross-validation via conditional edges:** After the initial parallel fan-out, the Head Supervisor reads all six domain reports from state — five from Gemini nodes, one from the GPT-4o-mini Finance node — identifies high-severity anomalies with `cross_reference_hints`, and uses conditional edges to route back to specific corroboration nodes. An anomaly confirmed by multiple agents gets its severity raised. An anomaly contradicted gets downgraded. When corroboration crosses the Gemini/GPT-4o-mini boundary (e.g., Legal → Finance or Finance → Legal), a successful cross-validation carries extra weight because it's model-family-independent.
-
-**Conflict resolution via forward scenario modeling:** When agents return contradictory signals, the supervisor does not average them or discard one. It models the scenario forward using Gemini to determine which signal dominates. Example: The GPT-4o-mini Finance Agent reports healthy runway (9.4 months). The Gemini Legal Agent flags imminent contract breach risk. The supervisor reasons: *"Finance's runway figure was computed without the conditional revenue loss. Legal's breach is upstream — if the contract terminates, Finance's inputs change. Recalculate Finance under Legal's scenario."* It routes a conditional query to the GPT-4o-mini Finance node with the breach scenario injected into state. The Finance node re-runs its structured calculation with the new assumptions and returns runway = 2.5 months. Legal dominates. The resolution is documented in state.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
-
-**Cascade ranking:** When multiple cascade chains are active simultaneously, the Head Supervisor ranks them using the urgency formula:
-
-```
-urgency = (1 / time_to_impact_days) × severity × (1 - reversibility)
+    return state["corroboration_queue"]
 ```
 
-Only the top three cascades are surfaced to the founder. Information overload is itself a risk.
-
-**Founder briefing:** The Head Supervisor produces a 3–5 sentence plain-language briefing that names the risk, states the timeline, and recommends one specific action. No jargon. No dashboards full of numbers. One clear message.
-
-**LangGraph checkpointing:** The compiled graph uses `MemorySaver` as its checkpointer. Every graph execution is persisted by `thread_id`. Across monitoring cycles the supervisor reads prior checkpoint state — which cascade links materialized, which cross-domain signals proved reliable — and uses this history to adjust baseline probabilities in the cascade dependency graph. The system compounds: routing decisions improve as the supervisor builds a model of which signals are predictive for this specific company.
-
----
-
-## The Cascade Mapper *(deterministic — no LLM)*
-
-The cascade mapper traces anomalies forward through a pre-built dependency graph of cross-domain causal relationships. It runs as a dedicated LangGraph node after the Head Supervisor has completed corroboration. It uses no LLM — it's pure graph traversal (NetworkX BFS with probability multiplication). This is intentional: the cascade mapper should be deterministic and fast, with no model variance.
-
-### How it works
-
-1. The Head Supervisor writes validated anomalies to state and routes to `cascade_mapper_node`.
-2. The mapper reads `state["anomalies"]`, selects the cascade path for each anomaly using `TRIGGER_MAP` keyword matching.
-3. For each path, it multiplies conditional probabilities edge-by-edge, pruning branches where cumulative probability drops below 0.25.
-4. The mapper writes all active `CascadeChain` objects to `state["cascade_chains"]`.
-5. The graph continues to `briefing_node`.
-
-### Pre-built cascade paths
-
-The MVP ships with six pre-seeded cascade paths encoding the most common startup failure patterns:
-
-<<<<<<< HEAD
-1. **Key-person departure → code ownership gap → code quality degradation → delivery delays → contract breach → revenue loss → runway crisis.** This is the primary demo cascade. It passes through five of the six specialist agents and produces a dramatic, legible story on stage. For Brainrot, this traces from Engineer 3's disengagement through the feed-service collapse, Branded Content SDK stall, VibeCheck deal death, and ultimately the Velocity Capital down-round clause trigger.
-
-2. **Critical CVE in dependency → compliance breach → legal exposure → investor confidence loss → funding risk.** This cascade starts with the Code Audit Agent finding the unpatched ffmpeg-wasm vulnerability in Brainrot's video processing pipeline and demonstrates how a technical vulnerability in a Gen Z social platform handling minor users' data cascades into an existential business threat via COPPA exposure.
-
-3. **Test coverage decline → undetected bugs shipped → user-facing errors → churn spike → revenue drop.** This cascade connects Code Audit to Product to Finance, showing how invisible code quality erosion in the feed algorithm produces visible business damage — in Brainrot's case, the degraded recommendation algorithm serving low-quality content that drives creators to Fizz.
-
-4. **Technical debt accumulation → deploy velocity drop → feature delivery failure → competitive loss.** This cascade shows how architectural rot slows the entire company down. For Brainrot, the circular dependency between feed-service and content-moderation-service means every change risks breaking both, and the video processing pipeline's outdated dependencies make feature iteration impossible.
-
-5. **Client revenue concentration → single client churn → revenue cliff → down-round trigger.** A pure finance-legal cascade that every seed-stage founder recognizes immediately. Brainrot's entire monetization thesis depends on the VibeCheck deal — without it, there is no path from $2,400/month in subscriptions to sustainable revenue.
-
-6. **Infrastructure degradation → SLA breach → contract penalty → burn rate spike → runway compression.** This cascade shows how operational issues compound into financial damage through contractual mechanisms. For Brainrot, the unoptimized video CDN spending ($7,200/month and climbing vs. an estimated $2,400/month if properly configured) is silently accelerating burn rate while DevOps is distracted by feed-service outages.
-=======
-1. **Key-person departure → code ownership gap → code quality degradation → delivery delays → contract breach → revenue loss → runway crisis.** The primary demo cascade. Five agent domains, six nodes, dramatic legible story on stage.
-
-2. **Critical CVE in dependency → compliance breach → legal exposure → investor confidence loss → funding risk.** Starts with Code Audit, shows how a technical vulnerability cascades into an existential business threat.
-
-3. **Test coverage decline → undetected bugs shipped → user-facing errors → churn spike → revenue drop.** Connects Code Audit to Product to Finance.
-
-4. **Technical debt accumulation → deploy velocity drop → feature delivery failure → competitive loss.** Architectural rot slows the entire company.
-
-5. **Client revenue concentration → single client churn → revenue cliff → down-round trigger.** Pure finance-legal cascade every seed-stage founder recognizes immediately.
-
-6. **Infrastructure degradation → SLA breach → contract penalty → burn rate spike → runway compression.** Operational issues compounding into financial damage through contractual mechanisms.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
-
-Each path is encoded as nodes and edges with baseline conditional probabilities. The Head Supervisor adjusts these probabilities in real-time based on corroborated specialist outputs written into state.
-
----
-
-## Features
-
-### Dashboard — cascade map
-
-The primary interface is a full-width directed graph showing all active cascade chains. Nodes are color-coded by agent domain: blue for People, green for Finance, orange for Infra, purple for Product, red for Legal, cyan for Code Audit. **Finance nodes have a subtle OpenAI badge indicating the cross-provider agent.** Edge thickness encodes probability. Active cascades animate with a pulse traveling along the chain from trigger to end-state. Clicking any node expands it to show the specialist agent's raw evidence, the model that generated it (Gemini or GPT-4o-mini), and the Head Supervisor's corroboration notes from the LangGraph state.
-
-### Risk score and founder briefing
-
-A single number from 0 to 100 sits at the top of the dashboard with a color indicator shifting from green through yellow and orange to red. A trend arrow shows whether risk is increasing, stable, or decreasing. Below the score, the Head Supervisor's latest briefing appears as a 2–3 sentence plain-language summary. A "top action" button shows the single most important thing the founder should do right now.
-
-### Head Supervisor activity log
-
-A scrollable log showing every conditional edge decision the Head Supervisor made. Entries show which specialist flagged what, which model provider generated the finding, which other specialists were routed to for corroboration, whether the anomaly was confirmed or contradicted, and how severity was adjusted. **Cross-provider corroborations are highlighted** — when a Gemini agent and the GPT-4o-mini Finance agent independently agree, the log marks this as a "model-independent corroboration." When agents disagree, the log shows the supervisor's reasoning for which signal it trusted — all pulled directly from `DEADPOOLState`.
-
-### "What If" simulation mode
-
-<<<<<<< HEAD
-A toggle switches the dashboard into simulation mode. Sliders appear for key scenario variables: "Key engineer leaves," "Biggest client churns," "Critical CVE discovered," "Cloud costs double," "Top 10 creators leave for Fizz." As sliders move, the Head Agent recalculates all cascade chains in real-time and generates a new briefing for the simulated scenario. The dashboard shows a side-by-side comparison of current state versus simulated state, including how creator network health affects the VibeCheck deal probability.
-=======
-A toggle switches the dashboard into simulation mode. Sliders appear for key scenario variables: "Key engineer leaves," "Biggest client churns," "Critical CVE discovered," "Cloud costs double." As sliders move, the compiled LangGraph is invoked with `whatif_params` set in state, causing the Head Supervisor to modulate anomaly severities before cascade mapping. The graph produces a new briefing and risk score for the simulated state — re-running the GPT-4o-mini Finance node with modified assumptions and the Gemini nodes with modified context. The dashboard shows a side-by-side comparison.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
-
-### Alert system
-
-When a new cascade chain is detected or an existing chain's probability crosses a severity threshold, a toast notification appears with the Head Supervisor's summary. The cascade chain highlights and animates on the graph. An alert log stores all historical alerts with timestamps and full chain details, sourced from LangGraph checkpoint history.
-
----
-
-## Tech stack
-
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| Frontend | React + D3.js | D3 handles the dependency graph rendering with animated edges and interactive nodes. React manages dashboard state, panels, and real-time updates. |
-| Backend | Python + FastAPI | Async-native, Pydantic v2 for type-safe agent I/O, minimal boilerplate. Handles the LangGraph execution loop, signal bus event queue, and SSE streaming. |
-| AI orchestration | **LangGraph** + **Google Gemini 2.5 Flash** + **OpenAI GPT-4o-mini** | `StateGraph` with typed `DEADPOOLState`, `add_conditional_edges` for dynamic supervisor routing, `Send` API for parallel specialist fan-out (mixed-provider), `MemorySaver` checkpointer for cross-cycle memory. LangGraph's model-agnostic node architecture makes multi-provider orchestration seamless — each node is a function that can call any model. |
-| Gemini integration | `google-genai` Python SDK | Used by 5 specialist nodes + Head Supervisor + Briefing Node. Structured output via Gemini's JSON mode ensures Pydantic-compatible responses. |
-| OpenAI integration | `openai` Python SDK | Used by Finance Agent only. `response_format={"type": "json_object"}` for structured output. GPT-4o-mini's speed (~300ms for structured extraction) keeps the Finance node from being the bottleneck in parallel fan-out. |
-| LangGraph observability | LangSmith (optional) | Traces every node execution, edge routing decision, state transition, and which model provider each node used. |
-| Data ingestion | JSON synthetic data files (hackathon), GitHub REST API, CSV upload for financials, pip-audit output for dependency scanning | Covers all six specialist agents with minimal integration overhead. |
-| Real-time updates | Server-Sent Events (SSE) via sse-starlette | Pushes cascade updates, Head Supervisor briefings, and risk score changes to the dashboard without client-side polling. |
-| Deployment | Vercel (frontend) + Railway (backend) | Free tiers, deploy in under 5 minutes, sufficient for hackathon demo traffic. |
-
----
-
-## Agent implementation
-
-### LangGraph architecture with multi-provider nodes
-
-DEADPOOL runs as a **compiled LangGraph `StateGraph`**. Every agent is a pure Python function (a LangGraph node) that accepts `DEADPOOLState` and returns a state delta. The key architectural decision: **each node owns its own model client**. The LangGraph framework doesn't care which model a node calls — it only cares about the state delta returned. This makes multi-provider orchestration a configuration choice, not an architectural change.
-
-```python
-import google.genai as genai
-from openai import OpenAI
-
-# Model clients — initialized once, used by their respective nodes
-gemini_client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-
-# Graph construction
-workflow = StateGraph(DEADPOOLState)
-
-# Register nodes — each node knows its own model
-workflow.add_node("people", people_node)          # → Gemini
-workflow.add_node("finance", finance_node)        # → GPT-4o-mini
-workflow.add_node("infra", infra_node)            # → Gemini
-workflow.add_node("product", product_node)        # → Gemini
-workflow.add_node("legal", legal_node)            # → Gemini
-workflow.add_node("code_audit", code_audit_node)  # → Gemini
-workflow.add_node("head_supervisor", head_supervisor_node)  # → Gemini
-workflow.add_node("cascade_mapper", cascade_mapper_node)    # → deterministic
-workflow.add_node("briefing", briefing_node)      # → Gemini
-
-# Initial fan-out via Send API (parallel execution, mixed providers)
-workflow.add_conditional_edges(START, initial_fanout)
-
-# Specialist nodes always return to head supervisor
-for specialist in ["people", "finance", "infra", "product", "legal", "code_audit"]:
-    workflow.add_edge(specialist, "head_supervisor")
-
-# Head supervisor uses conditional routing to corroborate or proceed
-workflow.add_conditional_edges("head_supervisor", supervisor_router)
-workflow.add_edge("cascade_mapper", "briefing")
-workflow.add_edge("briefing", END)
-
-# Compile with memory checkpointing
-app = workflow.compile(checkpointer=MemorySaver())
-```
-
-### Specialist node structure (Gemini-powered)
-
-Five of six specialist nodes follow this pattern using the Google GenAI SDK:
-
-```python
-def people_node(state: DEADPOOLState) -> dict:
-    """People Agent — runs on Gemini 2.5 Flash."""
-    # Load domain data
-    data = load_json("team_activity.json")
-
-    # Check if this is a corroboration re-query (entity-scoped)
-    entity_context = get_entity_context(state, "people")
-
-    # Build prompt with domain data + entity context
-    prompt = build_people_prompt(data, entity_context)
-
-    # Call Gemini with structured output
-    response = gemini_client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config=genai.types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=AgentReport  # Pydantic model
-        )
-    )
-
-    report = AgentReport.model_validate_json(response.text)
-
-    return {
-        "anomalies": report.anomalies,  # list-append reducer
-        "domain_reports": {"people": report}
-    }
-```
-
-### Finance node (GPT-4o-mini — the cross-provider agent)
-
-The Finance Agent is the only node running on OpenAI. Its implementation uses the OpenAI SDK with JSON mode:
-
-```python
-def finance_node(state: DEADPOOLState) -> dict:
-    """Finance Agent — runs on GPT-4o-mini (OpenAI).
-
-    Deliberately on a different model family from the other five agents.
-    Creates cross-provider corroboration signal when Finance findings
-    are validated by Gemini-powered agents (or vice versa).
-    """
-    # Load all three CSV files
-    transactions = load_csv("deadpool_finance_data.csv")
-    pipeline = load_csv("deadpool_revenue_pipeline.csv")
-    funding = load_csv("deadpool_funding_runway.csv")
-
-    # Check if this is a corroboration re-query or scenario simulation
-    entity_context = get_entity_context(state, "finance")
-    whatif = state.get("whatif_params")
-
-    # Build prompt with financial data + context
-    prompt = build_finance_prompt(transactions, pipeline, funding,
-                                  entity_context, whatif)
-
-    # Call GPT-4o-mini with structured JSON output
-    response = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": FINANCE_SYSTEM_PROMPT},
-            {"role": "user", "content": prompt}
-        ],
-        response_format={"type": "json_object"},
-        temperature=0.1  # Low temp for numerical precision
-    )
-
-    report = AgentReport.model_validate_json(
-        response.choices[0].message.content
-    )
-
-    # Tag the report with its model provider for cross-validation tracking
-    report.model_provider = "openai/gpt-4o-mini"
-
-    return {
-        "anomalies": report.anomalies,
-        "domain_reports": {"finance": report}
-    }
-```
-
-### Head Supervisor node structure (Gemini)
-
-```python
-def head_supervisor_node(state: DEADPOOLState) -> dict:
-    """Head Supervisor — runs on Gemini 2.5 Flash.
-
-    Reads all six domain reports (5 from Gemini, 1 from GPT-4o-mini).
-    Reasons about cross-domain implications.
-    Produces routing decisions for corroboration.
-    """
-    all_reports = state["domain_reports"]
-    all_anomalies = state["anomalies"]
-    iteration = state.get("iteration", 0)
-
-    # Build supervisor prompt with all evidence
-    # Explicitly notes which model produced each report
-    prompt = build_supervisor_prompt(all_reports, all_anomalies, iteration)
-
-    response = gemini_client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config=genai.types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=SupervisorDecision
-        )
-    )
-
-    decision = SupervisorDecision.model_validate_json(response.text)
-
-    return {
-        "corroboration_queue": decision.corroboration_targets,
-        "iteration": iteration + 1,
-        "anomalies": decision.updated_anomalies  # severity adjustments
-    }
-```
-
-### Agent interaction and delegation flow
-
-```
-[1] START → initial_fanout dispatches Send() to all six specialist nodes
-    Five nodes call Gemini 2.5 Flash in parallel
-    One node (Finance) calls GPT-4o-mini in parallel
-    All six run concurrently
-
-[2] Specialists write domain_reports and anomalies to DEADPOOLState
-    Each anomaly carries: severity, confidence, affected_entities,
-    cross_reference_hints, model_provider
-
-[3] Head Supervisor (Gemini) reads state, reasons:
-    "People node (Gemini) flagged sarah_chen, severity=0.85.
-     cross_reference_hints: ['payments-service', 'code_ownership'].
-     → corroboration_queue = ['code_audit']
-     → corroboration context: {developer_name: 'sarah_chen',
-                                service: 'payments-service'}"
-
-[4] Code Audit node (Gemini) receives targeted re-query
-    Reads entity context from state, returns focused output:
-    CVE confirmed, bus_factor=1, coverage=61%
-    cross_reference_hints: ['nexus_corp_contract', 'pci_compliance']
-
-[5] Head Supervisor (Gemini) reads updated state:
-    "CVE in payments-service + contract hint.
-     → corroboration_queue = ['legal', 'finance']
-     → context: {service: 'payments-service', contract: 'nexus_corp'}"
-
-[6] Legal node (Gemini) returns: breach_risk=high, refund=$211,680
-    Finance node (GPT-4o-mini) returns: nexus_corp=42% revenue,
-      post-loss runway=2.5mo, investor clause triggers
-
-    *** CROSS-PROVIDER CORROBORATION: Legal (Gemini) and Finance (GPT-4o-mini)
-    *** independently flag the same contract risk from different data sources
-    *** and different model families. Head Supervisor notes this in state.
-
-[7] Head Supervisor (Gemini) reads state:
-    iteration=2 → conditional edge routes to cascade_mapper
-
-[8] Cascade Mapper (deterministic) traces:
-    People → Code Audit → Legal → Finance → Finance(investor)
-    Multiplies probabilities, writes CascadeChain to state
-
-[9] Briefing Node (Gemini) scores urgency, generates founder briefing
-    Writes risk_score and briefing to state → END
-```
-
-### Conflict resolution between agents (cross-provider)
-
-When two specialists return contradictory signals, the supervisor does not average them or discard one. It models the scenario forward to determine which signal dominates. The most interesting case is when the contradiction crosses the model boundary:
-
-**Example:** The GPT-4o-mini Finance Agent reports healthy runway (9.4 months). The Gemini Legal Agent flags imminent contract breach risk. The Gemini Head Supervisor reasons: *"Finance (GPT-4o-mini) computed runway without the conditional revenue loss that Legal (Gemini) is flagging. These are from different models analyzing different data sources — neither is echoing the other. Legal's breach scenario is conditionally upstream. Recalculate Finance under Legal's breach scenario."* It routes to the GPT-4o-mini Finance node with the breach scenario injected. Finance re-runs and returns runway = 2.5 months. Legal dominates. The cross-provider disagreement-then-resolution is documented in state and visible in the activity log — demonstrating genuine reasoning, not model agreement by default.
-
-### LangGraph memory and persistence
-
-The compiled graph uses `MemorySaver` with a `thread_id` per company. Every execution checkpoint is persisted. The Head Supervisor reads prior checkpoint state at startup — specifically, which cascade links fired in previous cycles and which cross-domain anomaly correlations proved predictive. This is not LLM fine-tuning; it is structured state compounding over time, accumulated in the checkpointer and read into the supervisor's reasoning prompt at each cycle.
-
----
-
-## Data architecture
-
-### Synthetic data strategy
-
-<<<<<<< HEAD
-For the hackathon demo, we use carefully constructed synthetic data that represents Brainrot — a realistic seed-stage Gen Z social media startup over 12 weeks. The data is designed so that agents genuinely discover cascade chains from the data — they are not told what to find.
-
-The company narrative: Brainrot launched its beta in late 2025, hit 100K signups by December, grew to 340K MAU by March 2026, and is pursuing brand partnerships as its monetization model. The founding team is strong (ex-TikTok, ex-Discord), the product has real traction (Gen Z users love the "authentic chaos" feed), but a single engineer's departure threatens to unravel everything because the feed algorithm, content moderation pipeline, and Branded Content SDK all have a bus factor of one.
-
-Six JSON data files, one per specialist agent domain, plus three CSV files for the Finance Agent:
-
-- **deadpool_finance_data.csv** — Transaction-level ledger from Sep 2025 through Mar 2026: every income event (funding rounds, Brainrot Pro subscription revenue) and every expense (salaries by person, video CDN costs, API fees for content moderation, reimbursements, coworking rent). Running balance tracked. Covers $175K pre-seed from Kevin Tran's angel syndicate, $800K seed from Velocity Capital, team growing from 2 founders to 10 employees, burn rate escalation driven heavily by unoptimized video delivery infrastructure, and the emerging cash crisis.
-
-- **deadpool_revenue_pipeline.csv** — Revenue actuals (Brainrot Pro subscriptions at $14.99/month), accounts receivable (Drip Culture Agency overdue invoices from a branded content pilot), and pipeline deals with probabilities. The VibeCheck Media enterprise deal ($516K/year) is in procurement with a hard April 15 deadline tied to the Branded Content SDK. Pipeline status degrades from 0.85 probability to 0.30 as Engineer 3 goes on leave and competitor Fizz enters the conversation. Secondary pipeline includes NovaBrands (stalled — champion left) and StudyHive (delayed by COPPA/SOC 2 gaps).
-
-- **deadpool_funding_runway.csv** — Funding round details, investor clause terms (Velocity Capital down-round trigger at runway < 3 months, consequence: Jenna Okafor takes board control), monthly financial summaries (burn, revenue, cash, runway), and scenario projections (base case 6.9 months vs. VibeCheck closes at 15.3 months vs. worst case 3.7 months to clause trigger).
-
-- **team_activity.json** — 10 team members with weekly commit, PR, and response time data. Engineer 3 (Mobile/Feed) shows gradual disengagement: 60% commit drop in Feb, on unpaid leave in March. Other team members show normal patterns with realistic noise including a designer taking a week off for a wedding and a DevOps engineer having a spike week before a CDN migration.
-
-- **infrastructure.json** — 6 microservices with weekly deploy counts, uptime percentages, response times, error rates, and cloud costs. The feed-service and content-moderation-service degrade in correlation with Engineer 3's decline. Video CDN costs are the standout anomaly — $7,200/month and climbing when they should be $2,400/month with proper optimization. Other services (api-gateway, creator-dashboard, notification-service, analytics-pipeline) remain stable.
-
-- **product_metrics.json** — Weekly active users (340K MAU peak, now declining), feature-level engagement data (feed session duration dropping, Branded Content beta usage cratering), support ticket volume and sentiment (content moderation complaints up 3x, creator accounts deactivating), NPS scores (dropped from +42 to -5), and churn rates (creator churn up 3x). The feed experience — Brainrot's core value proposition — shows clear degradation while other features like creator onboarding and direct messaging remain healthy.
-
-- **contracts.json** — VibeCheck Media deal terms (draft contract with April 15 Branded Content SDK delivery clause, $516K/year annual value), Drip Culture Agency pilot (payment dispute), StudyHive pilot (delayed by COPPA compliance). Investor agreement with down-round clause. COPPA compliance obligation linked to content-moderation-service and user data handling — particularly sensitive given Brainrot's Gen Z audience includes users under 18.
-
-- **codebase_audit.json** — Repository-level analysis including file change frequency, code ownership maps, dependency vulnerability scan results (CVE in ffmpeg-wasm video processing library), test coverage per service (feed-service dropped to 58%), PR review patterns (PRs merged without review in feed-service critical paths), and architecture signals (circular dependency between feed-service and content-moderation-service). The feed-service has a bus factor of 1, and Engineer 3 is the sole meaningful contributor.
-=======
-For the hackathon demo, we use carefully constructed synthetic data representing a realistic seed-stage SaaS startup over 12 weeks. The data is designed so that agents genuinely discover cascade chains from the data — they are not told what to find.
-
-Six JSON data files, one per specialist agent domain, plus three CSV files for the Finance Agent:
-
-- **team_activity.json** — 12 developers with weekly commit, PR, and response time data. One developer (the cascade trigger) shows a gradual five-week disengagement pattern. Eleven developers show normal patterns with realistic noise.
-
-- **deadpool_finance_data.csv** — Transaction-level ledger from Sep 2025 through Mar 2026. Every income event and every expense with running balance. This is the primary input for the GPT-4o-mini Finance Agent.
-
-- **deadpool_revenue_pipeline.csv** — Revenue actuals, accounts receivable, and pipeline deals with probabilities and feature dependencies. The critical Nexus Corp enterprise deal ($423K/year) depends on Payments API v2.
-
-- **deadpool_funding_runway.csv** — Funding round details, investor clause terms (down-round trigger at runway < 3 months), monthly summaries, and runway scenario projections.
-
-- **infrastructure.json** — 6 microservices with weekly deploy counts, uptime percentages, response times, error rates, and cloud costs. The payments service degrades in correlation with the lead engineer's decline.
-
-- **product_metrics.json** — Weekly active users, feature-level engagement data, support ticket volume and sentiment, NPS scores, and churn rates.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
-
-- **contracts.json** — 4 client contracts with delivery deadlines and SLA guarantees. One investor agreement with a down-round clause. PCI DSS compliance obligation linked to the payments service.
-
-- **codebase_audit.json** — Repository-level analysis including file change frequency, code ownership maps, dependency vulnerability scan results, test coverage per service, PR review patterns.
-
-All files share consistent entity linking keys: developer names, service names, client names, and feature names are identical across files so the Head Supervisor and cascade mapper can trace connections through `DEADPOOLState`.
-
-### Cross-reference linking keys
+### Cross-domain linking via entity keys
 
 | Key | Connects |
 |-----|----------|
@@ -713,143 +192,324 @@ All files share consistent entity linking keys: developer names, service names, 
 | `client_name` | Finance ↔ Legal |
 | `feature_name` | Infra ↔ Legal ↔ Product |
 
+These keys are embedded in every corroboration query so receiving nodes narrow their analysis to the specific cross-domain intersection.
+
+---
+
+## The six specialist agents
+
+### People Agent *(Gemini)*
+**Domain:** Team health, engagement, key-person risk.
+**Data:** `team_activity.json` — 12 developers × 12 weeks of commit, PR, and response time data.
+**Detects:** Commit drops >50% WoW, prolonged silence from key contributors, bus factor concentration, PR review bottlenecks.
+**Cross-references:** Code Audit (affected code areas), Infra (owned services), Finance (payroll impact).
+
+### Finance Agent *(GPT-4o-mini)*
+**Domain:** Cash flow, runway, revenue pipeline, funding terms.
+**Data:** Three CSV files — `deadpool_finance_data.csv` (transaction ledger), `deadpool_revenue_pipeline.csv` (revenue + pipeline deals), `deadpool_funding_runway.csv` (investor terms + runway scenarios).
+**Why GPT-4o-mini:** Most structured workload in the system. CSV parsing, arithmetic (burn = expenses − revenue, runway = cash / net burn), threshold checks (runway < 6mo? concentration > 40%?). GPT-4o-mini is fast, precise at structured extraction, and produces consistent JSON. Cross-provider corroboration: when Finance (GPT-4o-mini) and Legal (Gemini) independently flag the same contract risk from different data sources, the finding is model-family-independent.
+**Detects:** Runway <6 months, revenue concentration >40%, burn acceleration, investor clause proximity, pipeline deals at risk from feature dependencies.
+**Cross-references:** Legal (contract deadlines), People (headcount costs), Product (churn impact on revenue).
+
+### Infra Agent *(Gemini)*
+**Domain:** System reliability, deployment operations, performance.
+**Data:** `infrastructure.json` — 6 microservices × 12 weeks of deploy counts, uptime, response times, error rates, cloud costs.
+**Detects:** Deploy frequency drops, CI failure spikes, response time degradation, SLA breach risk, cloud cost anomalies.
+**Cross-references:** Code Audit (code quality → runtime failures?), People (who owns the degrading service?), Legal (SLA obligations at risk).
+
+### Product Agent *(Gemini)*
+**Domain:** User engagement, retention, satisfaction.
+**Data:** `product_metrics.json` — WAU, feature engagement, support tickets, NPS, churn rates.
+**Detects:** Feature adoption decline, churn increases, NPS drops, support ticket spikes, sentiment deterioration.
+**Cross-references:** Infra (performance → UX decline?), Code Audit (bugs → user errors?), Finance (revenue impact of churn).
+
+### Legal Agent *(Gemini)*
+**Domain:** Contracts, compliance, regulatory exposure.
+**Data:** `contracts.json` — client contracts with parsed clauses, investor agreements, compliance obligations.
+**Detects:** Contract deadlines approaching with delivery at risk, conflicting terms, regulatory changes, compliance gaps (PCI DSS, SOC 2).
+**Cross-references:** Finance (breach liability), Infra (feature delivery status), Code Audit (compliance mapped to code state).
+
+### Code Audit Agent *(Gemini)*
+**Domain:** Codebase health, security posture, technical debt.
+**Data:** `codebase_audit.json` — file change frequency, code ownership maps, CVE scan results, test coverage, PR review patterns.
+**Detects:** CVEs with CVSS ≥7.0, test coverage <60% for critical services, bus factor = 1, unreviewed PRs in critical paths, outdated dependencies (2+ major versions behind).
+**Cross-references:** People (who owns the code?), Infra (which services run on it?), Legal (compliance implications), Product (user-facing features built on degraded code).
+
+---
+
+## The Head Supervisor Node *(Gemini)*
+
+The Head Supervisor orchestrates, arbitrates, and synthesizes through LangGraph's graph execution model.
+
+**Cross-validation:** Reads all six domain reports (five from Gemini, one from GPT-4o-mini), identifies high-severity anomalies, routes corroboration queries via conditional edges. Cross-provider corroborations (Gemini ↔ GPT-4o-mini) carry extra confidence weight.
+
+**Conflict resolution:** Does not average or discard contradictory signals. Models the scenario forward. Example: GPT-4o-mini Finance reports healthy runway (9.4 months). Gemini Legal flags contract breach risk. The supervisor reasons: *"Finance computed runway without the conditional revenue loss. Legal's breach is upstream — recalculate Finance under Legal's scenario."* Routes to GPT-4o-mini Finance with breach parameters. New output: runway = 2.5 months. Legal dominates. Resolution documented in state.
+
+**Cascade ranking:**
+```
+urgency = (1 / time_to_impact_days) × severity × (1 - reversibility)
+```
+Top 3 cascades surfaced. Information overload is itself a risk.
+
+**LangGraph checkpointing:** `MemorySaver` persists every execution by `thread_id`. Across cycles, the supervisor reads prior state to adjust baseline probabilities based on which signals proved predictive.
+
+---
+
+## The Cascade Mapper *(deterministic)*
+
+No LLM. Pure NetworkX BFS with probability multiplication. This is intentional — the cascade mapper should be deterministic, fast, and free of model variance.
+
+1. Reads validated anomalies from state
+2. Matches each to pre-built cascade paths via `TRIGGER_MAP`
+3. Multiplies conditional probabilities edge-by-edge
+4. Prunes chains where cumulative probability < 0.25
+5. Writes `CascadeChain` objects to state
+
+**Six pre-seeded cascade paths:**
+1. Key-person departure → code gap → quality drop → delivery delay → contract breach → revenue loss → runway crisis *(primary demo cascade)*
+2. CVE in dependency → compliance breach → legal exposure → investor confidence loss
+3. Test coverage decline → bugs shipped → user errors → churn spike → revenue drop
+4. Tech debt → deploy velocity drop → feature failure → competitive loss
+5. Revenue concentration → single client churn → revenue cliff → down-round trigger
+6. Infra degradation → SLA breach → contract penalty → burn spike → runway compression
+
+---
+
+## Features: what ships vs. what's stretch
+
+**The scoring rubric evaluates code against the master plan.** Overcommitting kills the completeness score. We define three tiers:
+
+### Tier 1 — Must ship (core product, code deadline: Day 1 midnight)
+
+| Feature | Owner | Description | Status |
+|---------|-------|-------------|--------|
+| **7-node LangGraph graph** | Dev 3 | All 6 specialists + Head Supervisor compiled and executing. Parallel fan-out, conditional routing, corroboration loop, cascade mapper, briefing node. | 🔄 Agent nodes done, orchestration in progress |
+| **Cascade detection** | Dev 3 + Dev 1/2 | Primary cascade (People → Code Audit → Infra → Legal → Finance) detected from synthetic data with correct probability chain. | 🔄 In progress |
+| **Dashboard: cascade graph** | Dev 4 | React + D3.js directed graph showing cascade chains with color-coded nodes and edge thickness encoding probability. Clickable nodes expanding to show evidence. | 🔜 Next |
+| **Dashboard: risk score + briefing** | Dev 4 | Single number 0–100, color indicator, trend arrow, and 2–3 sentence Head Supervisor briefing displayed below. | 🔜 Next |
+| **Dashboard: activity log** | Dev 4 | Scrollable log showing Head Supervisor routing decisions, corroboration results, and severity adjustments. | 🔜 Next |
+| **SSE streaming** | Dev 5 | FastAPI → React real-time push for cascade updates and briefings. | 🔜 Next |
+| **Landing page** | Dev 5 | Signup form with "What's your DEADPOOL score?" framing. | 🔜 Next |
+
+### Tier 2 — Should ship (high-value, code deadline: Day 2 10:30 AM)
+
+| Feature | Owner | Description | Complexity |
+|---------|-------|-------------|------------|
+| **What-If simulation** | Dev 3 | Sliders modify `whatif_params` in state, re-invoke graph, display side-by-side comparison. | Medium |
+| **Cross-provider highlighting** | Dev 4 | Activity log marks corroborations that cross the Gemini/GPT-4o-mini boundary. | Low |
+| **Cascade animation** | Dev 4 | Pulse animation traveling along active cascade chains from trigger to end-state. | Medium |
+
+### Tier 3 — Stretch (demo polish, only if Tiers 1-2 are solid)
+
+| Feature | Owner | Description | Complexity |
+|---------|-------|-------------|------------|
+| **Alert toasts** | Dev 4 | Toast notifications when cascade probability crosses severity threshold. | Low |
+| **LangGraph trace visualization** | Dev 5 | Show which nodes are active and which edges fired during graph execution. | Medium |
+| **Multiple simultaneous cascades** | Dev 3 | Dashboard rendering 2+ cascade chains simultaneously. | Medium |
+
+### Feasibility analysis — why this ships in time
+
+**Why we're confident (not naive):**
+
+1. **Backend agents are already done.** All six specialist nodes produce structured `AgentReport` outputs from synthetic data. Gemini and GPT-4o-mini integrations are tested. This is the part most hackathon teams are still building at midnight — we finished it Saturday afternoon.
+
+2. **The critical remaining work is well-scoped.** The Head Supervisor's conditional routing is a known LangGraph pattern (`add_conditional_edges` + `supervisor_router`). The cascade mapper is deterministic NetworkX BFS — no LLM variance, no prompt debugging. These are engineering problems with clear solutions, not open-ended research.
+
+3. **Five people eliminates the frontend bottleneck.** The most common hackathon failure mode is "backend works but dashboard isn't ready." With a dedicated frontend dev (Dev 4) and an integration dev (Dev 5) who handles SSE + deployment, the frontend track runs in parallel with zero dependency on the orchestration track.
+
+4. **We have a working fallback at every layer.** D3 graph too complex? → Table view in 30 minutes. What-If not ready? → Demo script has an if/else that skips to traction. SSE breaks? → Pre-cached last result in frontend state. The demo never breaks; it just degrades gracefully.
+
+5. **We've already validated the hardest integration point.** Gemini and GPT-4o-mini both produce outputs that parse into the same Pydantic `AgentReport` schema. The cross-provider schema mismatch risk — the scariest feasibility question — is already resolved.
+
+**Honest risks that remain:**
+
+- The Head Supervisor's corroboration routing is the single hardest remaining piece. If it takes longer than expected, we simplify: supervisor does one pass (no corroboration loop), reads all six reports, and routes directly to cascade mapper. Corroboration becomes a Tier 2 feature.
+- D3 cascade graph visualization could eat more time than allocated. Dev 4 builds the table fallback *first* and only upgrades to D3 if time permits.
+- End-to-end integration (backend → SSE → frontend) always has surprises. Dev 5's entire role is handling these surprises.
+
+**Dashboard contingency:** If D3 animated graph visualization runs over time, we fall back to a structured table view of cascade chains (node → node → node with probabilities) rendered in plain React. The cascade data is the same — only the visualization changes. The table fallback can be built in 30 minutes. The D3 graph is a better demo, but the table is a better plan.
+
+---
+
+## Tech stack
+
+| Layer | Technology | Why |
+|-------|-----------|-----|
+| Orchestration | **LangGraph** `StateGraph` | Typed state, conditional edges, parallel fan-out via `Send`, `MemorySaver` checkpointing. The right primitive for graph-structured agent orchestration. |
+| AI (primary) | **Gemini 2.5 Flash** via `google-genai` SDK | 5 specialist nodes + supervisor + briefing. JSON mode for structured output. |
+| AI (finance) | **GPT-4o-mini** via `openai` SDK | Finance node only. `response_format={"type": "json_object"}`, `temperature=0.1`. |
+| Backend | **Python + FastAPI** | Async-native, Pydantic v2 for type-safe I/O, SSE via `sse-starlette`. |
+| Frontend | **React + D3.js** | D3 for cascade graph. React for dashboard state and panels. |
+| Deployment | **Vercel** (frontend) + **Railway** (backend) | Free tiers, <5 minute deploy. |
+
+---
+
+## Agent implementation
+
+### LangGraph graph construction
+
+```python
+import google.genai as genai
+from openai import OpenAI
+
+gemini_client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+workflow = StateGraph(DEADPOOLState)
+
+# Each node owns its model client
+workflow.add_node("people", people_node)          # Gemini
+workflow.add_node("finance", finance_node)        # GPT-4o-mini
+workflow.add_node("infra", infra_node)            # Gemini
+workflow.add_node("product", product_node)        # Gemini
+workflow.add_node("legal", legal_node)            # Gemini
+workflow.add_node("code_audit", code_audit_node)  # Gemini
+workflow.add_node("head_supervisor", head_supervisor_node)  # Gemini
+workflow.add_node("cascade_mapper", cascade_mapper_node)    # deterministic
+workflow.add_node("briefing", briefing_node)      # Gemini
+
+workflow.add_conditional_edges(START, initial_fanout)
+for s in ["people","finance","infra","product","legal","code_audit"]:
+    workflow.add_edge(s, "head_supervisor")
+workflow.add_conditional_edges("head_supervisor", supervisor_router)
+workflow.add_edge("cascade_mapper", "briefing")
+workflow.add_edge("briefing", END)
+
+app = workflow.compile(checkpointer=MemorySaver())
+```
+
+### Specialist node pattern (Gemini)
+
+```python
+def people_node(state: DEADPOOLState) -> dict:
+    data = load_json("team_activity.json")
+    entity_context = get_entity_context(state, "people")
+    prompt = build_people_prompt(data, entity_context)
+
+    response = gemini_client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=genai.types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=AgentReport
+        )
+    )
+    report = AgentReport.model_validate_json(response.text)
+    return {"anomalies": report.anomalies, "domain_reports": {"people": report}}
+```
+
+### Finance node (GPT-4o-mini)
+
+```python
+def finance_node(state: DEADPOOLState) -> dict:
+    transactions = load_csv("deadpool_finance_data.csv")
+    pipeline = load_csv("deadpool_revenue_pipeline.csv")
+    funding = load_csv("deadpool_funding_runway.csv")
+    entity_context = get_entity_context(state, "finance")
+    whatif = state.get("whatif_params")
+
+    response = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": FINANCE_SYSTEM_PROMPT},
+            {"role": "user", "content": build_finance_prompt(
+                transactions, pipeline, funding, entity_context, whatif)}
+        ],
+        response_format={"type": "json_object"},
+        temperature=0.1
+    )
+    report = AgentReport.model_validate_json(response.choices[0].message.content)
+    report.model_provider = "openai/gpt-4o-mini"
+    return {"anomalies": report.anomalies, "domain_reports": {"finance": report}}
+```
+
+### Agent interaction flow
+
+The full flow (parallel fan-out → supervisor reads → conditional corroboration → cascade mapping → briefing) is detailed in the Architecture section above. The key implementation detail: steps [3]–[6] in that flow are the Head Supervisor's conditional routing — each step is a LangGraph edge, not a function call. The graph structure *is* the control flow.
+
+---
+
+## Data architecture
+
+### Synthetic data (hackathon)
+
+Seven files, engineered with discoverable cascade chains and noise signals that agents should correctly ignore:
+
+| File | Agent | Key signals |
+|------|-------|-------------|
+| `team_activity.json` | People | Sarah Chen: 94% commit drop over 5 weeks. 11 others: normal with noise. |
+| `deadpool_finance_data.csv` | Finance | $900K raised, $73K/mo burn, $493K cash, $1.2K/mo revenue. |
+| `deadpool_revenue_pipeline.csv` | Finance | Nexus Corp $423K/yr deal at_risk (prob 0.85→0.35). Greenleaf $9K overdue (noise). |
+| `deadpool_funding_runway.csv` | Finance | Down-round clause at runway <3mo. Base runway: 6.7mo. Worst case: 3.6mo to trigger. |
+| `infrastructure.json` | Infra | payments-service: 0 deploys in 2 weeks, API v2 at 34% completion. Others stable. |
+| `product_metrics.json` | Product | Payments dashboard errors 0.2%→12%. Other features stable. |
+| `contracts.json` | Legal | Nexus Corp Section 4.2: API v2 by April 15 or termination. PCI DSS obligation. |
+| `codebase_audit.json` | Code Audit | payments-service: bus factor=1, CVE-2026-4821 (CVSS 8.1), coverage 82%→61%. |
+
+Entity linking keys (`sarah_chen`, `payments-service`, `nexus_corp`, `payments_api_v2`) are identical across all files.
+
+### Transition to real data (post-hackathon)
+
+The synthetic data architecture is designed so each file maps to a specific real API integration. The transition path per agent:
+
+| Agent | Hackathon data | Production data source | Integration method | Entity resolution |
+|-------|---------------|----------------------|-------------------|-------------------|
+| People | `team_activity.json` | GitHub REST API + Slack API | OAuth app → webhook on push/PR events → normalize to `DeveloperActivity` schema | GitHub username → Slack display name mapping table |
+| Finance | 3 CSV files | Stripe API + QuickBooks/Xero API + manual CSV upload | OAuth for Stripe/accounting; CSV upload remains as fallback for cap table data | Stripe customer_id → contract client_name mapping |
+| Infra | `infrastructure.json` | GitHub Actions API + BetterStack/UptimeRobot API + AWS Cost Explorer | OAuth + API keys → periodic polling → normalize to `ServiceHealth` schema | GitHub repo → service_name mapping in config |
+| Product | `product_metrics.json` | PostHog/Plausible API + Intercom/Zendesk API | OAuth → periodic polling → normalize to `ProductMetrics` schema | Feature names defined in onboarding config |
+| Legal | `contracts.json` | PDF upload → Claude/Gemini extraction of key clauses | Upload UI → LLM extracts structured clause data → human reviews/confirms | Client names matched to Finance `client_name` |
+| Code Audit | `codebase_audit.json` | GitHub API (git blame, PRs) + `pip-audit`/`npm audit` output | GitHub OAuth → periodic scan → normalize to `CodebaseHealth` schema | GitHub username → developer_name; repo → service_name |
+
+**The critical engineering challenge** at the integration layer is entity resolution — ensuring that "sarah-chen" in GitHub, "Sarah Chen" in Slack, and "Sarah Chen" in the HR system all resolve to the same `developer_name` entity key. Post-hackathon, this requires a configurable entity mapping layer (JSON config uploaded during onboarding) that normalizes identifiers across sources. The hackathon version sidesteps this by using pre-normalized synthetic data — but the schema design accommodates the mapping layer.
+
 ---
 
 ## Cascade demonstration
 
-### Primary demo cascade (5 agents, 6 nodes, 2 model providers)
-
-<<<<<<< HEAD
-This is the cascade we demonstrate on stage. It passes through People → Code Audit → Infra → Finance (pipeline) → Finance (runway) → Finance (investor terms), showing DEADPOOL's cross-domain intelligence. The Brainrot narrative makes this particularly compelling because every founder in the room understands what happens when your best engineer quietly checks out and they're the only person who understands the code that your biggest deal depends on.
+### Primary demo cascade (5 agents, 2 providers, 6 nodes)
 
 ```
-Step 1 │ PEOPLE AGENT detects
-       │ Engineer 3 (Mobile/Feed) commit activity dropped 60%, now on unpaid leave
-       │ Sole architect of feed algorithm + Branded Content SDK
-       │ Severity: 0.85 → Head Agent validates to 0.88
-       │ (Code Audit confirms: 0 code reviews in feed-service for 14 days)
-       │
-       ▼ Conditional probability: 0.78
-       │
-Step 2 │ CODE AUDIT AGENT confirms
-       │ feed-service: bus factor = 1, test coverage dropped to 58%,
-       │ unpatched CVE-2026-3847 (CVSS 8.4) in ffmpeg-wasm video processing dependency
-       │ Circular dependency with content-moderation-service means changes risk both
-       │ Severity: 0.84
-       │
-       ▼ Conditional probability: 0.72
-       │
-Step 3 │ INFRA AGENT reports
-       │ feed-service deploy frequency: 0 in last 2 weeks
-       │ Branded Content SDK at 31% completion, deadline in 18 days
-       │ Video CDN costs at $7,200/mo (should be $2,400 — no one optimizing)
-       │ Projected miss: 35+ days overdue. No other engineer has context.
-       │ Severity: 0.81
-       │
-       ▼ Conditional probability: 0.65
-       │
-Step 4 │ FINANCE AGENT (pipeline) flags
-       │ VibeCheck Media deal ($516K/year) in procurement — hard deadline April 15
-       │ for Branded Content SDK deployment. Deal probability dropped from 0.85 to 0.30.
-       │ VibeCheck CEO asking for status update. They're evaluating Fizz.
-       │ If VibeCheck chooses Fizz, their 200+ brand advertisers validate the competitor.
-       │ Severity: 0.90
-       │
-       ▼ Conditional probability: 0.70
-       │
-Step 5 │ FINANCE AGENT (runway) calculates
-       │ Without VibeCheck: $535K cash, $80K/month burn, $2.4K/month revenue
-       │ Runway: 6.6 months and declining — no revenue inflection path
-       │ Drip Culture Agency $12K overdue compounds cash position
-       │ Video CDN overspend silently accelerating burn by $4,800/month
-       │ Severity: 0.77
-       │
-       ▼ Conditional probability: 0.60
-       │
-Step 6 │ FINANCE AGENT (investor terms) projects
-       │ Down-round clause triggers at runway < 3 months
-       │ At current burn: ~3.7 months until trigger
-       │ Velocity Capital converts at 50% discount with 2x liquidation preference
-       │ Jenna Okafor takes full board seat — founder diluted below control threshold
-=======
-This is the cascade we demonstrate on stage. It passes through People → Code Audit → Infra → Legal → Finance → Finance (investor terms). Critically, the final two nodes involve the **GPT-4o-mini Finance Agent** corroborating findings from **Gemini-powered** upstream agents — demonstrating cross-provider cascade tracing.
+Step 1 │ PEOPLE NODE (Gemini)
+       │ Sarah Chen commits dropped 94% over 5 weeks
+       │ Severity: 0.85 → validated to 0.91
+       ▼ P(link fires): 0.78
 
-```
-Step 1 │ PEOPLE NODE detects (Gemini)
-       │ Sarah Chen commit activity dropped 94% over 5 weeks
-       │ Severity: 0.85 → Head Supervisor validates to 0.91
-       │ (Code Audit corroboration confirms: 0 code reviews in 14 days)
-       │
-       ▼ Conditional probability: 0.78
-       │
-Step 2 │ CODE AUDIT NODE confirms (Gemini)
-       │ payments-service: bus factor = 1, test coverage dropped to 61%,
-       │ unpatched CVE-2026-4821 (CVSS 8.1) in payment processing dependency
+Step 2 │ CODE AUDIT NODE (Gemini)
+       │ payments-service: bus factor=1, coverage 61%, CVE-2026-4821 (CVSS 8.1)
        │ Severity: 0.82
-       │
-       ▼ Conditional probability: 0.72
-       │
-Step 3 │ INFRA NODE reports (Gemini)
-       │ payments-service deploy frequency: 0 in last 2 weeks
-       │ Payments API v2 at 34% completion, deadline in 18 days
-       │ Projected miss: 30+ days overdue
+       ▼ P(link fires): 0.72
+
+Step 3 │ INFRA NODE (Gemini)
+       │ payments-service: 0 deploys in 2 weeks. API v2 at 34%, deadline 18 days.
        │ Severity: 0.79
-       │
-       ▼ Conditional probability: 0.58
-       │
-Step 4 │ LEGAL NODE flags (Gemini)
-       │ Nexus Corp contract Section 4.2: delivery of Payments API v2
-       │ required by April 15, 2026. Breach = termination without penalty.
+       ▼ P(link fires): 0.58
+
+Step 4 │ LEGAL NODE (Gemini)
+       │ Nexus Corp Section 4.2: API v2 by April 15. Breach = termination.
        │ Refund liability: $211,680
        │ Severity: 0.88
-       │
-       ▼ Conditional probability: 0.65
-       │
-Step 5 │ FINANCE NODE calculates (GPT-4o-mini ← cross-provider!)
-       │ Nexus Corp = 42% of revenue ($35,280/month)
-       │ Post-loss monthly burn: $80,000 net negative
-       │ After refund: cash drops to ~$200,000
-       │ Runway: 2.5 months
+       ▼ P(link fires): 0.65
+
+Step 5 │ FINANCE NODE (GPT-4o-mini ← cross-provider)
+       │ Nexus = 42% revenue. Post-loss burn: $80K/mo net negative.
+       │ After refund: cash ~$200K. Runway: 2.5 months.
+       │ *** Cross-provider corroboration: Gemini Legal + GPT-4o-mini Finance
+       │ *** independently flag same risk. Model-independent signal.
        │ Severity: 0.92
+       ▼ P(link fires): 0.75
+
+Step 6 │ FINANCE NODE (GPT-4o-mini)
+       │ Down-round clause triggers below 3-month runway.
+       │ Investor converts at 50% discount, 2x liquidation preference.
+       │ Founder diluted below control. END STATE: Company lost.
        │
-       │ *** MODEL-INDEPENDENT CORROBORATION: Legal (Gemini) flagged the
-       │ *** contract risk. Finance (GPT-4o-mini) independently calculated
-       │ *** the revenue impact from separate CSV data. Two model families,
-       │ *** two data sources, same conclusion. High-confidence finding.
-       │
-       ▼ Conditional probability: 0.75
-       │
-Step 6 │ FINANCE NODE (investor terms) triggers (GPT-4o-mini)
-       │ Down-round clause activates below 3-month runway
-       │ Investor converts at 50% discount with 2x liquidation preference
-       │ Founder diluted below control threshold
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
-       │ END STATE: Company effectively lost
-       │
-       │ Overall cascade probability: 0.17
-       │ Time to impact: 112 days
-       │ Financial impact: $1.5M+ (deal lost + dilution + runway crisis + creator network collapse)
+       │ Cascade probability: 0.19 | Time to impact: 75 days | Impact: $1.9M+
 ```
 
-**Head Supervisor briefing for this cascade:**
+**Head Supervisor briefing:**
 
-<<<<<<< HEAD
-> "Engineer 3 has been disengaging since February and is now on unpaid leave. He's the only person with context on the feed algorithm and the Branded Content SDK — which is at 31% completion with 18 days until the VibeCheck Media deadline. The Code Audit Agent found an unpatched critical vulnerability in the video processing pipeline and test coverage on feed-service has collapsed to 58%. VibeCheck Media's $516K/year enterprise brand deal requires the SDK live by April 15 or the deal collapses — and they're already talking to Fizz. Without that deal, you're a pre-revenue company burning $80K/month with $535K in the bank. That's 6.6 months of runway with no path to extending it. In 3.7 months you hit the down-round clause threshold, and Velocity Capital takes board control. Meanwhile, your video CDN is burning $4,800/month more than it should because nobody is optimizing it. Resolve Engineer 3's situation or start knowledge transfer to a backup engineer this week. Contact VibeCheck about a deadline extension before April 1."
-=======
-> "Your lead backend engineer has been disengaging for five weeks, and she's the only person who can ship the payments feature that Nexus Corp's contract requires by April 15. The Code Audit node found an unpatched critical vulnerability in the same service. If the deadline is missed, Nexus Corp can walk — taking 42% of your revenue with them. That drops your runway below three months and triggers the down-round clause in your investor agreement. Talk to Sarah Chen today. Start a knowledge transfer to a backup engineer this week. Contact Nexus Corp about a deadline extension before April 1."
-
----
-
-## Market awareness and competitive landscape
-
-| Tool | What it does | Why it's insufficient |
-|------|-------------|----------------------|
-| GitHub Insights / LinearB | Engineering metrics only | No cross-domain synthesis; finance and legal blind spots |
-| ChartMogul / Baremetrics | Revenue dashboards | No causal link to engineering or legal triggers |
-| Notion / Linear | Task and project tracking | Passive; requires human to connect the dots |
-| Traditional BI (Looker, Metabase) | Aggregated reporting | Descriptive, not predictive; no agent reasoning |
-
-**DEADPOOL's position:** No current tool performs cross-domain causal reasoning across people + finance + infra + product + legal + code simultaneously. The category does not exist yet. DEADPOOL creates it by treating company operations as a graph traversal problem — which is exactly what LangGraph is built for.
+> "Your lead backend engineer has been disengaging for five weeks, and she's the only person who can ship the payments feature that Nexus Corp's contract requires by April 15. The Code Audit node found an unpatched critical vulnerability in the same service. If the deadline is missed, Nexus Corp can walk — taking 42% of your revenue. That drops your runway below three months and triggers the down-round clause. Talk to Sarah Chen today. Start knowledge transfer this week. Contact Nexus Corp about a deadline extension before April 1."
 
 ---
 
@@ -857,40 +517,133 @@ Step 6 │ FINANCE NODE (investor terms) triggers (GPT-4o-mini)
 
 ### Total addressable market
 
-There are approximately **34,000 venture-backed startups** between seed and Series B in the US at any given time (PitchBook 2025). Globally the figure is roughly 80,000. These are companies with 5–50 employees, $500K–$20M raised, and exactly the cross-domain blind spot DEADPOOL addresses. At a projected price point of $500/month (positioning below a fractional COO at $5K–$10K/month but above commodity dashboards at $50–$100/month), the serviceable addressable market is **$204M annually** in the US alone.
+Approximately **34,000 venture-backed startups** between seed and Series B in the US (PitchBook 2025), ~80,000 globally. At $500/month (below a fractional COO at $5K–$10K/mo, above commodity dashboards), the US SAM is **$204M annually**.
 
-### The cost of a missed cascade
+### Cost of a missed cascade
 
-Startup post-mortems consistently cite chain reactions — not single events — as the cause of death. We quantified the average cost using data from the CB Insights top 20 failure reasons, Carta's startup mortality data, and our own cascade modeling:
+| Cascade type | Avg financial impact | Time from signal to crisis | Early detection window |
+|-------------|---------------------|---------------------------|----------------------|
+| Key-person → delivery failure → contract breach | $1.2M–$2.4M | 60–120 days | 2–4 weeks after first commit drop |
+| CVE → compliance breach → client termination | $400K–$900K | 30–90 days | Immediately on CVE publication |
+| Revenue concentration → client churn → runway cliff | $800K–$3M | 45–90 days | Continuous monitoring at 40% threshold |
+| Tech debt → deploy collapse → competitive loss | $500K–$1.5M | 90–180 days | Weeks before velocity hits critical |
 
-| Cascade type | Avg financial impact | Avg time from first signal to company-ending event | Detection window (if caught early) |
-|-------------|---------------------|---------------------------------------------------|------------------------------------|
-| Key-person departure → delivery failure → contract breach | **$1.2M–$2.4M** (lost revenue + investor dilution) | 60–120 days | 2–4 weeks after first commit drop |
-| CVE in dependency → compliance breach → client termination | **$400K–$900K** (penalties + lost contracts) | 30–90 days | Immediately on CVE publication |
-| Revenue concentration → single client churn → runway crisis | **$800K–$3M** (runway collapse + forced down-round) | 45–90 days | Continuous monitoring flags at 40% threshold |
-| Tech debt → deploy velocity collapse → competitive loss | **$500K–$1.5M** (opportunity cost + delayed fundraise) | 90–180 days | Weeks before velocity hits critical threshold |
-
-**The average seed-stage startup that dies from a missed cascade loses $1.4M in combined direct financial impact and opportunity cost.** DEADPOOL at $500/month costs $6K/year. The ROI of catching a single cascade is **230x**.
+**Average missed cascade cost: $1.4M.** DEADPOOL at $500/mo ($6K/year) delivers **230x ROI** on catching one.
 
 ### Time-to-insight comparison
 
-| Method | Time to connect cross-domain signals | Coverage |
-|--------|--------------------------------------|----------|
-| **Founder intuition** (status quo) | Weeks to never — depends on whether the founder happens to check the right dashboard on the right day | Partial. No human monitors GitHub commits, contract deadlines, and investor clause thresholds simultaneously. |
-| **Weekly team standups** | 7 days minimum latency. Information is filtered, summarized, and often deprioritized before reaching the founder. | Depends entirely on what team members choose to escalate. Cross-domain connections are almost never surfaced. |
-| **Board meetings** (monthly/quarterly) | 30–90 day latency. Retrospective by definition. | High-level only. A board doesn't see a 60% commit drop in a payments engineer. |
-| **DEADPOOL** | **< 60 seconds** from data ingestion to cascade chain with cross-validated probabilities and a plain-language founder briefing. | All six domains monitored simultaneously. Cross-domain links traced automatically through the dependency graph. |
+| Method | Latency | Cross-domain coverage |
+|--------|---------|----------------------|
+| Founder intuition | Weeks to never | Partial — depends on which dashboards they check |
+| Weekly standups | 7+ days | Filtered by what team members choose to escalate |
+| Board meetings | 30–90 days | High-level only. Won't see a commit drop in one engineer. |
+| **DEADPOOL** | **< 60 seconds** | All six domains. Cross-domain links traced automatically. |
 
-DEADPOOL compresses the time from "signal visible somewhere in the company" to "founder has an actionable briefing with quantified risk" from **weeks-to-never down to under a minute**. For a seed-stage company burning $50K–$100K per month, every week of earlier detection is worth $12K–$25K in runway preserved.
+For a company burning $50K–$100K/month, every week of earlier detection preserves $12K–$25K in runway.
 
-### Hackathon traction targets
+---
 
-| Metric | Target | Why it matters |
-|--------|--------|---------------|
-| Landing page signups | 50+ | Founders who want their DEADPOOL score — direct demand signal |
-| LinkedIn post impressions | 5,000+ | "How your startup dies" framing — category awareness |
-| Email list from signups | 30+ .edu or company domains | Filters out curiosity clicks; indicates genuine ICP interest |
-| Demo day audience "would use this" hand-raise | 40%+ of room | Live PMF signal |
+## Market awareness and competitive landscape
+
+### Competitive landscape — who's adjacent and why they can't do this
+
+| Tool | What it does | Gap | Could they add cross-domain? |
+|------|-------------|-----|------------------------------|
+| **LinearB / GitHub Insights** | Engineering metrics (cycle time, PR throughput) | Finance + legal blind spots | No. Would need to ingest financial data, parse contracts, and build a causal reasoning layer. Completely outside their data model and product thesis. |
+| **ChartMogul / Baremetrics** | Revenue dashboards, MRR/churn analytics | No causal link to engineering triggers | No. They don't have access to GitHub, infrastructure metrics, or codebase analysis. Revenue is the *end* of the cascade — they can't see the *beginning*. |
+| **Notion / Linear** | Project and task tracking | Passive; human must connect dots | Theoretically possible — they have some cross-domain data. But their AI investment is in task automation and summarization, not causal chain reasoning. The LangGraph orchestration layer alone is 6+ months of engineering. |
+| **Looker / Metabase** | BI reporting and dashboards | Descriptive, not predictive; no agent reasoning | No. BI tools visualize data you query — they don't autonomously detect anomalies across domains or reason about causal chains. Adding multi-agent orchestration would be a complete product pivot. |
+| **Runway (financial planning)** | Financial modeling and scenario planning | Engineering, legal, and product blind spots | Closest potential competitor in the finance domain. But their product is manual scenario modeling — a human builds the model. DEADPOOL's Finance Agent *discovers* the scenarios autonomously by cross-referencing with engineering and legal signals. |
+| **Snyk / Dependabot** | Dependency vulnerability scanning | Only code domain; no business context | They can tell you there's a CVE. They can't tell you that the CVE is in a service owned by an engineer who just went on leave, blocking a feature that a $423K contract depends on. The business context is DEADPOOL's entire value. |
+
+**DEADPOOL's position:** No current tool performs cross-domain causal reasoning across people + finance + infra + product + legal + code simultaneously. The category does not exist yet.
+
+**Why incumbents won't build this fast:** The core challenge isn't AI — it's the cross-domain data model. LinearB would need to integrate with Stripe, parse legal contracts, and build entity resolution across GitHub users → financial records → contract clauses. ChartMogul would need to ingest GitHub data, infrastructure metrics, and codebase analysis. Each of these is a 6–12 month integration project *before* building the orchestration layer. By then, DEADPOOL has 12+ months of checkpoint memory for each customer — a data moat that a late entrant cannot shortcut.
+
+### Competitive moat — three layers of defensibility
+
+1. **Orchestration complexity moat (technical):** A 7-node LangGraph with conditional cross-domain routing, multi-provider orchestration, and typed state contracts is an order of magnitude harder to build than a single-domain AI dashboard. The architecture *is* the product.
+
+2. **Compounding data moat (time-based):** Every monitoring cycle, DEADPOOL's checkpoint memory learns which cross-domain signal correlations are predictive for *this specific company*. After 6 months, a company's DEADPOOL instance has a unique risk model that a competitor starting fresh cannot replicate. The switching cost is losing your accumulated operational intelligence. This moat deepens every day automatically.
+
+3. **Cross-domain entity graph moat (configuration-based):** The entity resolution layer (developer_name ↔ service_name ↔ client_name ↔ feature_name) is configured per company during onboarding. This mapping — who owns what, what depends on what, which contracts matter — is proprietary organizational knowledge. It's the company's operational DNA encoded as graph edges. Once configured, it's deeply sticky — migrating to a competitor means re-mapping your entire organizational structure.
+
+### Go-to-market — phased approach
+
+| Phase | Timeline | Strategy | Success metric |
+|-------|----------|----------|----------------|
+| **Hackathon** | This weekend | Landing page + LinkedIn post with cascade demo GIF + hackathon Slack sharing + in-person demos to attendees | 50+ signups |
+| **Founder validation** | Month 1–2 | Personal outreach to 8 founders who validated the problem. Free DEADPOOL score using their real GitHub + financial data. Iterate on the product based on real feedback. | 5 companies running DEADPOOL on real data |
+| **Closed beta** | Month 3–6 | Waitlist → beta with 15–20 companies. Focus on seed-stage SaaS with 8–25 employees (sweetest ICP — small enough for one founder to use DEADPOOL as their entire ops layer, large enough to have real cross-domain complexity). | 15 active companies, 3+ using it weekly |
+| **Self-serve launch** | Month 6+ | OAuth connectors for GitHub, Slack, Stripe. CSV upload for everything else. Pricing: $500/mo for up to 30 employees. | 50 paying customers, $25K MRR |
+| **Expansion** | Year 2+ | Expand beyond SaaS: hardware startups, agencies, funded non-profits. Investor dashboard product (aggregate DEADPOOL scores across portfolio). | $100K MRR, enterprise pilot |
+
+### Pricing logic
+
+$500/month positions DEADPOOL in the "essential infrastructure" price band — below a fractional COO ($5K–$10K/month) or a risk consultant ($200–$400/hour), but above commodity dashboards ($50–$100/month). At this price point, a founder who catches one cascade per year gets a 230x ROI. The price is low enough to be a no-brainer expense for any funded startup, high enough to signal serious value.
+
+---
+
+## Ecosystem and extensibility
+
+DEADPOOL is designed as an **open platform**, not a closed dashboard. Every layer — data ingestion, agent logic, cascade paths, and output — is extensible through well-defined interfaces.
+
+### Customer data integration model
+
+| Integration tier | Method | Availability | Data flow |
+|-----------------|--------|-------------|-----------|
+| **Tier 1: CSV/JSON upload** | Manual file upload via dashboard. Finance CSVs, contract JSONs, team activity exports. | Hackathon (ships Sunday) | User uploads → backend parses → agent reads from disk |
+| **Tier 2: OAuth connectors** | One-click connect for GitHub, Slack, Stripe, PostHog, Intercom. Periodic polling (every 5 min). | Post-hackathon Month 1–2 | OAuth flow → token stored → background worker polls API → normalizes to agent schema → writes to data store |
+| **Tier 3: Webhooks** | Real-time push from customer systems. GitHub push/PR webhooks, Stripe invoice events, Slack message events. | Post-hackathon Month 3+ | Webhook endpoint → validate signature → normalize event → trigger agent re-analysis on affected domain |
+| **Tier 4: Custom adapters** | Python adapter interface for proprietary data sources. Customers write a `DataAdapter` class that returns normalized schema. | Post-hackathon Month 6+ | Customer implements `DataAdapter.fetch() → NormalizedData` → DEADPOOL polls adapter on schedule |
+
+**Normalization layer:** All integration tiers feed through a normalization layer that converts source-specific data into DEADPOOL's internal schemas (`DeveloperActivity`, `FinancialRecord`, `ServiceHealth`, `ProductMetric`, `ContractClause`, `CodebaseState`). Agents never see raw API responses — they see normalized domain objects. Adding a new data source (e.g., switching from GitHub to GitLab) only requires a new normalizer, not changes to agent logic. The normalizer interface is a simple Python ABC: `DataAdapter.fetch(entity_keys) → NormalizedData`.
+
+### Custom cascade paths
+
+The six pre-seeded cascade paths cover common startup failure modes. But companies have unique risk topologies. Post-hackathon, customers can define custom cascade paths through a JSON configuration:
+
+```json
+{
+  "name": "Customer onboarding failure → support overload → churn → revenue loss",
+  "nodes": [
+    {"domain": "product", "trigger": "onboarding_completion_rate < 0.4"},
+    {"domain": "product", "trigger": "support_ticket_volume > 2x_baseline"},
+    {"domain": "product", "trigger": "churn_rate > 0.05"},
+    {"domain": "finance", "trigger": "monthly_revenue_decline > 0.1"}
+  ],
+  "baseline_probabilities": [0.6, 0.7, 0.5]
+}
+```
+
+The cascade mapper's BFS engine is path-agnostic — it traverses whatever edges exist in the dependency graph. Custom paths are just new edges added to the NetworkX graph. This means DEADPOOL's intelligence grows with the customer's domain knowledge: the more cascade paths they define, the more failure modes the system can detect.
+
+**Cascade path marketplace (future vision):** Companies in similar industries share failure modes. Post-hackathon, we envision a community library of anonymized cascade path templates — "SaaS Revenue Concentration Pack," "Compliance-Heavy Fintech Pack." This creates a network effect: every contributed cascade path makes the platform better for all customers.
+
+### DEADPOOL Score API (post-hackathon)
+
+Third-party consumption of DEADPOOL scores via REST API:
+
+```
+GET  /api/v1/score
+→ { "risk_score": 73, "trend": "increasing", "top_cascade": "...", "briefing": "..." }
+
+GET  /api/v1/cascades
+→ [{ "name": "...", "probability": 0.19, "time_to_impact_days": 75, "chain": [...] }]
+
+POST /api/v1/simulate
+← { "whatif": {"key_engineer_leaves": true} }
+→ { "new_score": 89, "new_cascades": [...], "delta": "+16" }
+
+GET  /api/v1/agents/{domain}/report
+→ { "domain": "finance", "anomalies": [...], "model_provider": "openai/gpt-4o-mini" }
+```
+
+**Use cases:** Investor dashboards that aggregate DEADPOOL scores across portfolio companies (a VC with 30 portfolio companies gets a single view of which ones are at risk), board reporting integrations (monthly board deck auto-populates with DEADPOOL risk trends), Slack bots that post daily briefings, CI/CD pipeline gates that block deploys if DEADPOOL risk score exceeds a threshold.
+
+### Interoperability with existing tools
+
+DEADPOOL doesn't replace existing tools — it connects them. A company keeps using GitHub, Slack, Stripe, and Linear exactly as before. DEADPOOL reads from those tools (via OAuth/webhooks) and adds the cross-domain reasoning layer on top. Zero workflow change required: install, connect, receive cascade briefings.
 
 ---
 
@@ -898,25 +651,26 @@ DEADPOOL compresses the time from "signal visible somewhere in the company" to "
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|-----------|
-| LangGraph conditional routing produces infinite corroboration loops | Medium | High — system hangs | `iteration` counter in state; max 2 corroboration passes |
-| Gemini returns malformed JSON from specialist nodes | Medium | Medium — node fails | Pydantic parsing with fallback to empty anomaly list |
-| GPT-4o-mini Finance node fails or times out | Low | High — breaks cross-provider narrative | Finance node has 10s timeout; fallback: inject last-known Finance report from checkpoint |
-| Gemini and GPT-4o-mini produce incompatible anomaly schemas | Low | High — state corruption | All nodes output to identical Pydantic `Anomaly` schema; validated before state write |
-| OpenAI API rate limit hit during demo | Low | Medium | GPT-4o-mini is only called 1-2 times per graph invocation; well within rate limits |
-| LangGraph state shape mismatch across providers | Low | High — demo broken | TypedDict with explicit `Annotated[list, operator.add]` reducers; unit-tested |
-| Synthetic data triggers no anomalies | Low | High — empty demo | Data engineered to produce anomalies; fallback: inject severity floor of 0.5 for demo |
+| **Infinite corroboration loop** | Medium | High — system hangs | `iteration` counter in state; max 2 passes before routing to cascade mapper |
+| **Gemini returns malformed JSON** | Medium | Medium — node fails | Pydantic parsing with fallback to empty anomaly list; node never crashes the graph |
+| **GPT-4o-mini Finance node timeout** | Low | High — breaks demo | 10s timeout; fallback: inject last-known Finance report from checkpoint state |
+| **Schema mismatch across providers** | Low | High — state corruption | All nodes output identical Pydantic `Anomaly` schema; validated before state write |
+| **D3 graph visualization overruns time budget** | Medium | Medium — demo quality | **Fallback: structured table view** of cascade chains in plain React. Same data, simpler render. Buildable in 30 minutes. |
+| **Synthetic data triggers no anomalies** | Low | High — empty demo | Data engineered with known cascade signals; fallback: severity floor of 0.5 for demo mode |
+| **Full integration sprint fails (Day 1 5–7 PM)** | Low | Critical — nothing works | Each specialist node is independently testable. If full graph doesn't compile, demo individual agent outputs + manually narrate the cascade chain. Ugly but functional. |
+| **WiFi drops during live demo** | Medium | Medium — demo pauses | Pre-cache last graph execution result in frontend local state. Demo runs from cached state if backend is unreachable. Briefing and cascade chain display from cache. |
+| **Projector/display issues** | Low | Low | Backup: screen-share from laptop. Secondary backup: screenshots in slide deck. |
+| **Audience doesn't understand cascade in 60 seconds** | Medium | High — judges confused | Demo script opens with the *story* (engineer leaves → contract breaks → company dies) before showing the graph. Narrative first, visualization second. Rehearsed 3x. |
 
-**Contingency plan:** If GPT-4o-mini has unexpected issues, the Finance node can hot-swap to Gemini with a single environment variable change (`FINANCE_PROVIDER=gemini`). The node function checks this variable and routes to the appropriate client. The multi-provider narrative is a feature, not a hard dependency.
+**Contingency priority:** The riskiest item is the D3 visualization eating too much time. We commit to having the table fallback working by Day 1 midnight. D3 animated graph is a Day 2 upgrade — attempted only if Tiers 1 are solid.
 
 ---
 
 ## Scalability design
 
-The hackathon demo runs on `MemorySaver` (in-memory checkpointer) with a single `thread_id`. But DEADPOOL's architecture is designed to scale to production multi-tenant deployment with zero structural changes to the LangGraph graph — only the infrastructure layer swaps out.
-
 ### PostgresSaver — production checkpointer
 
-LangGraph's checkpointer interface is pluggable. Replacing `MemorySaver` with `PostgresSaver` (from `langgraph-checkpoint-postgres`) requires changing exactly one line:
+One-line swap from hackathon to production:
 
 ```python
 # Hackathon
@@ -928,177 +682,130 @@ pool = AsyncConnectionPool(conninfo=os.environ["DATABASE_URL"])
 app = workflow.compile(checkpointer=AsyncPostgresSaver(pool))
 ```
 
-Every graph execution checkpoint — specialist outputs, corroboration results, cascade chains, Head Supervisor reasoning, risk scores — is persisted to PostgreSQL. This gives us durable cross-cycle memory, crash recovery (a graph can resume from its last checkpoint if a node fails mid-execution), and full audit history queryable via SQL.
+Enables durable cross-cycle memory, crash recovery (graph resumes from last checkpoint), and SQL-queryable audit history.
 
-### Multi-tenant isolation via `thread_id`
+### Multi-tenant isolation
 
-Each company that uses DEADPOOL gets a unique `thread_id` passed to every `app.invoke()` call. LangGraph's checkpointer scopes all state to that thread. This means:
-
-- **Company A's cascade history never leaks into Company B's.** The Head Supervisor reads only its own company's prior checkpoints when adjusting baseline probabilities.
-- **Each company's dependency graph evolves independently.** When Company A's Head Supervisor proposes a new graph edge (human-approved), it only affects Company A's cascade paths.
-- **Concurrent graph executions for different companies are fully isolated.** LangGraph handles this natively through the checkpointer's thread-scoped state.
+Each company gets a unique `thread_id`. LangGraph's checkpointer scopes all state to that thread. Company A's cascade history never leaks into Company B's. Dependency graphs evolve independently per tenant.
 
 ```python
-# Company A's monitoring cycle
-result_a = await app.ainvoke(
-    initial_state,
-    config={"configurable": {"thread_id": "company-acme-001"}}
-)
-
-# Company B's monitoring cycle (concurrent, isolated)
-result_b = await app.ainvoke(
-    initial_state,
-    config={"configurable": {"thread_id": "company-nova-002"}}
-)
+result = await app.ainvoke(state, config={"configurable": {"thread_id": "company-acme-001"}})
 ```
 
-In production, `thread_id` maps to a company ID in the application database. The LangGraph graph itself is compiled once and shared across all tenants — only the state and checkpoints are tenant-scoped.
+### Horizontal scaling path
 
-### Horizontal scaling of specialist nodes
+| Phase | Architecture | Scale | What changes |
+|-------|-------------|-------|-------------|
+| Hackathon | All nodes in-process, `asyncio` concurrency | 1 company | Nothing — this is what ships |
+| Early production | Specialist nodes as FastAPI microservices behind load balancer | 10–50 companies | Node function body swaps from direct API call to HTTP client call. Graph structure unchanged. |
+| Growth | Kubernetes HPA on request queue depth per service | 100–5,000 companies | Each specialist service autoscales independently. Finance (GPT-4o-mini) and Gemini services scale on different profiles. |
+| Enterprise | Dedicated graph instances per enterprise customer, shared specialist service pool | 5,000+ companies | Graph compilation per tenant with customer-specific cascade paths. Specialist services are stateless and shared. |
 
-The current architecture runs all six specialist nodes in parallel via LangGraph's `Send` API within a single process. For production scale (hundreds of concurrent companies), specialist nodes can be extracted to independent worker processes:
+The LangGraph graph structure doesn't change across any phase. The compiled graph is the same artifact at hackathon scale and enterprise scale — only the infrastructure underneath evolves.
 
-**Phase 1 — Hackathon (current):** All nodes run in-process. `Send` API dispatches to `asyncio` coroutines. Fast, simple, sufficient for demo.
+### Transition from synthetic data to real APIs
 
-**Phase 2 — Early production (10–50 companies):** Specialist nodes run as **FastAPI microservices** behind a load balancer. The LangGraph node functions become thin HTTP clients that call the specialist service and return the response as a state delta. The graph structure doesn't change — only the node implementation swaps from "call Gemini directly" to "call specialist-service/people endpoint which calls Gemini."
+This is the most significant engineering challenge post-hackathon. The synthetic data files map 1:1 to real API integrations, but the transition requires solving entity resolution, rate limiting, and data freshness:
 
-```python
-# Hackathon: node calls Gemini directly
-def people_node(state: DEADPOOLState) -> dict:
-    response = gemini_client.models.generate_content(...)
-    return {"anomalies": parse(response), "domain_reports": {"people": report}}
+| Agent | Hackathon source | Production source | Key engineering challenge |
+|-------|-----------------|-------------------|--------------------------|
+| People | `team_activity.json` | GitHub REST API + Slack API | **Entity resolution:** GitHub `sarah-chen-42` → Slack `Sarah Chen` → HR system `sarah.chen@company.com` must all resolve to the same `developer_name`. Solved with a configurable mapping table uploaded during onboarding. |
+| Finance | 3 CSV files | Stripe API + QuickBooks/Xero + CSV upload | **Data freshness:** Stripe webhooks for real-time transaction data. Accounting APIs polled daily. CSV upload remains for cap table and investor terms (too sensitive for API access). |
+| Infra | `infrastructure.json` | GitHub Actions API + BetterStack + AWS CloudWatch | **Rate limiting:** GitHub API has 5,000 req/hour. With 50 companies each with 6 services, we need intelligent caching (poll every 5 min, cache results, only re-query on webhook trigger). |
+| Product | `product_metrics.json` | PostHog/Plausible + Intercom/Zendesk | **Schema normalization:** PostHog events have different structure than Plausible pageviews. Normalization layer converts both to `ProductMetric` schema before the agent sees them. |
+| Legal | `contracts.json` | PDF upload → LLM extraction | **Accuracy:** Contract clause extraction via LLM is ~90% accurate. Requires human review step before clauses are used for cascade detection. False positive contract breach alerts are the highest-stakes failure mode. |
+| Code Audit | `codebase_audit.json` | GitHub API (blame, PRs) + `pip-audit`/`npm audit` | **Scale:** `git blame` on large repos is expensive. Pre-compute ownership maps nightly, cache results, update incrementally on push webhooks. |
 
-# Production: node calls specialist microservice
-async def people_node(state: DEADPOOLState) -> dict:
-    response = await httpx.post("https://people-service.internal/analyze",
-                                 json=state_to_request(state))
-    return response.json()  # Same state delta shape
-```
+**The hackathon architecture enables this transition** because every agent reads from a normalized schema (`DeveloperActivity`, `FinancialRecord`, `ServiceHealth`, etc.), not from raw data files. Swapping the data source means swapping the loader function, not the agent logic or the cascade mapper.
 
-**Phase 3 — Scale (100+ companies):** Specialist services autoscale horizontally (Kubernetes HPA on request queue depth). The Finance service (GPT-4o-mini) and Gemini-powered services scale independently based on their respective API rate limits and latency profiles. The Head Supervisor remains a single logical node per graph execution but can run on dedicated compute.
+### Cost model
 
-### Cost modeling at scale
+| Scale | Companies | Gemini calls/day | GPT-4o-mini calls/day | API cost/day | Revenue/day | Margin |
+|-------|-----------|------------------|-----------------------|-------------|-------------|--------|
+| Hackathon | 1 | ~100 | ~10 | ~$0.50 | $0 | N/A |
+| 50 companies | 50 | 5,000 | 500 | ~$25 | $833 | 97% |
+| 500 companies | 500 | 50,000 | 5,000 | ~$200 | $8,333 | 97.6% |
+| 5,000 companies | 5,000 | 500,000 | 50,000 | ~$1,800 | $83,333 | 97.8% |
 
-| Scale | Companies | Graph invocations/day | Gemini calls/day | GPT-4o-mini calls/day | Est. daily API cost | PostgreSQL cost |
-|-------|-----------|----------------------|------------------|-----------------------|--------------------|-----------------| 
-| Hackathon | 1 (demo) | 5–10 | 50–100 | 5–10 | ~$0.50 | $0 (MemorySaver) |
-| Early production | 50 | 500 | 5,000 | 500 | ~$25 | $15/mo (managed Postgres) |
-| Growth | 500 | 5,000 | 50,000 | 5,000 | ~$200 | $50/mo |
-| Scale | 5,000 | 50,000 | 500,000 | 50,000 | ~$1,800 | $200/mo |
-
-At 5,000 companies paying $500/month ($2.5M MRR), daily API cost is ~$1,800 ($54K/month) — a **2.2% cost-of-revenue**, well within SaaS norms. The GPT-4o-mini Finance node is ~10x cheaper per call than the Gemini nodes, so the cross-provider architecture is actually more cost-efficient than running all nodes on a single premium model.
-
-### What this means for the hackathon
-
-We don't build any of this during the hackathon. We build the single-tenant, `MemorySaver`, in-process version that demonstrates the full cascade detection pipeline. But the architecture is designed so that every production scaling step is a configuration change, not a rewrite:
-
-- `MemorySaver` → `PostgresSaver`: one-line swap
-- Single-tenant → multi-tenant: add `thread_id` to `invoke()` config
-- In-process nodes → microservices: swap node function body from direct API call to HTTP client
-- Single instance → horizontal scale: standard container orchestration
-
-The judges should see that this isn't a hackathon toy that needs to be rewritten for production. The LangGraph `StateGraph` compiles identically at demo scale and production scale. The graph is the architecture. The infrastructure is pluggable.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
+API costs are 2.2% of revenue at scale. GPT-4o-mini Finance node is ~10x cheaper per call than Gemini nodes, which actually makes the cross-provider architecture more cost-efficient than running everything on Gemini.
 
 ---
 
 ## Execution plan
 
-### Day 1 — Build the engine (12:00 PM – midnight)
+### Current status: Saturday evening
 
-<<<<<<< HEAD
-**12:00 – 1:00 PM:** Repository setup, project scaffold (React + FastAPI), deployment pipeline, shared constants file defining all entity linking keys. Confirm all synthetic data files are consistent (Brainrot company narrative, entity names aligned across all JSON/CSV files).
+Backend agent nodes and frontend scaffold are done. We are now in the **agent collaboration and cascade detection** phase — the critical path to a working demo.
 
-**1:00 – 3:00 PM (parallel tracks):**
-- Dev 1: People Agent + Finance Agent — data ingestion from team_activity.json and three CSV files, anomaly detection prompts tuned to Brainrot's team structure and financial model, signal bus integration.
-- Dev 2: Infra Agent + Code Audit Agent — GitHub API integration, dependency scanning for the video processing pipeline, CVE cross-referencing, feed-service degradation detection.
-- Dev 3: Dashboard scaffold — React layout, D3 graph component with Brainrot-themed color scheme, Head Agent briefing panel, risk score display.
+### Day 1 — remaining work (Saturday evening – midnight)
 
-**3:00 – 5:00 PM (parallel tracks):**
-- Dev 1: Product Agent + Legal Agent — creator engagement metrics parsing, content moderation complaint analysis, contract clause extraction for VibeCheck deal terms and COPPA obligations.
-- Dev 2: Head Agent core logic — signal bus subscription, cross-validation routing between specialists (especially the People → Code Audit → Infra → Finance chain), briefing generation prompt tuned to produce founder-readable output.
-- Dev 3: Signal bus implementation + cascade mapper integration with dependency graph. Pre-seed the six cascade paths with Brainrot-specific baseline probabilities.
+**Completed earlier today (for context — not claiming credit for hackathon-time work):**
+- ✅ Repo setup, FastAPI + React scaffold, deployment pipeline
+- ✅ DEADPOOLState TypedDict, Pydantic schemas, entity key constants
+- ✅ All 6 specialist agent nodes (Gemini × 5 + GPT-4o-mini × 1) producing AgentReport outputs
+- ✅ Synthetic data files loaded and verified
+- ✅ Gemini + OpenAI API integrations tested
 
-**5:00 – 7:00 PM:** Full team integration sprint. Wire all six specialists → signal bus → Head Agent → cascade mapper → dashboard. First end-to-end test with Brainrot synthetic data. Verify the primary cascade (Engineer 3 → feed-service → VibeCheck deal → runway crisis) fires correctly.
+**Now – 8:00 PM (agent collaboration sprint):**
+- Dev 1 + Dev 2: Tune specialist prompts — ensure cross_reference_hints are populated correctly in anomaly outputs. Test that entity keys match across agents.
+- Dev 3: **Head Supervisor node** — build the LangGraph StateGraph, implement `supervisor_router`, wire conditional edges, implement corroboration loop with iteration guard. This is the hardest remaining piece.
+- Dev 4: **Dashboard: table-based cascade view** (the guaranteed fallback). Risk score display. Briefing panel. Activity log component shell.
+- Dev 5: **SSE streaming** — FastAPI SSE endpoint, React SSE client, wire one dummy event end-to-end.
 
-**7:00 – 8:00 PM:** Dinner.
+**8:00 – 10:00 PM (cascade detection sprint):**
+- Dev 3: **Cascade mapper** — NetworkX BFS, probability multiplication, `TRIGGER_MAP`, chain pruning at 0.25 threshold. Wire into LangGraph graph after Head Supervisor.
+- Dev 1 + Dev 2: **Integration testing** — invoke full graph with `app.invoke()`, verify the primary cascade fires (People → Code Audit → Infra → Legal → Finance). Debug entity key mismatches, schema parsing failures, corroboration routing errors.
+- Dev 4: **D3 cascade graph** — start the upgrade from table view. Color-coded nodes, edge thickness, basic click-to-expand.
+- Dev 5: Wire SSE to real graph output. Dashboard receives live cascade chains and briefings. Deploy current state to Railway + Vercel.
 
-**8:00 PM – midnight:** Testing, debugging, first live cascade detection. Verify Head Agent cross-validation produces coherent corroboration — especially the critical path where it connects Engineer 3's people data to the code audit findings to the infra degradation to the financial impact. Fix edge cases. Ensure graceful degradation if any single agent fails. Test that noise anomalies (Drip Culture overdue invoices, NovaBrands stalled deal) don't trigger false cascade alerts.
-=======
-**12:00 – 1:00 PM:** Repository setup, project scaffold (React + FastAPI), deployment pipeline, `DEADPOOLState` TypedDict definition, shared entity linking key constants. Install both `google-genai` and `openai` SDKs. Verify both API keys work with a test call.
+**10:00 PM – midnight (buffer + polish):**
+- All: Fix whatever broke in integration. If primary cascade works end-to-end:
+  - Dev 3: Refine corroboration loop — test multi-step routing
+  - Dev 4: Continue D3 polish
+  - Dev 5: Landing page with signup form
+- If primary cascade does NOT work:
+  - Dev 3 + Dev 1 + Dev 2: All-hands on cascade detection debugging
+  - Dev 4: Ensure table fallback renders whatever data exists
+  - Dev 5: Ensure deployment is stable
 
-**1:00 – 3:00 PM (parallel tracks):**
-- Dev 1: People Node (Gemini) + Finance Node (GPT-4o-mini) — data loaders, prompt engineering for both providers, structured output parsing (Gemini JSON mode + OpenAI JSON mode), state write patterns. Verify both produce identical `AgentReport` Pydantic schemas.
-- Dev 2: Infra Node (Gemini) + Code Audit Node (Gemini) — GitHub API integration, dependency scanning, CVE cross-referencing, state reducers.
-- Dev 3: Dashboard scaffold — React layout, D3 graph component, Head Supervisor briefing panel, risk score display. Add provider badge to node display.
+**Tier 1 must be functional before anyone sleeps.** The definition of "functional": `app.invoke()` produces a CascadeChain, the dashboard renders it (table or D3), and the risk score + briefing display.
 
-**3:00 – 5:00 PM (parallel tracks):**
-- Dev 1: Product Node (Gemini) + Legal Node (Gemini) — analytics data parsing, contract clause extraction, Pydantic anomaly schema.
-- Dev 2: Head Supervisor node (Gemini) — LangGraph `StateGraph` construction, `add_conditional_edges`, `supervisor_router` function, corroboration loop with iteration guard. Cross-provider corroboration detection logic.
-- Dev 3: Signal bus + cascade mapper node (deterministic) + LangGraph graph compilation with `MemorySaver`.
-
-**5:00 – 7:00 PM:** Full team integration sprint. Wire all six specialist nodes → Head Supervisor → cascade mapper → briefing node. Compile the graph. First end-to-end `app.invoke()` test. Verify Gemini and GPT-4o-mini outputs both parse correctly into `DEADPOOLState`. Test cross-provider corroboration flow (Legal → Finance).
-
-**7:00 – 8:00 PM:** Dinner.
-
-**8:00 PM – midnight:** Testing, debugging, first live cascade detection. Verify cross-provider corroboration produces the model-independent signal in the activity log. Verify LangGraph checkpoint persists across runs. Fix edge cases. SSE streaming from FastAPI to React.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
-
-### Day 2 — Polish and demo hardening (9:00 AM – 2:30 PM)
+### Day 2 — Polish and demo prep (9:00 AM – 2:30 PM)
 
 **9:00 – 10:30 AM:**
-<<<<<<< HEAD
-- Dev 1: "What If" simulation mode powered by Head Agent cascade recalculation. Key sliders: "Engineer 3 returns," "VibeCheck deal probability," "Top creators leave for Fizz," "Video CDN optimized."
-- Dev 2: Head Agent activity log UI showing cross-validation reasoning and conflict resolution between Finance (healthy runway number) and Legal (imminent contract breach).
-- Dev 3: Landing page for signups with social sharing integration. Messaging: "Every startup has a DEADPOOL score. What's yours?"
+- Dev 1: What-If simulation mode (Tier 2) — only if Tier 1 is solid.
+- Dev 2: Prompt refinement — ensure noise signals (Greenleaf overdue invoices, normal developer vacation) don't trigger false cascades.
+- Dev 3: Cross-provider highlighting in activity log. Second cascade detection (CVE → compliance → legal).
+- Dev 4: D3 cascade graph polish (if started last night) or cascade animation (Tier 2).
+- Dev 5: Drive signups — LinkedIn post with demo GIF, hackathon Slack sharing, in-person demos to other teams.
 
 **10:30 AM – 12:00 PM:**
-- Dev 1 + Dev 2: Cascade animation polish (the primary cascade should animate smoothly from the People node through all five downstream nodes), alert notification system, Code Audit Agent deep scan visualization showing the ffmpeg-wasm CVE and bus factor analysis.
-- Dev 3: Drive signups — share landing page across social media, hackathon Slack channels, and in-person with attendees. Target: founders and early-stage team leads in the room.
+- All: Tier 2 features if time permits. Alert toasts (Tier 3) only if everything else is done.
+- **Code freeze at 11:30 AM** for Tier 3 items. Only bug fixes after.
+- Dev 5: Final deployment. Pre-cache one graph execution result in frontend (WiFi contingency).
 
-**12:00 – 1:30 PM:** Demo rehearsal. Run through the 3-minute script at least three times. Test every transition. Prepare for questions. Have backup talking points for: "How does this scale beyond synthetic data?" and "What's the pricing model?"
+**12:00 – 1:30 PM:** Demo rehearsal ×3. All 5 team members watch each run. Practice: story → architecture → live cascade → What-If (if built) → traction. Time each run strictly to 3 minutes. Prepare for technical questions: "Show me the reasoning trace," "What's the false positive rate?", "Why two different models?", "How does the cascade mapper work?"
 
-**1:30 – 2:30 PM:** Final polish. Freeze code. Prepare demo environment with pre-loaded Brainrot data and fallback states.
-=======
-- Dev 1: "What If" simulation mode — inject `whatif_params` into state, re-invoke graph (both providers re-run with modified assumptions).
-- Dev 2: Head Supervisor activity log UI — visualize conditional edge decisions, cross-provider corroboration highlights, and conflict resolution reasoning.
-- Dev 3: Landing page for signups + graph execution visualization showing which model powers each node.
-
-**10:30 AM – 12:00 PM:**
-- Dev 1 + Dev 2: Cascade animation polish, alert system, live node execution flow showing Gemini vs GPT-4o-mini processing.
-- Dev 3: Drive signups — post on LinkedIn/Twitter with cascade demo GIF.
-
-**12:00 – 1:30 PM:** Demo rehearsal ×3. Practice explaining the cross-provider narrative. Prepare for: "Why not use the same model for everything?" Answer: "Model-independent corroboration. When two different model families analyzing different data sources reach the same conclusion, that's a stronger signal than one model agreeing with itself."
-
-**1:30 – 2:30 PM:** Final polish. Freeze code. Verify both API keys are live. Prepare fallback.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
+**1:30 – 2:30 PM:** Final polish. Hard code freeze. Verify deployment is live. Prepare backup screenshots in case of demo-day WiFi issues.
 
 ---
 
 ## Demo script (3 minutes)
 
 **0:00 – 0:30 | The hook.**
-"Startups don't die from one thing. They die from a chain reaction nobody saw coming. We built DEADPOOL — Dependency Evaluation And Downstream Prediction Of Operational Liabilities. Seven AI agents, two model providers, one mission: see the kill chain before it kills you."
+"Startups don't die from one thing. They die from a chain reaction nobody saw coming. We built DEADPOOL — seven AI agents, two model providers, one mission: see the kill chain before it kills you."
 
-**0:30 – 0:50 | Architecture flash.**
-Show the LangGraph `StateGraph` on screen. "Six specialist nodes monitor every layer of your company. Five run on Gemini. One — the Finance Agent — runs on GPT-4o-mini. This is intentional: when agents on different model families independently corroborate the same risk, that's a stronger signal than one model agreeing with itself. One Head Supervisor on Gemini connects the dots via conditional graph edges."
+**0:30 – 0:50 | Architecture.**
+Show LangGraph graph. "Six specialists monitor every layer of your company. Five on Gemini, one on GPT-4o-mini — because when agents on different model families independently agree, that's a stronger signal than one model agreeing with itself. One Head Supervisor connects them via conditional graph edges."
 
-<<<<<<< HEAD
-**0:45 – 1:45 | Live cascade.**
-Walk through the primary cascade on the dashboard using Brainrot as the demo company. "Meet Brainrot — a Gen Z social media platform with 340K monthly active users. The People Agent detected that their lead mobile engineer went from strong contributor to unpaid leave in five weeks. The Code Audit Agent confirmed: the feed-service has a bus factor of 1, an unpatched critical CVE in the video processing pipeline, and test coverage is collapsing. The Infra Agent reported the Branded Content SDK is stuck at 31% completion with an April 15 deadline. The Finance Agent connected this to the VibeCheck Media deal — $516K per year, the company's only path to real revenue — and calculated: if this SDK doesn't ship, the deal dies, VibeCheck takes their 200 brand advertisers to competitor Fizz, the company stays pre-revenue burning $80K a month, and the down-round clause triggers in 3.7 months. Here's the cascade chain on screen — every link, every probability, every dollar amount."
+**0:50 – 1:50 | Live cascade.**
+Walk through cascade on dashboard. "People Agent detected a 94% commit drop. Code Audit confirmed the vulnerability. Legal flagged the contract deadline. Then Finance — running on GPT-4o-mini, separate data — independently calculated: 42% revenue vanishes, runway drops to 2.5 months, down-round triggers. Two model families, different data, same conclusion. Click any node — see exactly why each agent flagged it."
 
-**1:45 – 2:15 | What If mode.**
-Toggle simulation. "But what if we act? Watch." Drag the "engineer leaves" slider to 100%. The Head Agent recalculates in real-time. New briefing appears. "Now watch what happens when we assign a backup engineer and optimize the video CDN." Adjust the sliders. Cascade probability drops. Risk score drops. Monthly burn decreases by $4,800 from CDN optimization alone. "DEADPOOL doesn't just find the problem — it tells you exactly where to break the chain."
-=======
-**0:50 – 1:50 | Live cascade with cross-provider corroboration.**
-Walk through the cascade. "The People node on Gemini detected a 94% commit drop. Code Audit on Gemini confirmed the vulnerability. Legal on Gemini flagged the contract deadline. Then the Finance Agent — running on GPT-4o-mini, analyzing completely separate CSV data — independently calculated: if this contract breaks, 42% of revenue vanishes, runway drops to 2.5 months, and the investor down-round clause triggers. Two model families. Different data sources. Same conclusion. That's not model agreement — that's ground truth."
-
-**1:50 – 2:15 | What If mode.**
-Toggle simulation. Adjust sliders. Both Gemini and GPT-4o-mini re-run with modified assumptions. Cascade probability drops. "DEADPOOL doesn't just find the problem — it tells you exactly where to break the chain."
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
+**1:50 – 2:15 | [If built] What-If mode / [If not] Traction.**
+If What-If ships: toggle simulation, adjust sliders, show cascade probability dropping. If not: skip directly to traction.
 
 **2:15 – 2:45 | Traction.**
-Flash the landing page. Show signup count. "We launched this 20 hours ago. [X] founders signed up."
+Show landing page + signup count. "[X] founders signed up in 20 hours."
 
 **2:45 – 3:00 | Close.**
 "Every startup has a DEADPOOL score right now. Most founders don't know theirs. Now they can."
@@ -1107,91 +814,66 @@ Flash the landing page. Show signup count. "We launched this 20 hours ago. [X] f
 
 ## Why this wins
 
-<<<<<<< HEAD
-**Innovative use of AI:** Seven-agent hierarchical orchestration with a Head Agent that cross-validates across domains, resolves conflicts between agents, and generates strategic briefings. The Code Audit Agent brings codebase intelligence into business risk analysis — something no existing tool does. The cascade from a single engineer's GitHub activity to a board-control-changing investor clause trigger is the kind of insight that takes a human board advisor weeks to piece together, if they ever do. This isn't six chatbots in a trenchcoat. This is emergent intelligence from structured multi-agent coordination.
-=======
-**Graph-native orchestration:** DEADPOOL's architecture is not a pipeline of sequential API calls. It is a compiled LangGraph `StateGraph` where the Head Supervisor dynamically routes between specialist nodes via conditional edges based on accumulated evidence in shared typed state. The cascade detection problem is structurally isomorphic to graph traversal. LangGraph is the right primitive.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
+**Graph-native orchestration:** The cascade detection problem is structurally isomorphic to graph traversal. LangGraph's `StateGraph` with conditional edges, parallel fan-out, and typed state is the right primitive — not a pipeline of sequential API calls.
 
-**Multi-provider as a feature, not a constraint:** Five agents on Gemini. One agent on GPT-4o-mini. The multi-provider architecture creates **model-independent corroboration** — when agents on different model families reach the same conclusion from different data sources, the system has higher confidence than any single-model architecture could provide. This isn't a limitation we're working around. It's a deliberate architectural advantage that single-provider systems cannot replicate.
+**Multi-provider corroboration:** When Gemini and GPT-4o-mini independently reach the same conclusion from different data, that's model-independent confidence. Single-provider systems cannot replicate this.
 
-<<<<<<< HEAD
-**Product-market fit:** Every founder in the room has experienced siloed monitoring. Every founder has been blindsided by a chain reaction they could have predicted. The Head Agent's unified briefing is the feature that makes people say "I need this yesterday." The Brainrot demo makes it visceral — everyone in the room either knows a startup that lost a key engineer or has been that key engineer.
+**Quantified impact:** $1.4M average cascade cost. 230x ROI. <60 second time-to-insight vs. weeks-to-never. $204M TAM.
 
-**Creative AI use:** The cascade mapper produces insights that no individual agent could generate. The Head Agent's cross-validation creates a system where the whole is demonstrably greater than the sum of its parts. The Code Audit Agent catches what traditional code quality tools miss — business context for technical debt. A bus factor of 1 isn't just a code smell; it's a $516K revenue risk.
-=======
-**State as the product:** `DEADPOOLState` is model-agnostic — it doesn't care whether the writing node used Gemini or GPT-4o-mini. The shared typed state object is the contract between all nodes. Anomalies from both providers merge seamlessly through LangGraph's list-append reducers.
+**Production-ready architecture:** `MemorySaver` → `PostgresSaver` is one line. Multi-tenant is a `thread_id`. Specialist nodes extract to microservices by swapping the function body. API costs at 2.2% of revenue at 5,000 companies.
 
-**Memory that compounds:** LangGraph's `MemorySaver` checkpointer persists every state snapshot. The Head Supervisor reads prior state to adjust baseline probabilities — which signals proved predictive, which didn't. This works identically regardless of which model generated the original signal.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
+**Honest feasibility:** We scope to what ships in 24 hours. Tier 1 features are the commitment. Code will match the plan. We don't scaffold 10 features and ship 3.
 
-**Conditional routing IS the intelligence:** The `supervisor_router` function is where Gemini's reasoning produces observable behavior in the graph topology. When it routes to `["code_audit", "finance"]`, that routing decision sends one query to Gemini and one to GPT-4o-mini. The cross-provider fan-out is automatic.
-
-**Product-market fit:** Every founder has been blindsided by a chain reaction they could have predicted. The Head Supervisor's unified briefing — synthesized from six specialists across two model providers — is the feature that makes people say "I need this yesterday."
-
-**Quantified impact:** The average missed cascade costs a seed-stage startup $1.4M. DEADPOOL costs $6K/year — a 230x ROI on catching a single chain reaction. Time-to-insight compresses from weeks-to-never (founder intuition, board meetings) to under 60 seconds. The TAM is $204M annually across 34,000 US venture-backed startups between seed and Series B.
-
-**Production-ready architecture:** The hackathon demo runs on `MemorySaver` and in-process nodes — but every production scaling step is a configuration change, not a rewrite. `MemorySaver` → `PostgresSaver` is a one-line swap. Multi-tenant isolation is a `thread_id` in the invoke config. Specialist nodes extract to microservices by swapping the function body. At 5,000 companies, API costs are 2.2% of revenue. The LangGraph `StateGraph` compiles identically at demo scale and production scale.
-
-**Traction:** Landing page deployed by Day 1 evening. Target: 50+ signups.
+**Compounding data moat:** Every monitoring cycle builds company-specific operational intelligence in the checkpoint store. Switching cost = losing your accumulated risk model.
 
 ---
 
 ## Differentiation strategy
 
-1. **Graph-native cascade tracing:** LangGraph's `StateGraph` with conditional edges mirrors the cascade chain concept architecturally. Competitors would need to rebuild their orchestration layer.
+1. **Orchestration complexity as moat:** A 7-node LangGraph with conditional cross-domain routing is an order of magnitude harder to build than a single-domain AI dashboard. Linear can't add this by shipping a feature.
 
-2. **Cross-domain synthesis as core value:** No current tool performs cross-domain causal reasoning across people + finance + infra + product + legal + code simultaneously. The category does not exist yet.
+2. **Compounding data moat:** Checkpoint memory learns which signals are predictive *for this specific company*. 6 months of history is irreplaceable.
 
-3. **Multi-provider corroboration:** A single-provider system can only tell you that one model thinks there's a risk. DEADPOOL tells you that two independent model families, analyzing different data sources, independently reached the same conclusion. That's a fundamentally different confidence level.
+3. **Cross-domain entity graph as defensibility:** The entity mapping (who owns what, what depends on what) is proprietary organizational knowledge encoded as graph edges. Deeply sticky once configured.
 
-4. **The "DEADPOOL score" as a wedge:** A single number from 0–100 representing company-wide operational risk creates FOMO ("what's your DEADPOOL score?") that is inherently viral among founders.
+4. **Multi-provider corroboration:** Architectural advantage single-provider systems can't replicate without intentional cross-provider engineering.
+
+5. **DEADPOOL score as viral wedge:** Single number, shareable, creates FOMO. "What's your DEADPOOL score?"
 
 ---
 
 ## Request for Hacks alignment
 
-<<<<<<< HEAD
-**RFH #02 — Agents That Hire Agents:** The Head Agent dynamically queries specialist agents based on the situation. In the post-hackathon vision, it could autonomously spin up new specialist agents as the company grows or enters new domains — for example, a "Creator Health Agent" specifically for social platforms like Brainrot that depend on creator networks.
+**RFH #02 — Agents That Hire Agents:** Head Supervisor dynamically routes to specialists via conditional edges — including across model providers. The `supervisor_router` is the hiring decision.
 
-**RFH #04 — Intent as Code:** The dependency graph is a company's operational intent encoded as configuration — "these are the causal relationships that matter to us." Every agent inherits the company's priorities through the graph structure. For Brainrot, the graph encodes that creator retention matters more than raw MAU because the VibeCheck deal depends on a healthy creator network.
+**RFH #04 — Intent as Code:** The cascade dependency graph is operational intent as configuration. `DEADPOOLState` carries company priorities through every node.
 
-**RFH #05 — The Product That Builds Itself:** DEADPOOL's dependency graph improves over time as the Head Agent observes which cascades materialize and which don't. The system learns which cross-domain links are real and which are noise. After six months, DEADPOOL knows that for Brainrot, a 30% commit drop from a feed-service contributor is a high-severity signal, while a 30% drop from an analytics-pipeline contributor is low-severity noise.
+**RFH #05 — The Product That Builds Itself:** `MemorySaver` checkpoints compound across cycles. The supervisor adjusts probabilities based on which signals proved predictive.
 
-**RFH #07 — The One-Person Billion-Dollar Company:** DEADPOOL gives a solo founder the operational awareness of a 50-person leadership team. The Head Agent is their virtual COO — always watching, always connecting, always briefing. For a two-founder team like Brainrot's, where the CEO and CTO are both heads-down on product and fundraising, DEADPOOL catches the signals they're too busy to see.
-=======
-**RFH #02 — Agents That Hire Agents:** The Head Supervisor dynamically routes to specialist nodes via conditional edges — including routing across model providers. The `supervisor_router` function is the "hiring" decision. When it decides to query Finance, it's hiring a GPT-4o-mini agent. When it queries Legal, it's hiring a Gemini agent. Emergent cross-provider orchestration.
-
-**RFH #04 — Intent as Code:** The cascade dependency graph is a company's operational intent encoded as configuration. `DEADPOOLState` carries the company's priorities through every node execution — regardless of which model powers that node. Intent-as-state-schema, model-agnostically.
-
-**RFH #05 — The Product That Builds Itself:** LangGraph's `MemorySaver` persists cascade history across monitoring cycles. The Head Supervisor adjusts baseline probabilities based on which links materialized — including tracking which cross-provider corroborations were most predictive.
-
-**RFH #07 — The One-Person Billion-Dollar Company:** DEADPOOL gives a solo founder the operational awareness of a 50-person leadership team. Seven agents, two model providers, one unified briefing.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
+**RFH #07 — The One-Person Billion-Dollar Company:** Seven agents, two providers, one unified briefing. A founder's virtual COO.
 
 ---
 
 ## Success criteria
 
-<<<<<<< HEAD
-- All 7 agents running and producing structured output from Brainrot's synthetic data.
-- At least one detected cascade spanning 3+ agent domains including the Code Audit Agent.
-- Head Agent generating coherent founder briefings with cross-validated evidence that tell the Brainrot story.
-- Working "What If" simulation mode demonstrated on stage (show the effect of reassigning an engineer and optimizing video CDN costs).
-- 20+ landing page signups.
-- The audience understands the cascade chain in under 60 seconds.
-=======
-- All 7 LangGraph nodes running — five on Gemini, one on GPT-4o-mini, one deterministic — with structured outputs writing to `DEADPOOLState`.
-- LangGraph conditional edges demonstrably driving cross-node, cross-provider routing (visible in Head Supervisor activity log).
-- At least one detected cascade spanning 4+ node domains where the chain crosses the Gemini → GPT-4o-mini boundary.
-- Head Supervisor resolving at least one cross-provider agent conflict on stage with documented reasoning in state.
-- Working "What If" simulation mode — graph re-invoked with both providers processing modified assumptions.
-- LangGraph `MemorySaver` checkpoint persisting state across monitoring cycles.
-- Scalability path articulated: `PostgresSaver` swap, multi-tenant `thread_id` isolation, and horizontal specialist node extraction documented with code examples and cost model.
-- Quantified user impact presented: $1.4M average cascade cost, 230x ROI, < 60 second time-to-insight vs weeks-to-never baseline, $204M TAM.
-- 50+ landing page signups.
-- The audience understands both the cascade chain and the cross-provider corroboration in under 60 seconds.
->>>>>>> 876660892c7eea41c78f44f5e505ca55249f52fa
+### Tier 1 (must achieve — code will be measured against these)
+- All 7 LangGraph nodes running with structured outputs writing to `DEADPOOLState`
+- LangGraph conditional edges driving cross-node routing (visible in activity log)
+- Primary cascade detected spanning 4+ domains crossing the Gemini → GPT-4o-mini boundary
+- Dashboard displaying: cascade graph (table or D3), risk score, briefing, activity log
+- SSE streaming live updates from backend to frontend
+- Landing page live with signup form
+- 50+ landing page signups
+
+### Tier 2 (should achieve)
+- What-If simulation mode with slider-driven graph re-invocation
+- Cross-provider corroboration highlighted in activity log
+- D3 animated cascade graph (upgrade from table fallback)
+
+### Tier 3 (stretch)
+- Alert toast notifications
+- Multiple simultaneous cascade rendering
+- LangGraph execution trace visualization
 
 ---
 

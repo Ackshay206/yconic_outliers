@@ -1,0 +1,105 @@
+date,category,subcategory,description,amount,running_balance,notes
+2025-09-01,income,funding,Pre-seed round - Angel investor,175000.00,175000.00,Lead angel (Kevin Tran) + 2 micro-checks from Stanford alumni network
+2025-09-01,expense,salary,Founder 1 - CEO (monthly),5500.00,169500.00,Below market rate - equity comp. Ex-TikTok PM.
+2025-09-01,expense,salary,Founder 2 - CTO (monthly),6000.00,163500.00,Below market rate - equity comp. Ex-Discord engineer.
+2025-09-15,expense,reimbursement,Founder 2 - laptop + dev hardware,2800.00,160700.00,MacBook Pro M4 Max + external GPU for video processing tests
+2025-09-15,expense,reimbursement,Founder 1 - travel to LA creator meet,620.00,160080.00,Flight + Airbnb LA - meeting top Gen Z creators
+2025-09-20,expense,cloud,AWS MediaConvert + S3 - initial video infra,340.00,159740.00,Video transcoding pipeline prototype
+2025-09-20,expense,api,Anthropic API - prototyping content moderation,95.00,159645.00,Claude API for content safety agent prototype
+2025-09-30,expense,utility,Coworking space - October deposit,900.00,158745.00,WeWork hot desks x2 - Brooklyn
+2025-10-01,expense,salary,Founder 1 - CEO (monthly),5500.00,153245.00,
+2025-10-01,expense,salary,Founder 2 - CTO (monthly),6000.00,147245.00,
+2025-10-01,expense,salary,Engineer 1 - Full Stack (monthly),7500.00,139745.00,First hire - ex-Instagram Reels team
+2025-10-01,expense,utility,Coworking space - October,900.00,138845.00,
+2025-10-10,expense,reimbursement,Engineer 1 - laptop + monitor,2400.00,136445.00,MacBook Pro M4
+2025-10-15,expense,cloud,AWS MediaConvert + S3 + CloudFront + DynamoDB,680.00,135765.00,CDN for video delivery + user DB
+2025-10-15,expense,api,Anthropic API,160.00,135605.00,Content moderation agent development
+2025-10-15,expense,api,GitHub Teams,84.00,135521.00,3 seats
+2025-10-20,expense,reimbursement,Founder 1 - NYC creator economy conference,480.00,135041.00,Tickets + networking dinner
+2025-10-31,expense,utility,Figma + Notion + Slack (tools bundle),145.00,134896.00,SaaS tools
+2025-11-01,income,funding,Seed round - Lead VC closes,800000.00,934896.00,$800K seed at $4.2M pre-money from Velocity Capital (Lead: Jenna Okafor)
+2025-11-01,expense,salary,Founder 1 - CEO (monthly),7000.00,927896.00,Salary bump post-seed
+2025-11-01,expense,salary,Founder 2 - CTO (monthly),7500.00,920396.00,Salary bump post-seed
+2025-11-01,expense,salary,Engineer 1 - Full Stack (monthly),7500.00,912896.00,
+2025-11-01,expense,salary,Engineer 2 - Backend/Video (monthly),8000.00,904896.00,New hire post-seed - video pipeline specialist
+2025-11-01,expense,salary,Engineer 3 - Mobile/Feed (monthly),8000.00,896896.00,New hire post-seed - feed algorithm + mobile native
+2025-11-01,expense,salary,Designer 1 - Product Design (monthly),7200.00,889696.00,New hire post-seed - ex-Snapchat
+2025-11-01,expense,utility,Coworking space - upgraded plan,1800.00,887896.00,6 desks - larger Brooklyn space
+2025-11-10,expense,reimbursement,Engineer 2 - laptop + audio gear,2800.00,885096.00,Laptop + podcast mic for audio feature testing
+2025-11-10,expense,reimbursement,Engineer 3 - laptop + mobile device lab,3200.00,881896.00,Laptop + iPhone 16 Pro + Pixel 9 for testing
+2025-11-10,expense,reimbursement,Designer 1 - laptop + iPad Pro,3100.00,878796.00,Design workstation
+2025-11-15,expense,cloud,AWS - scaled video infra (MediaConvert + CloudFront + EC2 + S3),1800.00,876996.00,Beta launch prep - video transcoding at scale
+2025-11-15,expense,api,Anthropic API,420.00,876576.00,Content moderation + recommendation agent dev
+2025-11-15,expense,api,GitHub Teams - 6 seats,168.00,876408.00,
+2025-11-15,expense,api,Twilio SMS verification,110.00,876298.00,User auth for beta
+2025-11-20,expense,reimbursement,Founder 2 - AWS re:Invent conference,1300.00,874998.00,Flight + hotel Las Vegas - video infra sessions
+2025-11-30,expense,utility,Figma + Notion + Slack + Linear,290.00,874708.00,Added Linear for eng
+2025-12-01,expense,salary,Founder 1 - CEO (monthly),7000.00,867708.00,
+2025-12-01,expense,salary,Founder 2 - CTO (monthly),7500.00,860208.00,
+2025-12-01,expense,salary,Engineer 1 - Full Stack (monthly),7500.00,852708.00,
+2025-12-01,expense,salary,Engineer 2 - Backend/Video (monthly),8000.00,844708.00,
+2025-12-01,expense,salary,Engineer 3 - Mobile/Feed (monthly),8000.00,836708.00,
+2025-12-01,expense,salary,Designer 1 - Product Design (monthly),7200.00,829508.00,
+2025-12-01,expense,salary,PM 1 - Product Manager (monthly),8200.00,821308.00,New hire - ex-BeReal growth PM
+2025-12-01,expense,salary,Marketing 1 - Creator Partnerships (monthly),7000.00,814308.00,New hire - manages creator onboarding program
+2025-12-01,expense,utility,Coworking space,1800.00,812508.00,
+2025-12-10,expense,reimbursement,PM 1 - laptop,2200.00,810308.00,
+2025-12-10,expense,reimbursement,Marketing 1 - laptop + camera + ring light,3400.00,806908.00,Content creation + creator demo equipment
+2025-12-15,expense,cloud,AWS - beta launch traffic spike,3200.00,803708.00,Viral TikTok about Brainrot beta drove 40K signups in 48hrs
+2025-12-15,expense,api,Anthropic API,680.00,803028.00,Content moderation load from beta surge
+2025-12-15,expense,api,Twilio,280.00,802748.00,SMS verification spike from beta signups
+2025-12-20,expense,reimbursement,Team holiday dinner,1600.00,801148.00,10 people - team celebration for 100K beta signups
+2025-12-31,expense,utility,Figma + Notion + Slack + Linear + Intercom,420.00,800728.00,Added Intercom for creator support
+2026-01-01,expense,salary,Founder 1 - CEO (monthly),7000.00,793728.00,
+2026-01-01,expense,salary,Founder 2 - CTO (monthly),7500.00,786228.00,
+2026-01-01,expense,salary,Engineer 1 - Full Stack (monthly),7500.00,778728.00,
+2026-01-01,expense,salary,Engineer 2 - Backend/Video (monthly),8000.00,770728.00,
+2026-01-01,expense,salary,Engineer 3 - Mobile/Feed (monthly),8000.00,762728.00,
+2026-01-01,expense,salary,Designer 1 - Product Design (monthly),7200.00,755528.00,
+2026-01-01,expense,salary,PM 1 - Product Manager (monthly),8200.00,747328.00,
+2026-01-01,expense,salary,Marketing 1 - Creator Partnerships (monthly),7000.00,740328.00,
+2026-01-01,expense,salary,Engineer 4 - DevOps/Infra (monthly),8500.00,731828.00,New hire - video CDN scaling concerns
+2026-01-01,expense,salary,Data 1 - ML/Recommendation (monthly),8500.00,723328.00,New hire - 10th employee - feed algorithm optimization
+2026-01-01,expense,utility,Coworking space - 10 desks,2800.00,720528.00,Upgraded again
+2026-01-10,expense,reimbursement,Engineer 4 - laptop + home office,3200.00,717328.00,Remote setup
+2026-01-10,expense,reimbursement,Data 1 - laptop + GPU,3800.00,713528.00,M4 Max + eGPU for local model experiments
+2026-01-15,expense,cloud,AWS - production scaling (video CDN exploding),5200.00,708328.00,250K MAU driving massive video delivery costs
+2026-01-15,expense,api,Anthropic API,1100.00,707228.00,Content moderation at scale + creator safety agent
+2026-01-15,expense,api,Twilio,440.00,706788.00,
+2026-01-15,expense,api,Stripe - payment processing fees,280.00,706508.00,Creator tipping + Brainrot Pro subscriptions
+2026-01-20,expense,reimbursement,Founder 1 - YC interview trip,950.00,705558.00,Flight + hotel SF
+2026-01-31,expense,utility,Full SaaS stack,580.00,704978.00,
+2026-02-01,expense,salary,Founder 1 - CEO (monthly),7000.00,697978.00,
+2026-02-01,expense,salary,Founder 2 - CTO (monthly),7500.00,690478.00,
+2026-02-01,expense,salary,Engineer 1 - Full Stack (monthly),7500.00,682978.00,
+2026-02-01,expense,salary,Engineer 2 - Backend/Video (monthly),8000.00,674978.00,
+2026-02-01,expense,salary,Engineer 3 - Mobile/Feed (monthly),8000.00,666978.00,*** Commit activity dropped 60% this month. Feed algorithm work stalling.
+2026-02-01,expense,salary,Designer 1 - Product Design (monthly),7200.00,659778.00,
+2026-02-01,expense,salary,PM 1 - Product Manager (monthly),8200.00,651578.00,
+2026-02-01,expense,salary,Marketing 1 - Creator Partnerships (monthly),7000.00,644578.00,
+2026-02-01,expense,salary,Engineer 4 - DevOps/Infra (monthly),8500.00,636078.00,
+2026-02-01,expense,salary,Data 1 - ML/Recommendation (monthly),8500.00,627578.00,
+2026-02-01,expense,utility,Coworking space,2800.00,624778.00,
+2026-02-10,expense,reimbursement,Engineer 3 - medical reimbursement,700.00,624078.00,Mental health leave discussions starting
+2026-02-15,expense,cloud,AWS - video costs climbing uncontrolled,6400.00,617678.00,*** No CDN optimization happening - DevOps pulled to fire-fight feed outages
+2026-02-15,expense,api,Anthropic API,1300.00,616378.00,Moderation volume surging - hateful content reports up 3x
+2026-02-15,expense,api,Twilio,460.00,615918.00,
+2026-02-28,expense,utility,Full SaaS stack,580.00,615338.00,
+2026-03-01,expense,salary,Founder 1 - CEO (monthly),7000.00,608338.00,
+2026-03-01,expense,salary,Founder 2 - CTO (monthly),7500.00,600838.00,
+2026-03-01,expense,salary,Engineer 1 - Full Stack (monthly),7500.00,593338.00,
+2026-03-01,expense,salary,Engineer 2 - Backend/Video (monthly),8000.00,585338.00,
+2026-03-01,expense,salary,Engineer 3 - Mobile/Feed (monthly),0.00,585338.00,*** ON LEAVE - unpaid. Branded Content SDK stalled. Feed algorithm degrading.
+2026-03-01,expense,salary,Designer 1 - Product Design (monthly),7200.00,578138.00,
+2026-03-01,expense,salary,PM 1 - Product Manager (monthly),8200.00,569938.00,
+2026-03-01,expense,salary,Marketing 1 - Creator Partnerships (monthly),7000.00,562938.00,
+2026-03-01,expense,salary,Engineer 4 - DevOps/Infra (monthly),8500.00,554438.00,
+2026-03-01,expense,salary,Data 1 - ML/Recommendation (monthly),8500.00,545938.00,
+2026-03-01,expense,utility,Coworking space,2800.00,543138.00,
+2026-03-15,expense,cloud,AWS - unoptimized video CDN spend spiraling,7200.00,535938.00,*** Burn rate accelerating. 340K MAU but video delivery costs 3x what they should be.
+2026-03-15,expense,api,Anthropic API,1400.00,534538.00,Content moderation + creator safety running hot
+2026-03-15,expense,api,Twilio,420.00,534118.00,
+2026-03-20,expense,reimbursement,Founder 2 - legal consult re: Engineer 3,450.00,533668.00,Employment law consultation
+2026-03-20,expense,reimbursement,Founder 1 - emergency LA trip re: VibeCheck deal,780.00,532888.00,In-person meeting with VibeCheck Media CEO
+2026-03-28,expense,utility,Full SaaS stack,580.00,532308.00,
+2026-03-28,income,revenue,Brainrot Pro subscriptions - March,2400.00,534708.00,~160 paying users @ $14.99/mo (ad-free + exclusive filters)
