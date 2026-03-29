@@ -98,7 +98,7 @@ class BaseAgent:
             contents=user_message,
             config=genai_types.GenerateContentConfig(
                 system_instruction=self.system_prompt,
-                max_output_tokens=4096,
+                max_output_tokens=16384,
             ),
         )
         return response.text
