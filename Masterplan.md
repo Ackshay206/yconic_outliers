@@ -26,13 +26,13 @@ This is the problem DEADPOOL solves.
 
 DEADPOOL is a multi-agent startup immune system built on LangGraph's stateful graph orchestration framework. Six specialist agents continuously monitor every operational layer of a company — people, finance, infrastructure, product, legal, and codebase — connected by a LangGraph `StateGraph` where a Head Agent node orchestrates them all: cross-validating signals across domains, computing a 0–100 risk score, generating a plain-language founder briefing, and seeding a looping cascade expander that traces exactly how a single anomaly propagates into downstream failures.
 
-The system is **model-agnostic by design** — five specialist agents and the Head Agent run on **Google Gemini 2.5 Pro**, while the Finance Agent runs on **OpenAI GPT-4o-mini**. This multi-provider architecture is intentional: it demonstrates that the orchestration layer (LangGraph) is the intelligence, not any single model. When a Gemini-powered agent and a GPT-4o-mini-powered agent independently corroborate the same anomaly, the finding is robust across model families — not just consistent within one model's biases.
+The system is **model-agnostic by design** — five specialist agents run on **Google Gemini 2.5 Flash**, the Head Agent and cascade expander run on **Gemini 2.5 Pro**, while the Finance Agent runs on **OpenAI GPT-4o-mini**. This multi-provider architecture is intentional: it demonstrates that the orchestration layer (LangGraph) is the intelligence, not any single model. When a Gemini-powered agent and a GPT-4o-mini-powered agent independently corroborate the same anomaly, the finding is robust across model families — not just consistent within one model's biases.
 
 ### What ships at this hackathon vs. what comes later
 
 | | Hackathon (ships Sunday 2:30 PM) | Post-hackathon (weeks/months) |
 |---|---|---|
-| **Data** | Real API integrations: Slack API (People), GitHub Actions + REST + Dependabot APIs (Infra, Code Audit), uploaded CSVs (Finance, Product), uploaded PDFs + DuckDuckGo search (Legal) | Full OAuth + webhook connectors, multi-tenant ingestion pipelines |
+| **Data** | Slack API (People); GitHub Actions + REST + Dependabot APIs with JSON fallback (Infra, Code Audit); CSV files from `backend/data/` (Finance); `product_data.csv` + Reddit scraping with JSON fallback (Product); PDF extraction via pdfplumber + DuckDuckGo search with JSON fallback (Legal) | Full OAuth + webhook connectors, multi-tenant ingestion pipelines |
 | **Agents** | 7 LangGraph nodes, each making 1 LLM call per cycle with structured output | Agents with multi-step tool-use loops, retry logic, and rate limit handling |
 | **Orchestration** | Full LangGraph StateGraph with conditional routing, parallel fan-out, LLM cascade expander loop (max depth 5) | PostgresSaver, multi-tenant thread_id isolation, horizontal node scaling |
 | **Dashboard** | React + React Flow (`@xyflow/react`): cascade chain graph, risk score, founder briefing, liabilities panel | Animated cascade pulses, What-If simulation mode, alert system, mobile responsive |
@@ -49,7 +49,7 @@ This distinction matters because **code is evaluated against the master plan** �
 | **Dev 2** | Agent Engineer (Infra, Legal, Code Audit) | 3 specialist nodes, CVE matching, contract parsing, deploy analysis | Python, security, systems |
 | **Dev 3** | Orchestration Lead | LangGraph orchestrator (`orchestrator.py`), head_agent node, cascade expander loop, conditional routing | Python, LangGraph, graph algorithms |
 | **Dev 4** | Frontend Lead | React dashboard, React Flow cascade graph, risk score panel, liabilities panel, SSE client | React, React Flow, CSS, UI/UX |
-| **Dev 5** | Integration & Infra | FastAPI backend, SSE streaming, deployment (Vercel + Railway), API wiring between frontend/backend, demo environment, traction | Python, DevOps, marketing |
+| **Dev 5** | Integration & Infra | FastAPI backend, SSE streaming, deployment (Caddy + Railway), API wiring between frontend/backend, demo environment, traction | Python, DevOps, marketing |
 
 Five people is the right size for this architecture: two devs building six specialist agents in parallel, one dedicated to the hardest engineering problem (LangGraph orchestration + cascade mapper), one owning the entire frontend, and one making sure everything connects and deploys. No single person is a bottleneck for more than one Tier 1 feature.
 
@@ -73,10 +73,8 @@ We are not starting from zero. Here's what's done and what remains:
 | **Dashboard: cascade graph (React Flow)** | ✅ Done | Domain-colored nodes, animated edges, MiniMap, Controls |
 | **Dashboard: risk score + founder briefing** | ✅ Done | Summary, timeline, recommended_action |
 | **Dashboard: liabilities panel** | ✅ Done | Replaces activity log — sorted by severity |
-| **What-If simulation** | ✅ Done | `POST /api/whatif` wired to `HeadAgent.simulate_whatif()` |
 | **Agent Chat** | ✅ Shipped | `POST /api/agents/{name}/chat` — per-agent conversational interface grounded in latest analysis data, SSE token streaming, persisted conversation history across tab switches |
-
-| **Landing page** |  shipped |
+| **Landing page** | ✅ Shipped | Fade-out splash screen rendered on first entry |
 
 The critical path was **agent collaboration and cascade detection** — getting the LangGraph conditional routing to work correctly so that the primary cascade (People → Code Audit → Infra → Legal → Finance) fires end-to-end. This is complete. The LLM-driven cascade expander replaced the planned deterministic NetworkX approach.
 
@@ -92,23 +90,23 @@ DEADPOOL runs as a **LangGraph `StateGraph`**. Six specialist nodes are domain e
 
 | Node | Model | Rationale |
 |------|-------|-----------|
-| Head Agent | Gemini 2.5 Pro | Cross-validates all 6 reports, computes risk score, generates FounderBriefing in one pass |
-| People Agent | Gemini 2.5 Pro | Pattern recognition on 12-week developer activity time series |
+| Head Agent | **Gemini 2.5 Pro** | Cross-validates all 6 reports, computes risk score, generates FounderBriefing in one pass — needs largest context window |
+| People Agent | **Gemini 2.5 Flash** | Sentiment and disengagement pattern recognition on Slack message history |
 | Finance Agent | **GPT-4o-mini** | Most structured workload — CSV parsing, arithmetic, threshold checks. GPT-4o-mini excels at structured extraction at low latency. Creates cross-provider corroboration signal. |
-| Infra Agent | Gemini 2.5 Pro | System metrics correlation and degradation pattern detection |
-| Product Agent | Gemini 2.5 Pro | Sentiment analysis on support tickets and engagement trends |
-| Legal Agent | Gemini 2.5 Pro | Contract clause comprehension and compliance deadline tracking |
-| Code Audit Agent | Gemini 2.5 Pro | Dependency tree analysis, CVE matching, bus factor calculation |
-| Cascade Expander | Gemini 2.5 Pro | LLM-driven consequence expansion — asks "what happens next?" for all active threads collectively, enabling cross-cause acceleration detection |
+| Infra Agent | **Gemini 2.5 Flash** | Deploy frequency and CI/CD failure pattern detection across services |
+| Product Agent | **Gemini 2.5 Flash** | Quantitative metrics analysis + Reddit sentiment synthesis |
+| Legal Agent | **Gemini 2.5 Flash** | Contract clause comprehension and compliance deadline tracking |
+| Code Audit Agent | **Gemini 2.5 Flash** | Dependency vulnerability matching, bus factor calculation, PR review analysis |
+| Cascade Expander | **Gemini 2.5 Pro** | LLM-driven consequence expansion — asks "what happens next?" for all active threads collectively, enabling cross-cause acceleration detection |
 
 ```
   ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐
   │ People       │  │ Finance        │  │ Infra           │
-  │ (Gemini)     │  │ (GPT-4o-mini)  │  │ (Gemini)        │
+  │ (Flash)      │  │ (GPT-4o-mini)  │  │ (Flash)         │
   └──────┬───────┘  └───────┬────────┘  └────────┬────────┘
   ┌──────┴───────┐  ┌───────┴────────┐  ┌────────┴────────┐
   │ Product      │  │ Legal          │  │ Code Audit      │
-  │ (Gemini)     │  │ (Gemini)       │  │ (Gemini)        │
+  │ (Flash)      │  │ (Flash)        │  │ (Flash)         │
   └──────┬───────┘  └───────┬────────┘  └────────┬────────┘
          └──────────────────▼──────────────────────┘
                     ┌──────────────────────────────────┐
@@ -163,7 +161,7 @@ State is model-agnostic — the same `OrchestratorState` flows through Gemini sp
 
 ```
 START → [Parallel Fan-Out: 6 specialist nodes]
-         5 call Gemini 2.5 Pro, 1 calls GPT-4o-mini, all concurrent
+         5 call Gemini 2.5 Flash, 1 calls GPT-4o-mini, all concurrent
       → [Barrier join: all 6 feed into head_agent node]
       → [Head Agent: HeadAgent.analyze()]
          Cross-validates anomalies via CORROBORATION_MAP
@@ -219,41 +217,41 @@ These keys are embedded in every corroboration query so receiving nodes narrow t
 
 ## The six specialist agents
 
-### People Agent *(Gemini)*
+### People Agent *(Gemini 2.5 Flash)*
 **Domain:** Team health, engagement, key-person risk.
-**Data:** Slack API via `slack_client.py` — message frequency, response times, and user activity per developer pulled from the developer channel. Slack user IDs mapped to GitHub handles via a config file.
-**Detects:** Commit drops >50% WoW, prolonged silence from key contributors, bus factor concentration, PR review bottlenecks.
+**Data:** Slack API via `slack_client.py` — message frequency, response times, and user activity per developer pulled from the developer channel over a 42-day lookback window.
+**Detects:** Sentiment and tone shifts per developer (positive/neutral/negative), disengagement arcs, negative spikes, social withdrawal, burnout signals, checked-out behavior, flagged themes (leaving, frustration, conflict, deadline anxiety).
 **Cross-references:** Code Audit (affected code areas), Infra (owned services), Finance (payroll impact).
 
 ### Finance Agent *(GPT-4o-mini)*
 **Domain:** Cash flow, runway, revenue pipeline, funding terms.
 **Data:** Three CSV files — `deadpool_finance_data.csv` (transaction ledger), `deadpool_revenue_pipeline.csv` (revenue + pipeline deals), `deadpool_funding_runway.csv` (investor terms + runway scenarios).
 **Why GPT-4o-mini:** Most structured workload in the system. CSV parsing, arithmetic (burn = expenses − revenue, runway = cash / net burn), threshold checks (runway < 6mo? concentration > 40%?). GPT-4o-mini is fast, precise at structured extraction, and produces consistent JSON. Cross-provider corroboration: when Finance (GPT-4o-mini) and Legal (Gemini) independently flag the same contract risk from different data sources, the finding is model-family-independent.
-**Detects:** Runway <6 months, revenue concentration >40%, burn acceleration, investor clause proximity, pipeline deals at risk from feature dependencies.
+**Detects:** Runway <6 months (critical <3 months), revenue concentration >30% from a single client, burn acceleration >10% MoM, investor clause thresholds (down-round triggers, anti-dilution), AR overdue >30 days, pipeline deals at risk from feature delivery dependencies.
 **Cross-references:** Legal (contract deadlines), People (headcount costs), Product (churn impact on revenue).
 
-### Infra Agent *(Gemini)*
+### Infra Agent *(Gemini 2.5 Flash)*
 **Domain:** System reliability, deployment operations, performance.
-**Data:** GitHub Actions API — recent workflow runs including pass/fail rate, deploy frequency per service, and workflow duration trends.
-**Detects:** Deploy frequency drops, CI failure spikes, response time degradation, SLA breach risk, cloud cost anomalies.
+**Data:** `infrastructure.json` (service topology, SLA obligations, deployment targets) + GitHub Actions API (workflow runs, deploy frequency, pass/fail rates, duration trends over 30-day lookback). Falls back to JSON data if no GitHub token.
+**Detects:** Deploy frequency dropping to zero over a 2-week window, CI/CD failure rate >20%, workflow duration 2× baseline, feature completion stalling due to repeated pipeline failures.
 **Cross-references:** Code Audit (code quality → runtime failures?), People (who owns the degrading service?), Legal (SLA obligations at risk).
 
-### Product Agent *(Gemini)*
+### Product Agent *(Gemini 2.5 Flash)*
 **Domain:** User engagement, retention, satisfaction.
-**Data:** Uploaded CSV `product_data.csv` — columns for weekly active users, feature-level engagement, NPS, and support ticket volume. Parsed and validated with Pydantic before passing to the model.
-**Detects:** Feature adoption decline, churn increases, NPS drops, support ticket spikes, sentiment deterioration.
+**Data:** `product_data.csv` (weekly active users, feature adoption, NPS, CSAT, churn, support ticket volume) + Reddit r/BrainrotGenz scraped via public JSON API (with `reddit_brainrotgenz.json` cached fallback). When both sources flag the same issue, severity is corroborated and raised.
+**Detects:** Feature adoption declining >20% WoW, WAU drops on core revenue features, NPS <30, CSAT <3.0, churn >5% monthly, error spikes on key user journeys, support tickets +50%, negative sentiment dominance in Reddit posts.
 **Cross-references:** Infra (performance → UX decline?), Code Audit (bugs → user errors?), Finance (revenue impact of churn).
 
-### Legal Agent *(Gemini)*
+### Legal Agent *(Gemini 2.5 Flash)*
 **Domain:** Contracts, compliance, regulatory exposure.
-**Data:** Uploaded contract PDFs extracted via `pdfplumber`/`pypdf` (chunked to fit context limits), plus a web search tool (`duckduckgo-search`) for regulatory lookups against Federal Register and SEC EDGAR.
-**Detects:** Contract deadlines approaching with delivery at risk, conflicting terms, regulatory changes, compliance gaps (PCI DSS, SOC 2).
-**Cross-references:** Finance (breach liability), Infra (feature delivery status), Code Audit (compliance mapped to code state).
+**Data:** Contract PDFs extracted via `pdfplumber` (max 80K chars, chunked to fit context), plus DuckDuckGo web search for regulatory lookups (PCI DSS, SOC 2, GDPR). Falls back to `contracts.json` if no PDFs are present.
+**Detects:** Contract delivery deadlines within 30 days where delivery is at risk, termination-without-penalty clauses at risk of breach, PCI DSS / SOC 2 / GDPR compliance gaps, SLA thresholds near breach, investor clause triggers, refund/penalty liabilities.
+**Cross-references:** Finance (breach financial impact), Infra (feature delivery status), Code Audit (compliance mapped to code state).
 
-### Code Audit Agent *(Gemini)*
+### Code Audit Agent *(Gemini 2.5 Flash)*
 **Domain:** Codebase health, security posture, technical debt.
-**Data:** Three GitHub sources sharing the same token — (1) commit history via `backend/get_commit_history.py` for per-developer commit frequency, volume trends, and file-level change frequency; (2) GitHub REST API for git blame on critical files, PR open/merge/review counts, and stale PR detection; (3) GitHub Dependabot Alerts API for all open CVE alerts with severity and affected package.
-**Detects:** CVEs with CVSS ≥7.0, test coverage <60% for critical services, bus factor = 1, unreviewed PRs in critical paths, outdated dependencies (2+ major versions behind).
+**Data:** GitHub API (commit history 84-day lookback, Dependabot CVE alerts, PR data 30-day lookback) via PyGithub. Falls back to `codebase_audit.json` if no GitHub token or repo is configured.
+**Detects:** CVEs with CVSS ≥7.0 in production dependencies, bus factor = 1 (one person owns >80% of critical service commits), developer commit frequency drop >50%, PRs merged without review in critical paths (payments, auth, data), dependencies 2+ major versions behind, PRs open >14 days with no reviewer activity.
 **Cross-references:** People (who owns the code?), Infra (which services run on it?), Legal (compliance implications), Product (user-facing features built on degraded code).
 
 ---

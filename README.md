@@ -5,7 +5,7 @@
 > *Seven AI agents. Two model providers. One mission: see the kill chain before it kills your startup.*
 
 Built at the **yconic New England Inter-Collegiate AI Hackathon** — March 28–29, 2026
-Track: AI Innovation Hack · Powered by: **Google Gemini 2.5 Pro** + **OpenAI GPT-4o-mini** + **LangGraph**
+Track: AI Innovation Hack · Powered by: **Google Gemini 2.5 Flash/Pro** + **OpenAI GPT-4o-mini** + **LangGraph**
 
 **Live deployment:**
 - Frontend: https://outstanding-essence-production.up.railway.app/
@@ -106,7 +106,7 @@ The system is **multi-model by design**: five specialist agents run on **Google 
 ## Project Structure
 
 ```
-yconic_outliers/
+DEADPOOL/
 ├── .env                        # API keys (see Environment Variables)
 ├── .env.example                # Template for all required environment variables
 ├── Masterplan.md               # Full product vision & architecture document
@@ -116,14 +116,14 @@ yconic_outliers/
 │   ├── main.py                 # 🚀 Entry point — routes, CORS, SSE, agent lifecycle
 │   ├── models.py               # 📐 Pydantic v2 schemas (Anomaly, CascadeChain, RiskScore, FounderBriefing, etc.)
 │   ├── orchestrator.py         # 🔀 LangGraph StateGraph — fan-out → head_agent → cascade_expander loop → format_output
-│   ├── cascade_mapper.py       # 🔗 _llm_next_step (Gemini) + _apply_rules (probability boosts for domain combos)
+│   ├── cascade_mapper.py       # 🔗 _llm_next_step (Gemini 2.5 Pro) + _apply_rules (probability boosts for domain combos)
 │   ├── signal_bus.py           # 📡 In-memory pub/sub ring buffer for SSE anomaly streaming
 │   ├── requirements.txt        # Python dependencies
 │   │
 │   ├── agents/                 # 🤖 AI Agent Modules
 │   │   ├── __init__.py
-│   │   ├── base_agent.py       # Abstract base — Gemini client, prompt template, JSON parsing
-│   │   ├── head_agent.py       # Cross-validate + risk score + FounderBriefing + What-If simulation
+│   │   ├── base_agent.py       # Abstract base — Gemini 2.5 Flash client, JSON parsing, chat streaming
+│   │   ├── head_agent.py       # Cross-validate + risk score + FounderBriefing + What-If  (Gemini 2.5 Pro)
 │   │   ├── people_agent.py     # Team health & key-person risk         (Gemini 2.5 Flash)
 │   │   ├── finance_agent.py    # Cash flow, runway, revenue            (GPT-4o-mini)
 │   │   ├── infra_agent.py      # System reliability & deploy ops       (Gemini 2.5 Flash)
@@ -134,15 +134,15 @@ yconic_outliers/
 │   ├── utils/
 │   │   ├── dashboard_formatter.py  # Dashboard response formatting helpers
 │   │   ├── slack_client.py         # 💬 Slack API integration client
-│   │   ├── get_commit_history.py   # GitHub commit history fetcher
 │   │   └── reddit_scraper.py       # Public Reddit JSON API scraper
 │   │
 │   └── data/                   # 📁 Synthetic Data (engineered cascade signals)
-│       ├── team_activity.json         # → People Agent
-│       ├── infrastructure.json        # → Infra Agent
-│       ├── product_metrics.json       # → Product Agent
-│       ├── contracts.json             # → Legal Agent
-│       ├── codebase_audit.json        # → Code Audit Agent
+│       ├── team_activity.json         # → People Agent (fallback)
+│       ├── infrastructure.json        # → Infra Agent (baseline + fallback)
+│       ├── product_data.csv           # → Product Agent
+│       ├── reddit_brainrotgenz.json   # → Product Agent (Reddit fallback)
+│       ├── contracts.json             # → Legal Agent (fallback)
+│       ├── codebase_audit.json        # → Code Audit Agent (fallback)
 │       └── csv/
 │           ├── deadpool_finance_data.csv       # → Finance Agent: transaction ledger
 │           ├── deadpool_revenue_pipeline.csv   # → Finance Agent: revenue + pipeline deals
@@ -159,43 +159,22 @@ yconic_outliers/
     │
     ├── components/
     │   ├── layout/
-    │   │   └── Header.jsx          # Top bar — DEADPOOL branding + Run Analysis button + page nav (Overview / Cascade Chains / Agent Chat)
+    │   │   └── Header.jsx          # Top bar — DEADPOOL branding + Run Analysis button + page nav
     │   │
-    │   ├── AgentChatPanel.jsx      # 💬 Agent Chat page — per-agent conversational interface with SSE streaming
+    │   ├── AgentChatPanel.jsx      # 💬 Agent Chat — per-agent conversational interface with SSE streaming
     │   ├── AgentsPanel.jsx         # 2×3 grid of agent status cards (idle/processing/healthy/warning/critical)
     │   ├── BriefingPanel.jsx       # FounderBriefing (summary, timeline, recommended_action)
     │   ├── FlawsPanel.jsx          # Scrollable liabilities list sorted by severity
     │   ├── RiskIndex.jsx           # 0–100 risk score with severity level + trend
     │   ├── CascadeChainPanel.jsx   # React Flow directed graph — cascade chains
-    │   ├── ErrorBoundary.jsx       # React error boundary wrapper
-    │   │
-    │   ├── shared/
-    │   │   └── StatusBadge.jsx     # Reusable status indicator
-    │   │
-    │   └── ingest/                 # Unused in production App.jsx (preserved for reference)
-    │       ├── IngestTab.jsx
-    │       ├── FileUploadPanel.jsx
-    │       ├── FileSlot.jsx
-    │       ├── AgentStatusPanel.jsx
-    │       ├── AgentStatusCard.jsx
-    │       ├── AgentTabBar.jsx
-    │       ├── AgentOutputPanel.jsx
-    │       └── AnomalyCard.jsx
+    │   ├── LandingPage.jsx         # Fade-out splash screen on first entry
+    │   └── ErrorBoundary.jsx       # React error boundary wrapper
     │
     ├── hooks/
-    │   ├── useDeadpool.js          # Main hook — SSE + POST /api/head-agent/analyze + all state
-    │   ├── useAgentProcessor.js    # Agent data processing helper hook
-    │   └── useCascaseAnimation.js  # Cascade animation controller (unused in production)
-    │
-    ├── utils/
-    │   ├── formatter.js            # Number/date formatting
-    │   └── riskColor.js            # Risk level → color mapping
+    │   └── useDeadpool.js          # Main hook — SSE + POST /api/head-agent/analyze + all state
     │
     └── constants/
-        ├── agents.js           # Agent metadata, DOMAIN_COLORS
-        ├── cascade.js          # Cascade definitions
-        ├── fileSlots.js        # File slot configurations
-        └── mockOutputs.js      # Mock agent outputs for offline development
+        └── agents.js               # Agent metadata, DOMAIN_COLORS
 ```
 
 ---
@@ -208,14 +187,14 @@ yconic_outliers/
 
 - **Python 3.11+**
 - **Node.js 18+** and npm
-- **Google API Key** (Gemini 2.5 Pro access)
+- **Google API Key** (Gemini 2.5 Flash + Pro access)
 - **OpenAI API Key** (GPT-4o-mini access)
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/yconic_outliers.git
-cd yconic_outliers
+git clone https://github.com/your-org/DEADPOOL.git
+cd DEADPOOL
 ```
 
 ### 2. Set up environment variables
@@ -242,8 +221,7 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-API: `http://localhost:8000`
-Swagger docs: `http://localhost:8000/docs`
+API: `http://localhost:8000` · Swagger docs: `http://localhost:8000/docs`
 
 On startup you should see:
 ```
@@ -346,9 +324,9 @@ Subclasses only need to implement `load_data()` to return their domain data dict
 **`finance_agent.py` — GPT-4o-mini (Standalone)**
 
 Does **not** extend `BaseAgent`. Uses the OpenAI SDK directly:
-- Loads 3 CSV files via Pandas
+- Loads 3 CSV files from `backend/data/csv/` via Pandas
 - Calls `gpt-4o-mini` with `response_format={"type": "json_object"}` and `temperature=0.1`
-- Creates **cross-provider corroboration**: when Finance (GPT-4o-mini) and Legal (Gemini) independently flag the same contract risk from different data, the signal is model-family-independent
+- Creates **cross-provider corroboration**: when Finance (GPT-4o-mini) and Legal (Gemini 2.5 Flash) independently flag the same contract risk from different data sources, the finding is model-family-independent
 
 **`head_agent.py` — The Orchestrator**
 
@@ -377,7 +355,7 @@ Contains two functions used by the LangGraph orchestrator's cascade expander nod
   - `infra+product`: +15 — infra failures manifest in product
   - Caps at 99 to keep LLM output meaningful.
 
-The `CascadeMapperAgent` class and `_build_cascade` function also exist in this file but are not used in the main pipeline.
+The `CascadeMapperAgent` class and `_build_cascade` function also exist in this file as legacy stubs but are not used in the main pipeline.
 
 #### Signal Bus: `backend/signal_bus.py`
 
@@ -441,64 +419,61 @@ The `useDeadpool` hook opens an `EventSource` receiving three event types:
 - `risk_score` — updates risk score display
 - `heartbeat` — keep-alive ping every 15 seconds (no action taken)
 
-#### Utilities & Constants
+#### Constants
 
-- **`formatter.js`** — Number and date formatting helpers
-- **`riskColor.js`** — Maps risk levels to color codes
-- **`agents.js`** — Agent metadata, `DOMAIN_COLORS` (used by React Flow nodes and legend)
-- **`cascade.js`** — Cascade definitions
-- **`fileSlots.js`** — File slot configurations (for reference)
-- **`mockOutputs.js`** — Mock agent outputs for offline development
+- **`agents.js`** — Agent metadata (`name`, `domain`, `color`, `icon`, `description`) and `DOMAIN_COLORS` map used by React Flow nodes, the cascade legend, and AgentChatPanel
 
 ---
 
 ## API Reference
 
+> Replace `{BASE_URL}` with `http://localhost:8000` locally or the deployed backend URL in production.
+
 ### Health Check
 ```bash
-curl http://localhost:8000/health
+curl {BASE_URL}/health
 ```
 
 ### Run a Single Agent
 ```bash
 # Options: people, finance, infra, product, legal, code_audit
-curl http://localhost:8000/api/agents/people/run
+curl {BASE_URL}/api/agents/people/run
 ```
 
 ### Run All Agents Concurrently
 ```bash
-curl http://localhost:8000/api/agents/all/run
+curl {BASE_URL}/api/agents/all/run
 ```
 
 ### Full Orchestrated Analysis
 ```bash
-curl -X POST http://localhost:8000/api/head-agent/analyze
+curl -X POST {BASE_URL}/api/head-agent/analyze
 ```
 Returns dashboard dict: `{ riskScore, severityLevel, trend, briefing, nodes, edges, activeChains, activeCascades }`.
 
 ### Get Latest Risk Score
 ```bash
-curl http://localhost:8000/api/risk-score
+curl {BASE_URL}/api/risk-score
 ```
 
 ### List Active Cascades
 ```bash
-curl http://localhost:8000/api/cascades
+curl {BASE_URL}/api/cascades
 ```
 
 ### Chat with an Agent (streaming)
 ```bash
 # Options: people, finance, infra, product, legal, code_audit
-curl -X POST http://localhost:8000/api/agents/people/chat \
+curl -X POST {BASE_URL}/api/agents/people/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "Who is the biggest key-person risk right now?", "history": []}'
 ```
 Response: `text/event-stream` — `data: {"text": "chunk"}` events until `data: [DONE]`.
-Each agent primes the conversation with its latest analysis findings before responding.
+Each agent primes the conversation with its latest analysis data before responding.
 
 ### What-If Simulation
 ```bash
-curl -X POST http://localhost:8000/api/whatif \
+curl -X POST {BASE_URL}/api/whatif \
   -H "Content-Type: application/json" \
   -d '{"scenario_type": "engineer_leaves", "parameters": {"severity_multiplier": 1.5}}'
 ```
@@ -506,18 +481,18 @@ curl -X POST http://localhost:8000/api/whatif \
 
 ### Get Agent's Last Report
 ```bash
-curl http://localhost:8000/api/agents/finance/report
+curl {BASE_URL}/api/agents/finance/report
 ```
 
 ### SSE Stream (Real-time)
 ```bash
-curl -N http://localhost:8000/api/sse/updates
+curl -N {BASE_URL}/api/sse/updates
 ```
 Event types: `anomaly`, `risk_score`, `heartbeat` (every 15s)
 
 ### Slack Integration Status
 ```bash
-curl http://localhost:8000/api/slack/status
+curl {BASE_URL}/api/slack/status
 ```
 
 ---
@@ -533,7 +508,7 @@ All data files are in `backend/data/` with **carefully engineered signals** and 
 | `csv/deadpool_revenue_pipeline.csv` | Finance | Nexus Corp $423K/yr deal at risk (prob 0.85→0.35). Greenleaf $9K overdue (noise). |
 | `csv/deadpool_funding_runway.csv` | Finance | Down-round clause at runway <3mo. Base runway: 6.7mo. Worst case: 3.6mo. |
 | `infrastructure.json` | Infra | `payments-service`: 0 deploys in 2 weeks, API v2 at 34% completion. |
-| `product_metrics.json` | Product | Payments dashboard errors 0.2%→12%. Other features stable. |
+| `product_data.csv` + `reddit_brainrotgenz.json` | Product | Payments dashboard errors 0.2%→12%. Reddit sentiment fallback for qualitative signals. |
 | `contracts.json` | Legal | Nexus Corp Section 4.2: API v2 by April 15 or termination. PCI DSS obligation. |
 | `codebase_audit.json` | Code Audit | `payments-service`: bus factor=1, CVE-2026-4821 (CVSS 8.1), coverage 82%→61%. |
 
@@ -546,11 +521,11 @@ All data files are in `backend/data/` with **carefully engineered signals** and 
 
 | Variable | Required | Used By | Notes |
 |----------|----------|---------|-------|
-| `GOOGLE_API_KEY` | ✅ Yes | All Gemini agents + Head Agent + cascade expander | Required for startup |
+| `GOOGLE_API_KEY` | ✅ Yes | 5 specialist agents (Gemini 2.5 Flash) + Head Agent + cascade expander (Gemini 2.5 Pro) | Required for startup |
 | `OPENAI_API_KEY` | ✅ Yes | Finance Agent (GPT-4o-mini) | Required for startup |
 | `GITHUB_TOKEN` | ⚠️ Recommended | Code Audit Agent, Infra Agent | Falls back to JSON data if missing |
 | `GITHUB_REPO` | ⚠️ Recommended | Code Audit Agent, Infra Agent | Format: `owner/repo` |
-| `SLACK_BOT_TOKEN` | ❌ Optional | `utils/slack_client.py` | Gracefully skipped if missing |
+| `SLACK_BOT_TOKEN` | ❌ Optional | People Agent (`utils/slack_client.py`) | Falls back to `team_activity.json` if missing |
 
 ---
 
