@@ -1,4 +1,3 @@
-// ─── components/layout/Header.jsx ─────────────────────────────────────────────
 import React from "react";
 
 export default function Header({ running, onRun }) {
@@ -29,23 +28,25 @@ export default function Header({ running, onRun }) {
         </span>
       </div>
 
-      {/* Right: run button */}
-      <button
-        onClick={onRun}
-        disabled={running}
-        style={{
-          background: running ? "#3D0000" : "linear-gradient(135deg, #FF2020, #7A0000)",
-          color: running ? "#888888" : "#FFFFFF",
-          border: "none", borderRadius: 6,
-          padding: "8px 20px",
-          fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em",
-          cursor: running ? "not-allowed" : "pointer",
-          transition: "opacity 0.2s",
-          opacity: running ? 0.7 : 1,
-        }}
-      >
-        {running ? "Analyzing..." : "Run Analysis"}
-      </button>
+      {/* Right: action items */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <button
+          onClick={onRun}
+          disabled={running}
+          style={{
+            background: running ? "#3D0000" : "linear-gradient(135deg, #FF2020, #7A0000)",
+            color: running ? "#888888" : "#FFFFFF",
+            border: "none", borderRadius: 6,
+            padding: "8px 20px",
+            fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em",
+            cursor: running ? "not-allowed" : "pointer",
+            transition: "opacity 0.2s",
+            opacity: running ? 0.7 : 1,
+          }}
+        >
+          {running ? "Analyzing..." : "Run Analysis"}
+        </button>
+      </div>
     </div>
   );
 }

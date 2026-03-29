@@ -35,14 +35,23 @@ const STATIC_TEXT = {
 
 function AgentCard({ agent, status }) {
   const [msgIndex, setMsgIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     if (status !== "processing") return;
     setMsgIndex(0);
-    const interval = setInterval(() => {
+    
+    let timerId;
+    const tick = () => {
       setMsgIndex(i => (i + 1) % agent.processing.length);
-    }, 1800);
-    return () => clearInterval(interval);
+      const nextDelay = 3500 + Math.random() * 3000; // 3.5s to 6.5s, avg ~5s
+      timerId = setTimeout(tick, nextDelay);
+    };
+    
+    const startDelay = 500 + Math.random() * 4500; // 0.5s to 5.0s
+    timerId = setTimeout(tick, startDelay);
+
+    return () => clearTimeout(timerId);
   }, [status, agent.processing.length]);
 
   const dotColor = STATUS_COLOR[status];
@@ -52,9 +61,16 @@ function AgentCard({ agent, status }) {
     : (STATIC_TEXT[status] || "Standby");
 
   return (
-    <div style={{
-      background: "#1C1C1C",
+    <div 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+      background: "rgba(30, 30, 30, 0.5)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      border: "1px solid rgba(255, 60, 60, 0.15)",
       borderTop: "2px solid #FF2020",
+      boxShadow: isHovered ? "0 8px 32px rgba(255, 32, 32, 0.25)" : "0 4px 30px rgba(0, 0, 0, 0.5)",
       borderRadius: 8,
       display: "flex",
       flexDirection: "column",
@@ -63,6 +79,9 @@ function AgentCard({ agent, status }) {
       textAlign: "center",
       padding: "0 12px",
       gap: 6,
+      transform: isHovered ? "translateY(-4px)" : "translateY(0)",
+      transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out",
+      cursor: "pointer",
     }}>
       <span className="material-icons" style={{
         fontSize: 28,
@@ -80,6 +99,7 @@ function AgentCard({ agent, status }) {
           width: 8, height: 8, borderRadius: "50%",
           background: dotColor, boxShadow: dotGlow, flexShrink: 0,
           transition: "background 0.4s, box-shadow 0.4s",
+          animation: status === "processing" ? "pulseDot 1.5s infinite" : "none",
         }} />
         <span style={{ fontSize: 14, fontWeight: 600, color: "#FFFFFF", transition: "opacity 0.3s" }}>
           {text}
@@ -92,6 +112,12 @@ function AgentCard({ agent, status }) {
 export default function AgentsPanel({ agentStatuses }) {
   return (
     <div style={{ display: "grid", gridTemplateRows: "auto 1fr", height: "100%", gap: 16 }}>
+      <style>{`
+        @keyframes pulseDot {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.4); opacity: 0.7; }
+        }
+      `}</style>
       <div style={{
         fontSize: 22, fontWeight: 900, fontStyle: "italic", textTransform: "uppercase",
         letterSpacing: "-0.5px",

@@ -70,9 +70,36 @@ export default function FlawsPanel({ anomalies }) {
       }}>
         {anomalies.length === 0 ? (
           <div style={{
-            padding: 24, textAlign: "center", color: "#555555", fontSize: 12,
+            height: "100%", display: "flex", flexDirection: "column",
+            justifyContent: "center", alignItems: "center", gap: 16,
+            color: "#555555", padding: 32, textAlign: "center"
           }}>
-            Run analysis to detect flaws
+            <div style={{
+              width: 80, height: 80, borderRadius: "50%",
+              background: "rgba(255, 32, 32, 0.05)",
+              border: "1px dashed rgba(255, 32, 32, 0.2)",
+              display: "flex", justifyContent: "center", alignItems: "center",
+              boxShadow: "0 0 30px rgba(255, 32, 32, 0.05)",
+              animation: "pulse 3s infinite alternate"
+            }}>
+              <span className="material-icons" style={{ fontSize: 36, color: "rgba(255, 32, 32, 0.6)" }}>
+                radar
+              </span>
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#888888", letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
+                System Ready
+              </div>
+              <div style={{ fontSize: 12, lineHeight: 1.6, color: "#555555", maxWidth: 280, margin: "0 auto" }}>
+                Awaiting manual override. Initiate the analysis to detect operational vulnerabilities and cascade risks.
+              </div>
+            </div>
+            <style>{`
+              @keyframes pulse {
+                0% { box-shadow: 0 0 20px rgba(255, 32, 32, 0.02); border-color: rgba(255, 32, 32, 0.1); }
+                100% { box-shadow: 0 0 40px rgba(255, 32, 32, 0.1); border-color: rgba(255, 32, 32, 0.4); }
+              }
+            `}</style>
           </div>
         ) : (
           anomalies.map((flaw, i) => {
