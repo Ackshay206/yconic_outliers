@@ -37,7 +37,7 @@ Startups don't die from one thing — they die from a **chain reaction** nobody 
 
 **DEADPOOL is a multi-agent startup immune system.** Six specialist AI agents continuously monitor every operational layer of a company — **People, Finance, Infrastructure, Product, Legal, and Code Audit** — orchestrated by a **LangGraph pipeline** that cross-validates findings, traces cascade chains using LLM-driven consequence expansion, and produces plain-language founder briefings.
 
-The system is **multi-model by design**: five specialist agents and the Head Agent run on **Google Gemini 2.5 Pro**, while the Finance Agent runs on **OpenAI GPT-4o-mini**. When agents on different model families independently corroborate the same risk, the signal is model-independent — not just one model agreeing with itself.
+The system is **multi-model by design**: five specialist agents run on **Google Gemini 2.5 Flash**, the Head Agent and cascade expander run on **Gemini 2.5 Pro**, and the Finance Agent runs on **OpenAI GPT-4o-mini**. When agents on different model families independently corroborate the same risk, the signal is model-independent — not just one model agreeing with itself.
 
 ---
 
@@ -46,11 +46,11 @@ The system is **multi-model by design**: five specialist agents and the Head Age
 ```
   ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐
   │ People       │  │ Finance        │  │ Infra           │
-  │ (Gemini Pro) │  │ (GPT-4o-mini)  │  │ (Gemini Pro)    │
+  │ (Gemini Flash│  │ (GPT-4o-mini)  │  │ (Gemini Flash)  │
   └──────┬───────┘  └───────┬────────┘  └────────┬────────┘
   ┌──────┴───────┐  ┌───────┴────────┐  ┌────────┴────────┐
   │ Product      │  │ Legal          │  │ Code Audit      │
-  │ (Gemini Pro) │  │ (Gemini Pro)   │  │ (Gemini Pro)    │
+  │ (Gemini Flash│  │ (Gemini Flash) │  │ (Gemini Flash)  │
   └──────┬───────┘  └───────┬────────┘  └────────┬────────┘
          └──────────────────▼──────────────────────┘
                    ┌───────────────────────────────────┐
@@ -91,7 +91,8 @@ The system is **multi-model by design**: five specialist agents and the Head Age
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | Orchestration | **LangGraph** `StateGraph` | Typed state, conditional edges, parallel fan-out, cascade expander loop |
-| AI (Primary) | **Gemini 2.5 Pro** via `google-genai` SDK | 5 specialist agents + Head Agent + cascade expansion |
+| AI (Specialists) | **Gemini 2.5 Flash** via `google-genai` SDK | 5 specialist agents (people, infra, product, legal, code_audit) |
+| AI (Orchestration) | **Gemini 2.5 Pro** via `google-genai` SDK | Head Agent + cascade expansion |
 | AI (Finance) | **GPT-4o-mini** via `openai` SDK | Finance agent — fast structured CSV extraction, precise arithmetic |
 | Backend | **Python 3.11+ / FastAPI** | Async API server, SSE streaming, Pydantic v2 data validation |
 | Frontend | **React 19 + Vite 6 + React Flow** | Two-page dashboard: Overview + Cascade Chains (`@xyflow/react`) |
@@ -123,12 +124,12 @@ yconic_outliers/
 │   │   ├── __init__.py
 │   │   ├── base_agent.py       # Abstract base — Gemini client, prompt template, JSON parsing
 │   │   ├── head_agent.py       # Cross-validate + risk score + FounderBriefing + What-If simulation
-│   │   ├── people_agent.py     # Team health & key-person risk         (Gemini 2.5 Pro)
+│   │   ├── people_agent.py     # Team health & key-person risk         (Gemini 2.5 Flash)
 │   │   ├── finance_agent.py    # Cash flow, runway, revenue            (GPT-4o-mini)
-│   │   ├── infra_agent.py      # System reliability & deploy ops       (Gemini 2.5 Pro)
-│   │   ├── product_agent.py    # User engagement & retention           (Gemini 2.5 Pro)
-│   │   ├── legal_agent.py      # Contracts & compliance                (Gemini 2.5 Pro)
-│   │   └── code_audit_agent.py # Codebase health, CVEs, bus factor     (Gemini 2.5 Pro)
+│   │   ├── infra_agent.py      # System reliability & deploy ops       (Gemini 2.5 Flash)
+│   │   ├── product_agent.py    # User engagement & retention           (Gemini 2.5 Flash)
+│   │   ├── legal_agent.py      # Contracts & compliance                (Gemini 2.5 Flash)
+│   │   └── code_audit_agent.py # Codebase health, CVEs, bus factor     (Gemini 2.5 Flash)
 │   │
 │   ├── utils/
 │   │   ├── dashboard_formatter.py  # Dashboard response formatting helpers
@@ -332,7 +333,7 @@ All data is typed with **Pydantic v2** schemas:
 
 All agents except Finance inherit from `BaseAgent`:
 - Initializes a `google.genai.Client` with `GOOGLE_API_KEY`
-- `run()` method: calls `load_data()` → builds a structured prompt → calls Gemini 2.5 Pro → parses JSON response → strips markdown fences → validates into `Anomaly` objects → publishes each to the signal bus → returns `AgentReport`
+- `run()` method: calls `load_data()` → builds a structured prompt → calls Gemini 2.5 Flash → parses JSON response → strips markdown fences → validates into `Anomaly` objects → publishes each to the signal bus → returns `AgentReport`
 - If the model returns malformed JSON, gracefully returns an empty anomaly list
 
 Subclasses only need to implement `load_data()` to return their domain data dict.
