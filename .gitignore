@@ -26,6 +26,7 @@ htmlcov/
 
 # Claude Code
 CLAUDE.md
+agents.md
 .claude/
 memory/
 
@@ -40,3 +41,4 @@ venv/
 node_modules/
 dist/
 .env
+local_memory/

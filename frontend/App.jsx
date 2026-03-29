@@ -16,7 +16,16 @@ function AppInner() {
       fontFamily: "'Inter', sans-serif",
       display: "flex", flexDirection: "column",
       overflow: "hidden",
+      position: "relative",
     }}>
+      {running && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 50,
+          background: "rgba(0, 0, 0, 0.5)",
+          pointerEvents: "none",
+          transition: "opacity 0.4s ease"
+        }} />
+      )}
       <Header running={running} onRun={runAnalysis} />
       {error && (
         <div style={{
