@@ -32,7 +32,7 @@ The system is **model-agnostic by design** — five specialist agents and the He
 
 | | Hackathon (ships Sunday 2:30 PM) | Post-hackathon (weeks/months) |
 |---|---|---|
-| **Data** | Synthetic JSON/CSV files — carefully engineered to contain discoverable cascade chains | Real API integrations (GitHub, Slack, Stripe, PostHog) via OAuth + webhook connectors |
+| **Data** | Real API integrations: Slack API (People), GitHub Actions + REST + Dependabot APIs (Infra, Code Audit), uploaded CSVs (Finance, Product), uploaded PDFs + DuckDuckGo search (Legal) | Full OAuth + webhook connectors, multi-tenant ingestion pipelines |
 | **Agents** | 7 LangGraph nodes, each making 1 LLM call per cycle with structured output | Agents with multi-step tool-use loops, retry logic, and rate limit handling |
 | **Orchestration** | Full LangGraph StateGraph with conditional routing, parallel fan-out, and MemorySaver checkpointing | PostgresSaver, multi-tenant thread_id isolation, horizontal node scaling |
 | **Dashboard** | React + D3.js: cascade graph visualization, risk score, founder briefing, activity log | Animated cascade pulses, What-If simulation mode, alert system, mobile responsive |
@@ -200,7 +200,7 @@ These keys are embedded in every corroboration query so receiving nodes narrow t
 
 ### People Agent *(Gemini)*
 **Domain:** Team health, engagement, key-person risk.
-**Data:** `team_activity.json` — 12 developers × 12 weeks of commit, PR, and response time data.
+**Data:** Slack API via `slack_client.py` — message frequency, response times, and user activity per developer pulled from the developer channel. Slack user IDs mapped to GitHub handles via a config file.
 **Detects:** Commit drops >50% WoW, prolonged silence from key contributors, bus factor concentration, PR review bottlenecks.
 **Cross-references:** Code Audit (affected code areas), Infra (owned services), Finance (payroll impact).
 
@@ -213,25 +213,25 @@ These keys are embedded in every corroboration query so receiving nodes narrow t
 
 ### Infra Agent *(Gemini)*
 **Domain:** System reliability, deployment operations, performance.
-**Data:** `infrastructure.json` — 6 microservices × 12 weeks of deploy counts, uptime, response times, error rates, cloud costs.
+**Data:** GitHub Actions API — recent workflow runs including pass/fail rate, deploy frequency per service, and workflow duration trends.
 **Detects:** Deploy frequency drops, CI failure spikes, response time degradation, SLA breach risk, cloud cost anomalies.
 **Cross-references:** Code Audit (code quality → runtime failures?), People (who owns the degrading service?), Legal (SLA obligations at risk).
 
 ### Product Agent *(Gemini)*
 **Domain:** User engagement, retention, satisfaction.
-**Data:** `product_metrics.json` — WAU, feature engagement, support tickets, NPS, churn rates.
+**Data:** Uploaded CSV `product_data.csv` — columns for weekly active users, feature-level engagement, NPS, and support ticket volume. Parsed and validated with Pydantic before passing to the model.
 **Detects:** Feature adoption decline, churn increases, NPS drops, support ticket spikes, sentiment deterioration.
 **Cross-references:** Infra (performance → UX decline?), Code Audit (bugs → user errors?), Finance (revenue impact of churn).
 
 ### Legal Agent *(Gemini)*
 **Domain:** Contracts, compliance, regulatory exposure.
-**Data:** `contracts.json` — client contracts with parsed clauses, investor agreements, compliance obligations.
+**Data:** Uploaded contract PDFs extracted via `pdfplumber`/`pypdf` (chunked to fit context limits), plus a web search tool (`duckduckgo-search`) for regulatory lookups against Federal Register and SEC EDGAR.
 **Detects:** Contract deadlines approaching with delivery at risk, conflicting terms, regulatory changes, compliance gaps (PCI DSS, SOC 2).
 **Cross-references:** Finance (breach liability), Infra (feature delivery status), Code Audit (compliance mapped to code state).
 
 ### Code Audit Agent *(Gemini)*
 **Domain:** Codebase health, security posture, technical debt.
-**Data:** `codebase_audit.json` — file change frequency, code ownership maps, CVE scan results, test coverage, PR review patterns.
+**Data:** Three GitHub sources sharing the same token — (1) commit history via `backend/get_commit_history.py` for per-developer commit frequency, volume trends, and file-level change frequency; (2) GitHub REST API for git blame on critical files, PR open/merge/review counts, and stale PR detection; (3) GitHub Dependabot Alerts API for all open CVE alerts with severity and affected package.
 **Detects:** CVEs with CVSS ≥7.0, test coverage <60% for critical services, bus factor = 1, unreviewed PRs in critical paths, outdated dependencies (2+ major versions behind).
 **Cross-references:** People (who owns the code?), Infra (which services run on it?), Legal (compliance implications), Product (user-facing features built on degraded code).
 
