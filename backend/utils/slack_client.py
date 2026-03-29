@@ -16,7 +16,7 @@ import logging
 import os
 import time
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 logger = logging.getLogger("deadpool.slack")
@@ -100,7 +100,7 @@ class SlackClient:
         try:
             users = self._list_users()
             channels = self._list_channels()
-            oldest = _ts(datetime.utcnow() - timedelta(days=days))
+            oldest = _ts(datetime.now(timezone.utc) - timedelta(days=days))
 
             per_user: dict[str, list[dict]] = defaultdict(list)
 

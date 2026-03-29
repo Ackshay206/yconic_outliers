@@ -8,7 +8,7 @@ rather than propagating bad data into downstream logic.
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -38,7 +38,7 @@ class Anomaly(BaseModel):
     affected_entities: list[str] = []
     evidence: dict[str, Any] = {}
     cross_references: list[str] = []  # domains that should corroborate this
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class CascadeNode(BaseModel):
@@ -112,7 +112,7 @@ class RiskScore(BaseModel):
     trend: Literal["increasing", "stable", "decreasing"]
     top_cascades: list[CascadeChain]
     briefing: FounderBriefing
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class AgentReport(BaseModel):
@@ -127,7 +127,7 @@ class AgentReport(BaseModel):
     agent: str
     anomalies: list[Anomaly]
     raw_data_summary: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class WhatIfScenario(BaseModel):

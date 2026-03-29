@@ -13,7 +13,7 @@ import logging
 import os
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 import google.genai as genai
 from google.genai import types as genai_types
@@ -89,7 +89,7 @@ class BaseAgent:
             agent=self.domain,
             anomalies=anomalies,
             raw_data_summary=summary,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
         )
         self.last_report = report
 
