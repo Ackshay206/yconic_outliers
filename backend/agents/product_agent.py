@@ -12,8 +12,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pandas as pd
-
 from agents.base_agent import BaseAgent
 
 CSV_PATH = Path(__file__).parent.parent / "data" / "csv" / "product_data.csv"

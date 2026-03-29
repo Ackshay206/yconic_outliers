@@ -9,14 +9,12 @@ from __future__ import annotations
 
 import json
 import os
-import uuid
 from datetime import datetime
 
 import google.genai as genai
 from google.genai import types as genai_types
 
 from models import Anomaly, AgentReport, CascadeChain, FounderBriefing, RiskScore, WhatIfScenario
-from utils.cascade_mapper import map_cascade, _urgency
 
 MODEL = "gemini-2.5-pro"
 
@@ -70,21 +68,14 @@ class HeadAgent:
 
         validated = self._cross_validate(all_anomalies)
 
-        seen_triggers: set[str] = set()
-        chains: list[CascadeChain] = []
-        for anomaly in validated:
-            if anomaly.id not in seen_triggers and anomaly.severity >= 0.5:
-                chain = map_cascade(anomaly)
-                chains.append(chain)
-                seen_triggers.add(anomaly.id)
-
-        chains.sort(key=lambda c: c.urgency_score, reverse=True)
-        top_cascades = chains[:3]
+        # Cascade expansion is now handled by the orchestrator's cascade_expander node.
+        # analyze() only computes the risk score and briefing from anomalies.
+        top_cascades: list[CascadeChain] = []
 
         risk_score = self._compute_risk_score(validated, top_cascades)
         briefing = self._generate_briefing(validated, top_cascades, risk_score)
 
-        self.active_cascades = chains
+        self.active_cascades = top_cascades
         result = RiskScore(
             score=risk_score,
             severity_level=self._score_to_severity(risk_score),

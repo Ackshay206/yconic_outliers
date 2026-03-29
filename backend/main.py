@@ -167,27 +167,48 @@ async def run_all_agents():
 # ---------------------------------------------------------------------------
 # Head Agent analysis
 # ---------------------------------------------------------------------------
-@app.post("/api/head-agent/analyze", response_model=RiskScore, tags=["Head Agent"])
+async def _run_full_pipeline() -> dict:
+    """Shared logic: run full LangGraph pipeline and merge RiskScore + dashboard."""
+    from orchestrator import run_pipeline
+
+    dashboard = await asyncio.to_thread(run_pipeline, agent_registry, head_agent_instance)
+
+    # Merge RiskScore fields (briefing, severity_level, timestamp) into dashboard
+    rs = head_agent_instance.last_risk_score
+    if rs:
+        dashboard["severityLevel"] = rs.severity_level
+        dashboard["briefing"] = rs.briefing.model_dump()
+        dashboard["timestamp"] = rs.timestamp.isoformat()
+
+    return dashboard
+
+
+@app.post("/api/head-agent/analyze", tags=["Head Agent"])
 async def head_agent_analyze():
     """
-    Run all specialist agents, then have the Head Agent cross-validate
-    anomalies, map cascade chains, and produce a founder briefing.
+    Run the full LangGraph pipeline (specialists → head agent → cascade expander × 3 → format)
+    and return a merged response with RiskScore fields and frontend dashboard graph data.
     """
     if not head_agent_instance:
         raise HTTPException(status_code=503, detail="Head agent not initialized.")
 
-    # Collect anomalies from all specialists
-    all_anomalies = []
-    for agent in agent_registry.values():
-        try:
-            report = await asyncio.to_thread(agent.run)
-            all_anomalies.extend(report.anomalies)
-        except Exception as exc:
-            print(f"[DEADPOOL] Agent {agent.domain} failed: {exc}")
+    try:
+        return await _run_full_pipeline()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
+# Dashboard — same pipeline, same response
+# ---------------------------------------------------------------------------
+@app.get("/api/dashboard", tags=["Risk"])
+async def get_dashboard():
+    """Alias for /api/head-agent/analyze — returns full pipeline result."""
+    if not head_agent_instance:
+        raise HTTPException(status_code=503, detail="Head agent not initialized.")
 
     try:
-        risk_score = await asyncio.to_thread(head_agent_instance.analyze, all_anomalies)
-        return risk_score
+        return await _run_full_pipeline()
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
