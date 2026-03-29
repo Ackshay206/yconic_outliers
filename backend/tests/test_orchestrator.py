@@ -23,7 +23,7 @@ if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, call, patch
 
 from models import AgentReport, Anomaly, RiskScore, CascadeChain
@@ -44,7 +44,7 @@ def _make_anomaly(domain: str, anomaly_id: str, severity: float = 0.7) -> Anomal
         affected_entities=[],
         evidence={},
         cross_references=[],
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
 
@@ -54,7 +54,7 @@ def _make_report(domain: str, anomaly_count: int = 1) -> AgentReport:
         agent=domain,
         anomalies=anomalies,
         raw_data_summary=f"{domain} data loaded",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
 
@@ -64,7 +64,7 @@ def _make_risk_score() -> RiskScore:
         trend="increasing",
         top_cascades=[],
         briefing="Test briefing from head agent.",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
 

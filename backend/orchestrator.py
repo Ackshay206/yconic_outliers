@@ -18,10 +18,13 @@ produced by each parallel branch before head_agent reads them.
 from __future__ import annotations
 
 import operator
-from typing import Annotated, Optional
+from typing import TYPE_CHECKING, Annotated, Optional
 
 from langgraph.graph import StateGraph, START, END
 from typing_extensions import TypedDict
+
+if TYPE_CHECKING:
+    from langgraph.graph.state import CompiledStateGraph
 
 from models import AgentReport, Anomaly, RiskScore
 
@@ -76,7 +79,7 @@ def _make_head_node(head_agent):
 SPECIALIST_DOMAINS = ["people", "finance", "infra", "product", "legal", "code_audit"]
 
 
-def build_graph(specialists: dict, head_agent) -> "CompiledGraph":
+def build_graph(specialists: dict, head_agent) -> CompiledStateGraph:
     """
     Build and compile the DEADPOOL LangGraph pipeline.
 
@@ -90,7 +93,7 @@ def build_graph(specialists: dict, head_agent) -> "CompiledGraph":
 
     Returns
     -------
-    CompiledGraph
+    CompiledStateGraph
         A compiled LangGraph graph ready for .invoke() / .ainvoke().
     """
     builder = StateGraph(OrchestratorState)
