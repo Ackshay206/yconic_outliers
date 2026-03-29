@@ -73,51 +73,50 @@ function AppInner() {
         </div>
       )}
 
-      {/* ── PAGE: Agent Chat ──────────────────────────────────────────────── */}
-      {activePage === "chat" ? (
-        <div style={{ flex: 1, overflow: "hidden" }}>
-          <AgentChatPanel agentStatuses={agentStatuses} />
-        </div>
+      {/* ── Always-mounted pages — visibility toggled via display so state persists ── */}
 
-      /* ── PAGE: Cascade Chains (full-width) ──────────────────────────────── */
-      ) : activePage === "cascades" ? (
-        <div style={{ flex: 1, overflow: "hidden" }}>
-          <CascadeChainPanel
-            cascadeChains={cascadeChains}
-            cascadeNodes={cascadeNodes}
-            cascadeEdges={cascadeEdges}
-          />
-        </div>
-      ) : (
-        /* ── PAGE: Overview (two-column) ──────────────────────────────────── */
+      {/* Agent Chat — always mounted so conversation history survives tab switches */}
+      <div style={{ flex: 1, overflow: "hidden", display: activePage === "chat" ? "flex" : "none", flexDirection: "column" }}>
+        <AgentChatPanel agentStatuses={agentStatuses} />
+      </div>
+
+      {/* Cascade Chains */}
+      <div style={{ flex: 1, overflow: "hidden", display: activePage === "cascades" ? "flex" : "none", flexDirection: "column" }}>
+        <CascadeChainPanel
+          cascadeChains={cascadeChains}
+          cascadeNodes={cascadeNodes}
+          cascadeEdges={cascadeEdges}
+        />
+      </div>
+
+      {/* Overview (two-column) */}
+      <div style={{
+        flex: 1, display: activePage === "overview" ? "grid" : "none",
+        gridTemplateColumns: "3fr 7fr", overflow: "hidden",
+      }}>
+        {/* Left — Agents */}
         <div style={{
-          flex: 1, display: "grid", gridTemplateColumns: "3fr 7fr",
-          gap: 0, overflow: "hidden",
+          background: "#0A0A0A",
+          borderRight: "1px solid #3D0000",
+          overflow: "hidden",
+          padding: 24,
         }}>
-          {/* Left — Agents */}
-          <div style={{
-            background: "#0A0A0A",
-            borderRight: "1px solid #3D0000",
-            overflow: "hidden",
-            padding: 24,
-          }}>
-            <AgentsPanel agentStatuses={agentStatuses} />
-          </div>
+          <AgentsPanel agentStatuses={agentStatuses} />
+        </div>
 
-          {/* Right — Briefing + Liabilities + Risk Index */}
-          <div style={{
-            background: "#111111",
-            display: "flex", flexDirection: "column",
-            padding: 24, gap: 20, overflow: "hidden",
-          }}>
-            <BriefingPanel briefing={briefing} />
-            <FlawsPanel liabilities={liabilities} />
-            <div style={{ flexShrink: 0 }}>
-              <RiskIndex score={riskScore} severityLevel={severityLevel} trend={trend} />
-            </div>
+        {/* Right — Briefing + Liabilities + Risk Index */}
+        <div style={{
+          background: "#111111",
+          display: "flex", flexDirection: "column",
+          padding: 24, gap: 20, overflow: "hidden",
+        }}>
+          <BriefingPanel briefing={briefing} />
+          <FlawsPanel liabilities={liabilities} />
+          <div style={{ flexShrink: 0 }}>
+            <RiskIndex score={riskScore} severityLevel={severityLevel} trend={trend} />
           </div>
         </div>
-      )}
+      </div>
 
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
