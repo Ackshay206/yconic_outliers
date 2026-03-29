@@ -1,0 +1,120 @@
+{
+  "riskScore": 78,
+  "trend": "increasing",
+  "activeCascades": 3,
+  "nodes": [
+    {
+      "id": "eng3_disengage",
+      "domain": "people",
+      "status": "OCCURRED",
+      "title": "Engineer 3 Disengagement",
+      "subtitle": "Key engineer showing burnout signals",
+      "description": "Engineer 3 has shown a 72% drop in commit frequency over the past 3 weeks, combined with declining Slack activity and missed standups. Pattern matches historical attrition signals.",
+      "agentName": "People Agent",
+      "evidence": "Commit frequency dropped 72%. Slack messages down 58%. Missed 4 standups in 2 weeks. Sentiment score: 0.23 (critical).",
+      "cascadeProbability": 0.82,
+      "position": { "x": 0, "y": 200 }
+    },
+    {
+      "id": "deploy_drop",
+      "domain": "infra",
+      "status": "OCCURRED",
+      "title": "Deploy Velocity Dropped 60%",
+      "subtitle": "CI/CD pipeline throughput declining",
+      "description": "Deployment frequency has fallen from 12/week to 5/week, correlating with Engineer 3's reduced output and growing tech debt in the build system.",
+      "agentName": "Infra Agent",
+      "evidence": "Deploy frequency: 5/week (was 12). Build times up 40%. 3 rollbacks in past week. Pipeline queue depth: 2.3x normal.",
+      "cascadeProbability": 0.58,
+      "position": { "x": 300, "y": 80 }
+    },
+    {
+      "id": "dm_feature_broken",
+      "domain": "product",
+      "status": "LIKELY",
+      "title": "DM Feature Broken",
+      "subtitle": "Critical messaging feature degraded",
+      "description": "The direct messaging feature\u2014owned primarily by Engineer 3\u2014has accumulated 14 unresolved bugs and 3 critical performance regressions since disengagement began.",
+      "agentName": "Product Agent",
+      "evidence": "14 open bugs in DM module. P0 latency regression: 340ms \u2192 1.2s. Feature adoption dropped 23%. 47 support tickets this week.",
+      "cascadeProbability": 0.64,
+      "position": { "x": 300, "y": 340 }
+    },
+    {
+      "id": "ci_failures",
+      "domain": "infra",
+      "status": "LIKELY",
+      "title": "CI Failure Rate Spike",
+      "subtitle": "Build reliability deteriorating",
+      "description": "CI failure rate has climbed to 34%, up from a baseline of 8%. Flaky tests and untested merges from reduced code review coverage are primary drivers.",
+      "agentName": "Infra Agent",
+      "evidence": "CI failure rate: 34% (baseline 8%). Flaky test count: 23. Average retry count: 2.1. Developer wait time: +45min/day.",
+      "cascadeProbability": 0.32,
+      "position": { "x": 600, "y": 80 }
+    },
+    {
+      "id": "contract_risk",
+      "domain": "legal",
+      "status": "POSSIBLE",
+      "title": "SLA Contract At Risk",
+      "subtitle": "Uptime guarantees threatened",
+      "description": "Current infrastructure degradation trajectory puts 3 enterprise SLA contracts at risk of breach within 30 days, potentially triggering penalty clauses.",
+      "agentName": "Legal Agent",
+      "evidence": "3 enterprise SLAs with 99.9% uptime clause. Current uptime: 99.2%. Penalty exposure: $340K. Contract renewal in 45 days.",
+      "cascadeProbability": 0.18,
+      "position": { "x": 600, "y": 280 }
+    },
+    {
+      "id": "churn_spike",
+      "domain": "product",
+      "status": "LIKELY",
+      "title": "Churn Rate Spike +6.4%",
+      "subtitle": "User retention declining sharply",
+      "description": "Monthly churn has increased from 3.2% to 9.6%, driven by DM feature degradation and growing user frustration with product reliability.",
+      "agentName": "Product Agent",
+      "evidence": "Monthly churn: 9.6% (was 3.2%). NPS dropped 18 points. 'Cancel' page visits up 340%. Competitor mentions in churn surveys: 67%.",
+      "cascadeProbability": 0.50,
+      "position": { "x": 900, "y": 200 }
+    },
+    {
+      "id": "revenue_drop",
+      "domain": "finance",
+      "status": "POSSIBLE",
+      "title": "Revenue Cliff Risk",
+      "subtitle": "MRR erosion accelerating",
+      "description": "Combined impact of churn acceleration and SLA penalties creates a projected 22% MRR decline over 60 days, threatening runway assumptions.",
+      "agentName": "Finance Agent",
+      "evidence": "Projected MRR decline: 22% over 60 days. Current MRR: $1.2M. At-risk ARR: $3.1M. Runway impact: -2.3 months.",
+      "cascadeProbability": 0.36,
+      "position": { "x": 1200, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "eng3_disengage",    "target": "deploy_drop",       "severity": "high" },
+    { "id": "e2", "source": "eng3_disengage",    "target": "dm_feature_broken", "severity": "high" },
+    { "id": "e3", "source": "deploy_drop",       "target": "ci_failures",       "severity": "medium" },
+    { "id": "e4", "source": "dm_feature_broken", "target": "churn_spike",       "severity": "high" },
+    { "id": "e5", "source": "ci_failures",       "target": "contract_risk",     "severity": "medium" },
+    { "id": "e6", "source": "contract_risk",     "target": "revenue_drop",      "severity": "medium" },
+    { "id": "e7", "source": "churn_spike",       "target": "revenue_drop",      "severity": "high" }
+  ],
+  "activeChains": [
+    {
+      "label": "Cascade #1 \u2014 People \u2192 Product \u2192 Finance",
+      "chain": ["Engineer 3 Disengagement", "DM Feature Broken", "Churn Spike +6.4%", "Revenue Cliff Risk"],
+      "domains": ["people", "product", "product", "finance"],
+      "prob": 0.28
+    },
+    {
+      "label": "Cascade #2 \u2014 People \u2192 Infra \u2192 Legal \u2192 Finance",
+      "chain": ["Engineer 3 Disengagement", "Deploy Velocity Drop", "CI Failure Spike", "SLA Contract Risk", "Revenue Cliff Risk"],
+      "domains": ["people", "infra", "infra", "legal", "finance"],
+      "prob": 0.13
+    },
+    {
+      "label": "Cascade #3 \u2014 Full Convergence",
+      "chain": ["Engineer 3 Disengagement", "DM Feature Broken", "Churn Spike +6.4%", "Revenue Cliff Risk"],
+      "domains": ["people", "product", "product", "finance"],
+      "prob": 0.36
+    }
+  ]
+}

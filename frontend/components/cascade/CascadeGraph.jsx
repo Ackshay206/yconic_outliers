@@ -1,52 +1,83 @@
-import React from "react";
-import { HARDCODED_CASCADE } from "../../constants/cascade";
-import { DOMAIN_COLORS } from "../../constants/agents";
-import { useCascadeAnimation } from "../../hooks/useCascaseAnimation";
-import { CascadeEdge } from "./CascadeEdge";
-import { CascadeNode } from "./CascadeNode";
+import React, { useMemo, useCallback } from "react";
+import { ReactFlow, Controls, Background } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import { CASCADE_MOCK_DATA } from "../../constants/cascade";
+import { CascadeFlowNode } from "./CascadeFlowNode";
+import { CascadeFlowEdge } from "./CascadeFlowEdge";
 
-// ─── CascadeGraph ─────────────────────────────────────────────────────────────
-export function CascadeGraph() {
-  const { nodes, edges } = HARDCODED_CASCADE;
-  const { pulse, animStep } = useCascadeAnimation(edges.length);
-  const [hoveredNode, setHoveredNode] = React.useState(null);
+const nodeTypes = { cascadeNode: CascadeFlowNode };
+const edgeTypes = { cascadeEdge: CascadeFlowEdge };
 
-  const nodeMap = {};
-  nodes.forEach(n => nodeMap[n.id] = n);
-  const W = 960, H = 580;
+export function CascadeGraph({ onNodeClick, onPaneClick }) {
+  const nodes = useMemo(
+    () =>
+      CASCADE_MOCK_DATA.nodes.map((n) => ({
+        id: n.id,
+        type: "cascadeNode",
+        position: n.position,
+        data: {
+          domain: n.domain,
+          status: n.status,
+          title: n.title,
+          subtitle: n.subtitle,
+          description: n.description,
+          agentName: n.agentName,
+          evidence: n.evidence,
+          cascadeProbability: n.cascadeProbability,
+        },
+      })),
+    []
+  );
+
+  const edges = useMemo(
+    () =>
+      CASCADE_MOCK_DATA.edges.map((e) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        type: "cascadeEdge",
+        data: { severity: e.severity },
+      })),
+    []
+  );
+
+  const handleNodeClick = useCallback(
+    (_event, node) => {
+      const sourceNode = CASCADE_MOCK_DATA.nodes.find((n) => n.id === node.id);
+      if (sourceNode && onNodeClick) onNodeClick(sourceNode);
+    },
+    [onNodeClick]
+  );
+
+  const handlePaneClick = useCallback(() => {
+    if (onPaneClick) onPaneClick();
+  }, [onPaneClick]);
 
   return (
-    <div style={{ background: "#0a0f1e", border: "1px solid #1e293b", borderRadius: 12, padding: 24, marginBottom: 24, overflowX: "auto" }}>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", minWidth: 720 }}>
-        <defs>
-          {nodes.map(n => (
-            <radialGradient key={n.id} id={`grad_${n.id}`} cx="50%" cy="50%" r="50%">
-              <stop offset="0%"   stopColor={DOMAIN_COLORS[n.domain]} stopOpacity="0.4" />
-              <stop offset="100%" stopColor={DOMAIN_COLORS[n.domain]} stopOpacity="0.05" />
-            </radialGradient>
-          ))}
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-            <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#475569" />
-          </marker>
-        </defs>
-
-        {edges.map((e, i) => (
-          <CascadeEdge key={i} edge={e} nodeMap={nodeMap}
-            active={i <= animStep % (edges.length + 1)} />
-        ))}
-
-        {nodes.map(n => (
-          <CascadeNode key={n.id} node={n} pulse={pulse}
-            hovered={hoveredNode === n.id}
-            onEnter={() => setHoveredNode(n.id)}
-            onLeave={() => setHoveredNode(null)} />
-        ))}
-      </svg>
+    <div style={{ width: "100%", height: "100%", background: "#111111", overflow: "hidden" }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onNodeClick={handleNodeClick}
+        onPaneClick={handlePaneClick}
+        fitView
+        fitViewOptions={{ padding: 0.2 }}
+        proOptions={{ hideAttribution: true }}
+        minZoom={0.3}
+        maxZoom={1.5}
+        style={{ background: "#111111" }}
+      >
+        <Background color="#1a1a1a" gap={24} size={1} />
+        <Controls
+          style={{
+            background: "#1a1a1a",
+            border: "1px solid #2a2a2a",
+            borderRadius: 6,
+          }}
+        />
+      </ReactFlow>
     </div>
   );
 }
-
