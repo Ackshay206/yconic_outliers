@@ -36,6 +36,7 @@ The system is **model-agnostic by design** — five specialist agents and the He
 | **Agents** | 7 LangGraph nodes, each making 1 LLM call per cycle with structured output | Agents with multi-step tool-use loops, retry logic, and rate limit handling |
 | **Orchestration** | Full LangGraph StateGraph with conditional routing, parallel fan-out, LLM cascade expander loop (max depth 5) | PostgresSaver, multi-tenant thread_id isolation, horizontal node scaling |
 | **Dashboard** | React + React Flow (`@xyflow/react`): cascade chain graph, risk score, founder briefing, liabilities panel | Animated cascade pulses, What-If simulation mode, alert system, mobile responsive |
+| **Agent Chat** | Per-agent conversational interface grounded in latest analysis data, SSE token streaming, persisted history | Multi-tenant conversation isolation, proactive alert surfacing, voice interface |
 | **Traction** | Landing page with signup form | Waitlist → beta invites → paid pilot with 5 founders |
 
 This distinction matters because **code is evaluated against the master plan** — not against an aspirational vision. Everything in the "Hackathon" column is what we commit to building and what the code will be measured against. The "Post-hackathon" column is documented to show scalability thinking, but we do not claim to build it this weekend.
@@ -73,6 +74,7 @@ We are not starting from zero. Here's what's done and what remains:
 | **Dashboard: risk score + founder briefing** | ✅ Done | Summary, timeline, recommended_action |
 | **Dashboard: liabilities panel** | ✅ Done | Replaces activity log — sorted by severity |
 | **What-If simulation** | ✅ Done | `POST /api/whatif` wired to `HeadAgent.simulate_whatif()` |
+| **Agent Chat** | ✅ Shipped | `POST /api/agents/{name}/chat` — per-agent conversational interface grounded in latest analysis data, SSE token streaming, persisted conversation history across tab switches |
 | **Dashboard: activity log** | ❌ Not shipped | Deprioritised in favour of liabilities panel |
 | **Landing page** | ❌ Not shipped | Out of scope for hackathon code submission |
 
@@ -293,6 +295,53 @@ LLM-driven consequence expansion via the `_llm_next_step` function in `cascade_m
 
 ---
 
+## Agent Chat *(Shipped)*
+
+DEADPOOL ships with an interactive chat interface that lets founders interrogate any of the six specialist agents directly. Unlike a generic LLM chat, every conversation is **grounded in the latest analysis data** — each agent primes the conversation with its most recent anomaly report before the first user message, so answers are specific to the company's current operational state, not generic knowledge.
+
+### How it works
+
+1. **Data context injection:** Before the conversation starts, `BaseAgent.get_chat_context()` returns the last `AgentReport` summary. This is injected as a priming `user`/`model` exchange in the conversation history, anchoring all subsequent responses in real findings.
+2. **Conversation history replay:** The full prior conversation is replayed to the model on each turn, maintaining coherent multi-turn dialogue.
+3. **Token-by-token SSE streaming:** `BaseAgent.chat_stream(message, history)` calls `client.models.generate_content_stream()` and yields each text chunk as a Server-Sent Event: `data: {"text": "chunk"}\n\n`. A `data: [DONE]\n\n` sentinel ends the stream.
+4. **Frontend stream consumption:** `AgentChatPanel.jsx` opens the response body as a `ReadableStream` via `response.body.getReader()`, appending chunks to the active message bubble in real time. A blinking cursor animates during streaming and is removed on `[DONE]`.
+5. **Conversation persistence:** Each agent's conversation is stored in a `Map` keyed by agent name in React state. Switching tabs preserves the full conversation history — the agent remembers what was discussed earlier in the session.
+
+### System prompt modification
+
+Chat mode appends conversation-specific instructions to each agent's base system prompt:
+- Respond conversationally, not in JSON
+- Be concise and actionable — founders are busy
+- Reference specific entities from the analysis (developer names, service names, contract clauses)
+- Suggest one concrete next action per response
+
+### API endpoint
+
+```
+POST /api/agents/{agent_name}/chat
+Content-Type: application/json
+
+{
+  "message": "What should I prioritize given Sarah Chen's disengagement?",
+  "history": [
+    {"role": "user",  "content": "What anomalies did you find?"},
+    {"role": "model", "content": "I detected a 94% commit drop from Sarah Chen..."}
+  ]
+}
+```
+
+Response: `text/event-stream` — `data: {"text": "chunk"}` events until `data: [DONE]`.
+
+### Frontend: AgentChatPanel
+
+Three-section layout:
+
+- **Left sidebar:** Six agent cards, each with a domain-colored status dot (critical/warning/healthy/idle), agent label, and brief description. Clicking a card switches the active agent and restores that agent's conversation history.
+- **Main chat area:** Auto-scrolling message history. User messages are right-aligned with a "YOU" avatar. Agent responses are left-aligned with domain-colored headers, streaming cursor animation during response generation, and a Clear Chat button.
+- **Welcome state:** When a conversation is empty, a per-agent welcome card shows the agent's icon, description, and 3–4 suggested questions (e.g., *"Which engineer is the biggest single point of failure?"*, *"How many months of runway do we have?"*). Clicking a suggestion pre-fills the input.
+
+---
+
 ## Features: what ships vs. what's stretch
 
 **The scoring rubric evaluates code against the master plan.** Overcommitting kills the completeness score. We define three tiers:
@@ -307,6 +356,7 @@ LLM-driven consequence expansion via the `_llm_next_step` function in `cascade_m
 | **Dashboard: risk score + briefing** | Dev 4 | 0–100 score, severity level, trend, FounderBriefing (summary, timeline, action). | ✅ Shipped |
 | **Dashboard: liabilities panel** | Dev 4 | Scrollable severity-sorted anomaly list. Replaced activity log. | ✅ Shipped |
 | **SSE streaming** | Dev 5 | FastAPI `signal_bus` → React `EventSource` — incremental anomaly display during analysis. | ✅ Shipped |
+| **Agent Chat** | Dev 4 + Dev 5 | Per-agent conversational interface grounded in latest analysis data. Token streaming via SSE. Conversation history persists across tab switches. | ✅ Shipped |
 
 ### Tier 2 — Should ship
 
