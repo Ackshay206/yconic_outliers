@@ -15,10 +15,10 @@ from __future__ import annotations
 import json
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from agents.base_agent import BaseAgent
+from utils.datetime_utils import ensure_aware_utc, lookback_since
 
 FALLBACK_JSON = Path(__file__).parent.parent / "data" / "infrastructure.json"
 LOOKBACK_DAYS = 30
@@ -85,27 +85,20 @@ class InfraAgent(BaseAgent):
         g = Github(token)
         repo = g.get_repo(repo_name)
 
-        since = datetime.now(timezone.utc) - timedelta(days=LOOKBACK_DAYS)
+        since = lookback_since(LOOKBACK_DAYS)
 
         # Fetch all workflow runs in the lookback window
         runs_by_workflow: dict[str, list[dict]] = defaultdict(list)
 
         for run in repo.get_workflow_runs():
-            run_dt = run.created_at
-            # PyGithub returns naive datetimes for some fields; make aware
-            if run_dt.tzinfo is None:
-                run_dt = run_dt.replace(tzinfo=timezone.utc)
+            run_dt = ensure_aware_utc(run.created_at)
             if run_dt < since:
                 break  # Runs are returned newest-first; stop when past the window
 
             duration_sec = None
             if run.updated_at and run.created_at:
-                updated = run.updated_at
-                created = run.created_at
-                if updated.tzinfo is None:
-                    updated = updated.replace(tzinfo=timezone.utc)
-                if created.tzinfo is None:
-                    created = created.replace(tzinfo=timezone.utc)
+                updated = ensure_aware_utc(run.updated_at)
+                created = ensure_aware_utc(run.created_at)
                 duration_sec = int((updated - created).total_seconds())
 
             runs_by_workflow[run.name].append({

@@ -15,14 +15,13 @@ Requires GITHUB_TOKEN and GITHUB_REPO environment variables.
 from __future__ import annotations
 
 import json
+import logging
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import logging
-
 from agents.base_agent import BaseAgent
+from utils.datetime_utils import ensure_aware_utc, lookback_since
 
 logger = logging.getLogger("deadpool.code_audit_agent")
 
@@ -116,7 +115,7 @@ class CodeAuditAgent(BaseAgent):
         page through repo.get_commits(), extract author + file data.
         Maps developer_name → files_changed and weekly commit counts.
         """
-        since = datetime.now(timezone.utc) - timedelta(days=COMMIT_LOOKBACK_DAYS)
+        since = lookback_since(COMMIT_LOOKBACK_DAYS)
 
         commits_by_author: dict[str, list[dict]] = defaultdict(list)
         total_fetched = 0
@@ -209,18 +208,16 @@ class CodeAuditAgent(BaseAgent):
         Fetch closed and open PRs from the last PR_LOOKBACK_DAYS days.
         Detect: merged without review, stale open PRs, review bottlenecks.
         """
-        since = datetime.now(timezone.utc) - timedelta(days=PR_LOOKBACK_DAYS)
+        since = lookback_since(PR_LOOKBACK_DAYS)
 
         merged_without_review = []
         stale_open_prs = []
         pr_summary = []
 
-        stale_threshold = datetime.now(timezone.utc) - timedelta(days=14)
+        stale_threshold = lookback_since(14)
 
         for pr in repo.get_pulls(state="all", sort="updated", direction="desc"):
-            updated = pr.updated_at
-            if updated.tzinfo is None:
-                updated = updated.replace(tzinfo=timezone.utc)
+            updated = ensure_aware_utc(pr.updated_at)
             if updated < since:
                 break
 
@@ -247,10 +244,7 @@ class CodeAuditAgent(BaseAgent):
                 merged_without_review.append(pr_info)
 
             # Open PR with no activity for >14 days
-            created = pr.created_at
-            if created.tzinfo is None:
-                created = created.replace(tzinfo=timezone.utc)
-            if pr.state == "open" and created < stale_threshold and review_count == 0:
+            if pr.state == "open" and ensure_aware_utc(pr.created_at) < stale_threshold and review_count == 0:
                 stale_open_prs.append(pr_info)
 
         return {
