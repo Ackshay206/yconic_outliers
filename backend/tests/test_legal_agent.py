@@ -11,7 +11,7 @@ Covers:
 import json
 import os
 import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from conftest import VALID_ANOMALY, make_claude_response
 
@@ -165,6 +165,118 @@ class TestLegalAgentLoadData:
              patch.object(legal_agent, "_web_search_regulatory", return_value=[]):
             data = legal_agent.load_data()
         assert "contracts" in data
+
+
+class TestLegalAgentWebSearch:
+    """Tests for _web_search_regulatory — unit (mocked) and integration (real network)."""
+
+    EXPECTED_QUERIES = [
+        "PCI DSS 4.0 compliance requirements 2026",
+        "SOC 2 Type II audit requirements SaaS startup",
+        "GDPR enforcement actions SaaS 2026",
+    ]
+
+    def _make_ddgs_hit(self, title="T", body="B" * 600, href="https://example.com"):
+        return {"title": title, "body": body, "href": href}
+
+    def _mock_ddgs(self, hits_per_query=2):
+        """Return a context-manager mock for DDGS that yields `hits_per_query` hits per query."""
+        mock_ddgs_instance = MagicMock()
+        mock_ddgs_instance.text.return_value = [
+            self._make_ddgs_hit(title=f"Result {i}") for i in range(hits_per_query)
+        ]
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(return_value=mock_ddgs_instance)
+        mock_ctx.__exit__ = MagicMock(return_value=False)
+        return mock_ctx, mock_ddgs_instance
+
+    def test_returns_list(self, legal_agent):
+        """_web_search_regulatory always returns a list."""
+        mock_ctx, _ = self._mock_ddgs()
+        with patch("ddgs.DDGS", return_value=mock_ctx):
+            result = legal_agent._web_search_regulatory()
+        assert isinstance(result, list)
+
+    def test_result_has_required_keys(self, legal_agent):
+        """Each result dict must have query, title, snippet, and url."""
+        mock_ctx, _ = self._mock_ddgs(hits_per_query=1)
+        with patch("ddgs.DDGS", return_value=mock_ctx):
+            results = legal_agent._web_search_regulatory()
+        assert len(results) > 0
+        for r in results:
+            assert "query" in r
+            assert "title" in r
+            assert "snippet" in r
+            assert "url" in r
+
+    def test_snippet_truncated_to_500_chars(self, legal_agent):
+        """Snippet must be at most 500 characters even when body is longer."""
+        mock_ctx, _ = self._mock_ddgs(hits_per_query=1)
+        with patch("ddgs.DDGS", return_value=mock_ctx):
+            results = legal_agent._web_search_regulatory()
+        for r in results:
+            assert len(r["snippet"]) <= 500
+
+    def test_searches_all_three_queries(self, legal_agent):
+        """All three regulatory queries must be issued to DDGS."""
+        mock_ctx, mock_ddgs_instance = self._mock_ddgs(hits_per_query=1)
+        with patch("ddgs.DDGS", return_value=mock_ctx):
+            legal_agent._web_search_regulatory()
+        actual_queries = [call.args[0] for call in mock_ddgs_instance.text.call_args_list]
+        assert actual_queries == self.EXPECTED_QUERIES
+
+    def test_at_most_two_results_per_query(self, legal_agent):
+        """max_results=2 is passed to DDGS, so no more than 2 hits per query."""
+        mock_ctx, mock_ddgs_instance = self._mock_ddgs(hits_per_query=2)
+        with patch("ddgs.DDGS", return_value=mock_ctx):
+            results = legal_agent._web_search_regulatory()
+        # 3 queries × 2 hits = 6 max
+        assert len(results) <= len(self.EXPECTED_QUERIES) * 2
+        for call in mock_ddgs_instance.text.call_args_list:
+            assert call.kwargs.get("max_results", call.args[1] if len(call.args) > 1 else 2) == 2
+
+    def test_query_field_matches_search_term(self, legal_agent):
+        """The 'query' field in each result must match the query that produced it."""
+        mock_ctx, _ = self._mock_ddgs(hits_per_query=1)
+        with patch("ddgs.DDGS", return_value=mock_ctx):
+            results = legal_agent._web_search_regulatory()
+        returned_queries = {r["query"] for r in results}
+        assert returned_queries.issubset(set(self.EXPECTED_QUERIES))
+
+    def test_returns_empty_on_import_error(self, legal_agent):
+        """Returns [] gracefully when duckduckgo_search is not installed."""
+        with patch.dict("sys.modules", {"ddgs": None}):
+            result = legal_agent._web_search_regulatory()
+        assert result == []
+
+    def test_returns_empty_on_network_error(self, legal_agent):
+        """Returns [] gracefully when DDGS raises a network exception."""
+        mock_ctx = MagicMock()
+        mock_ctx.__enter__ = MagicMock(side_effect=Exception("network error"))
+        mock_ctx.__exit__ = MagicMock(return_value=False)
+        with patch("ddgs.DDGS", return_value=mock_ctx):
+            result = legal_agent._web_search_regulatory()
+        assert result == []
+
+    @pytest.mark.network
+    def test_real_web_search_returns_results(self, legal_agent):
+        """Integration: actually calls DuckDuckGo and checks result structure."""
+        results = legal_agent._web_search_regulatory()
+        # Network may return nothing in restricted environments — just validate shape
+        assert isinstance(results, list)
+        for r in results:
+            assert "query" in r and "title" in r and "snippet" in r and "url" in r
+            assert r["query"] in self.EXPECTED_QUERIES
+            assert len(r["snippet"]) <= 500
+
+    @pytest.mark.network
+    def test_real_web_search_covers_all_queries(self, legal_agent):
+        """Integration: results should span all three regulatory queries."""
+        results = legal_agent._web_search_regulatory()
+        if not results:
+            pytest.skip("DuckDuckGo returned no results in this environment")
+        returned_queries = {r["query"] for r in results}
+        assert returned_queries == set(self.EXPECTED_QUERIES)
 
 
 class TestLegalAgentDataFile:
