@@ -16,8 +16,9 @@ from pathlib import Path
 
 from agents.base_agent import BaseAgent
 
-CSV_PATH = Path(__file__).parent.parent / "data" / "csv" / "product_data.csv"
-FALLBACK_JSON = Path(__file__).parent.parent / "data" / "product_metrics.json"
+CSV_PATH          = Path(__file__).parent.parent / "data" / "csv" / "product_data.csv"
+FALLBACK_JSON     = Path(__file__).parent.parent / "data" / "product_metrics.json"
+REDDIT_CACHE_JSON = Path(__file__).parent.parent / "data" / "reddit_brainrotgenz.json"
 SUBREDDIT = "BrainrotGenz"
 
 SYSTEM_PROMPT = """You are the Product Agent for DEADPOOL, a startup risk monitoring system.
@@ -94,14 +95,30 @@ class ProductAgent(BaseAgent):
             data["data_sources"] = []
             data["status"] = "no product CSV data found"
 
-        # --- Source 2: Reddit scrape ---
+        # --- Source 2: Reddit scrape (with cached JSON fallback) ---
+        reddit_data = None
         try:
             from utils.reddit_scraper import fetch_subreddit_data
             reddit_data = fetch_subreddit_data(SUBREDDIT, max_pages=3, fetch_comments=True)
-            data["reddit"] = reddit_data
-            data.setdefault("data_sources", []).append(f"r/{SUBREDDIT} (Reddit)")
         except Exception as exc:
-            data["reddit"] = {"error": str(exc), "posts": []}
+            import logging as _logging
+            _logging.getLogger("deadpool.product_agent").warning(
+                "Reddit scrape failed: %s — falling back to cached JSON", exc
+            )
+
+        # Fall back to cached JSON if scrape failed or returned no posts
+        if not reddit_data or not reddit_data.get("posts"):
+            if REDDIT_CACHE_JSON.exists():
+                with open(REDDIT_CACHE_JSON) as _f:
+                    reddit_data = json.load(_f)
+                reddit_data["_source"] = "cached (reddit_brainrotgenz.json)"
+                data.setdefault("data_sources", []).append(f"r/{SUBREDDIT} (cached JSON fallback)")
+            else:
+                reddit_data = {"posts": [], "_source": "no data available"}
+
+        data["reddit"] = reddit_data
+        if "_source" not in reddit_data:
+            data.setdefault("data_sources", []).append(f"r/{SUBREDDIT} (Reddit live)")
 
         return data
 

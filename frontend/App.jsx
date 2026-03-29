@@ -1,13 +1,38 @@
-import React from "react";
-import Header        from "./components/layout/Header";
-import AgentsPanel   from "./components/AgentsPanel";
-import FlawsPanel    from "./components/FlawsPanel";
-import RiskIndex     from "./components/RiskIndex";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { useDeadpool } from "./hooks/useDeadpool";
+import { useState } from "react";
+import Header            from "./components/layout/Header";
+import AgentsPanel       from "./components/AgentsPanel";
+import FlawsPanel        from "./components/FlawsPanel";
+import CascadeChainPanel from "./components/CascadeChainPanel";
+import RiskIndex         from "./components/RiskIndex";
+import BriefingPanel     from "./components/BriefingPanel";
+import ErrorBoundary     from "./components/ErrorBoundary";
+import { useDeadpool }   from "./hooks/useDeadpool";
 
 function AppInner() {
-  const { agentStatuses, anomalies, cascadeSteps, riskScore, running, error, runAnalysis } = useDeadpool();
+  const {
+    agentStatuses,
+    liabilities,
+    cascadeChains,
+    cascadeNodes,
+    cascadeEdges,
+    riskScore,
+    severityLevel,
+    trend,
+    briefing,
+    running,
+    done,
+    error,
+    runAnalysis,
+  } = useDeadpool();
+
+  // "cascades" page only unlocks after analysis completes
+  const [activePage, setActivePage] = useState("overview");
+
+  // If analysis re-runs, stay on current page
+  const handlePageChange = (page) => {
+    if (page === "cascades" && !done) return;
+    setActivePage(page);
+  };
 
   return (
     <div style={{
@@ -18,15 +43,24 @@ function AppInner() {
       overflow: "hidden",
       position: "relative",
     }}>
+      {/* Loading overlay */}
       {running && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 50,
-          background: "rgba(0, 0, 0, 0.5)",
+          background: "rgba(0,0,0,0.4)",
           pointerEvents: "none",
-          transition: "opacity 0.4s ease"
         }} />
       )}
-      <Header running={running} onRun={runAnalysis} />
+
+      <Header
+        running={running}
+        onRun={runAnalysis}
+        activePage={activePage}
+        onPageChange={handlePageChange}
+        showCascades={done && cascadeChains.length > 0}
+      />
+
+      {/* Error banner */}
       {error && (
         <div style={{
           background: "#3D0000", color: "#FF6060", fontSize: 12, fontWeight: 600,
@@ -36,34 +70,45 @@ function AppInner() {
         </div>
       )}
 
-      {/* Two-column body */}
-      <div style={{
-        flex: 1, display: "grid", gridTemplateColumns: "3fr 7fr",
-        gap: 0, overflow: "hidden",
-      }}>
-
-        {/* Left column: Agents */}
-        <div style={{
-          background: "#0A0A0A",
-          borderRight: "1px solid #3D0000",
-          overflow: "hidden",
-          padding: 24,
-        }}>
-          <AgentsPanel agentStatuses={agentStatuses} />
+      {/* ── PAGE: Cascade Chains (full-width) ─────────────────────────────── */}
+      {activePage === "cascades" ? (
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <CascadeChainPanel
+            cascadeChains={cascadeChains}
+            cascadeNodes={cascadeNodes}
+            cascadeEdges={cascadeEdges}
+          />
         </div>
-
-        {/* Right column: Flaws Detected + Risk Index */}
+      ) : (
+        /* ── PAGE: Overview (two-column) ──────────────────────────────────── */
         <div style={{
-          background: "#111111",
-          display: "flex", flexDirection: "column",
-          padding: 24, gap: 24, overflow: "hidden",
+          flex: 1, display: "grid", gridTemplateColumns: "3fr 7fr",
+          gap: 0, overflow: "hidden",
         }}>
-          <FlawsPanel anomalies={anomalies} />
-          <div style={{ flexShrink: 0 }}>
-            <RiskIndex score={riskScore} />
+          {/* Left — Agents */}
+          <div style={{
+            background: "#0A0A0A",
+            borderRight: "1px solid #3D0000",
+            overflow: "hidden",
+            padding: 24,
+          }}>
+            <AgentsPanel agentStatuses={agentStatuses} />
+          </div>
+
+          {/* Right — Briefing + Liabilities + Risk Index */}
+          <div style={{
+            background: "#111111",
+            display: "flex", flexDirection: "column",
+            padding: 24, gap: 20, overflow: "hidden",
+          }}>
+            <BriefingPanel briefing={briefing} />
+            <FlawsPanel liabilities={liabilities} />
+            <div style={{ flexShrink: 0 }}>
+              <RiskIndex score={riskScore} severityLevel={severityLevel} trend={trend} />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
@@ -73,17 +118,10 @@ function AppInner() {
         ::-webkit-scrollbar-track { background: #0E0E0E; }
         ::-webkit-scrollbar-thumb { background: #3D0000; border-radius: 2px; }
         .material-icons {
-          font-family: 'Material Icons';
-          font-weight: normal;
-          font-style: normal;
-          line-height: 1;
-          letter-spacing: normal;
-          text-transform: none;
-          display: inline-block;
-          white-space: nowrap;
-          direction: ltr;
-          -webkit-font-feature-settings: 'liga';
-          font-feature-settings: 'liga';
+          font-family: 'Material Icons'; font-weight: normal; font-style: normal;
+          line-height: 1; letter-spacing: normal; text-transform: none;
+          display: inline-block; white-space: nowrap; direction: ltr;
+          -webkit-font-feature-settings: 'liga'; font-feature-settings: 'liga';
           -webkit-font-smoothing: antialiased;
         }
       `}</style>
