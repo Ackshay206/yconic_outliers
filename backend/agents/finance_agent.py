@@ -203,3 +203,49 @@ class FinanceAgent:
             except Exception:
                 pass
         return anomalies
+
+    # ------------------------------------------------------------------
+    # Chat interface (mirrors BaseAgent API)
+    # ------------------------------------------------------------------
+
+    def get_chat_context(self) -> str:
+        if self.last_report and self.last_report.anomalies:
+            lines = [f"Latest finance analysis found {len(self.last_report.anomalies)} anomalies:\n"]
+            for a in self.last_report.anomalies:
+                lines.append(f"- [{a.severity:.0%} severity] {a.title}: {a.description}")
+            return "\n".join(lines)
+        return "No finance analysis has been run yet. I can still answer general questions about startup finance risks."
+
+    def chat_stream(self, message: str, history: list[dict]):
+        """Yield text chunks for a streaming chat response using OpenAI."""
+        chat_system = (
+            f"{SYSTEM_PROMPT}\n\n"
+            "--- CHAT MODE ---\n"
+            "You are now in interactive chat mode. Answer in plain conversational language "
+            "— no JSON arrays. Be concise, specific, and actionable."
+        )
+
+        messages = [{"role": "system", "content": chat_system}]
+
+        # Inject data context as first assistant exchange
+        data_ctx = self.get_chat_context()
+        messages.append({"role": "user", "content": f"Here is the current finance data context:\n\n{data_ctx}"})
+        messages.append({"role": "assistant", "content": "Understood. I've reviewed the finance data and I'm ready to help."})
+
+        # Replay conversation history
+        for msg in history:
+            role = "assistant" if msg["role"] == "model" else msg["role"]
+            messages.append({"role": role, "content": msg["text"]})
+
+        messages.append({"role": "user", "content": message})
+
+        stream = self.client.chat.completions.create(
+            model=self.MODEL,
+            messages=messages,
+            temperature=0.3,
+            stream=True,
+        )
+        for chunk in stream:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                yield delta

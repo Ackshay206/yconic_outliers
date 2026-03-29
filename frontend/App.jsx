@@ -5,6 +5,8 @@ import FlawsPanel        from "./components/FlawsPanel";
 import CascadeChainPanel from "./components/CascadeChainPanel";
 import RiskIndex         from "./components/RiskIndex";
 import BriefingPanel     from "./components/BriefingPanel";
+import AgentChatPanel    from "./components/AgentChatPanel";
+import LandingPage       from "./components/LandingPage";
 import ErrorBoundary     from "./components/ErrorBoundary";
 import { useDeadpool }   from "./hooks/useDeadpool";
 
@@ -25,6 +27,7 @@ function AppInner() {
     runAnalysis,
   } = useDeadpool();
 
+  const [landed, setLanded]         = useState(false); // false = show landing
   // "cascades" page only unlocks after analysis completes
   const [activePage, setActivePage] = useState("overview");
 
@@ -70,8 +73,14 @@ function AppInner() {
         </div>
       )}
 
-      {/* ── PAGE: Cascade Chains (full-width) ─────────────────────────────── */}
-      {activePage === "cascades" ? (
+      {/* ── PAGE: Agent Chat ──────────────────────────────────────────────── */}
+      {activePage === "chat" ? (
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <AgentChatPanel agentStatuses={agentStatuses} />
+        </div>
+
+      /* ── PAGE: Cascade Chains (full-width) ──────────────────────────────── */
+      ) : activePage === "cascades" ? (
         <div style={{ flex: 1, overflow: "hidden" }}>
           <CascadeChainPanel
             cascadeChains={cascadeChains}
@@ -125,6 +134,10 @@ function AppInner() {
           -webkit-font-smoothing: antialiased;
         }
       `}</style>
+
+      {/* Landing page overlays on top — main app is already mounted beneath,
+          so when the landing fades out there is no white flash */}
+      {!landed && <LandingPage onEnter={() => setLanded(true)} />}
     </div>
   );
 }
