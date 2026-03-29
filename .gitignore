@@ -24,6 +24,11 @@ build/
 .coverage
 htmlcov/
 
+# Claude Code
+CLAUDE.md
+.claude/
+memory/
+
 # IDEs
 .vscode/
 .idea/

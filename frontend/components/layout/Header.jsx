@@ -1,44 +1,51 @@
-// ─── Header.jsx ───────────────────────────────────────────────────────────────
-import { getRiskColor } from "../../utils/riskColor";
+// ─── components/layout/Header.jsx ─────────────────────────────────────────────
+import React from "react";
 
-export default function Header({ riskScore, showScore }) {
-  const c = getRiskColor(riskScore);
+export default function Header({ running, onRun }) {
   return (
     <div style={{
-      borderBottom: "1px solid #1e293b", padding: "16px 32px",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      background: "rgba(2,8,23,0.95)", backdropFilter: "blur(12px)",
+      height: 48, background: "#0E0E0E",
+      borderBottom: "1px solid #3D0000",
+      display: "flex", alignItems: "center",
+      justifyContent: "space-between",
+      padding: "0 24px",
       position: "sticky", top: 0, zIndex: 100,
+      flexShrink: 0,
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 8,
-          background: "linear-gradient(135deg,#ef4444,#7c3aed)",
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
-        }}>☠️</div>
-        <div>
-          <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: 2, color: "#f1f5f9" }}>DEADPOOL</div>
-          <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1 }}>
-            DEPENDENCY EVALUATION AND DOWNSTREAM PREDICTION OF OPERATIONAL LIABILITIES
-          </div>
-        </div>
+      {/* Left: branding */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{
+          fontSize: 20, fontWeight: 900, letterSpacing: "-0.5px",
+          background: "linear-gradient(90deg, #FF2020, #B00000)",
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        }}>
+          DEADPOOL
+        </span>
+        <span style={{
+          fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+          letterSpacing: "0.2em", color: "#888888",
+        }}>
+          Startup Risk Intelligence
+        </span>
       </div>
 
-      {showScore && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 10, color: "#475569", letterSpacing: 1 }}>COMPANY RISK SCORE</div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: c, lineHeight: 1 }}>{riskScore}</div>
-          </div>
-          <div style={{
-            width: 48, height: 48, borderRadius: "50%",
-            border: `3px solid ${c}`,
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
-          }}>
-            {riskScore >= 70 ? "🔴" : "🟡"}
-          </div>
-        </div>
-      )}
+      {/* Right: run button */}
+      <button
+        onClick={onRun}
+        disabled={running}
+        style={{
+          background: running ? "#3D0000" : "linear-gradient(135deg, #FF2020, #7A0000)",
+          color: running ? "#888888" : "#FFFFFF",
+          border: "none", borderRadius: 6,
+          padding: "8px 20px",
+          fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em",
+          cursor: running ? "not-allowed" : "pointer",
+          transition: "opacity 0.2s",
+          opacity: running ? 0.7 : 1,
+        }}
+      >
+        {running ? "Analyzing..." : "Run Analysis"}
+      </button>
     </div>
   );
 }
