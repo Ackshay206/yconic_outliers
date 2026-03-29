@@ -269,20 +269,3 @@ def _build_cascade(
         terminal_states_hit=list(set(terminal_states_hit)),
         max_depth_reached=max_depth_reached,
     )
-
-
-# ---------------------------------------------------------------------------
-# Agent class
-# ---------------------------------------------------------------------------
-
-class CascadeMapperAgent:
-    """
-    Standalone agent — receives root causes and domains from HeadAgent output,
-    returns a fully expanded CascadeResult.
-    """
-
-    def __init__(self):
-        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
-
-    def run(self, root_causes: list[str], domains_present: list[str]) -> CascadeResult:
-        return _build_cascade(self.client, root_causes, domains_present)
