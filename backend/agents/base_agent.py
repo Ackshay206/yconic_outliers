@@ -26,7 +26,7 @@ logger = logging.getLogger("deadpool.base_agent")
 class BaseAgent:
     """Abstract base class for specialist agents."""
 
-    MODEL = "gemini-2.5-flash"
+    MODEL = "gemini-2.5-pro"
 
     def __init__(self, domain: str, system_prompt: str):
         self.domain = domain
