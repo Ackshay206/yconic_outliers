@@ -11,7 +11,8 @@ export function useCascadeAnimation(edgeCount) {
   }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setAnimStep(s => (s + 1) % (edgeCount + 1)), 600);
+    const safeCount = Math.max(1, edgeCount || 0);
+    const t = setInterval(() => setAnimStep(s => (s + 1) % (safeCount + 1)), 600);
     return () => clearInterval(t);
   }, [edgeCount]);
 

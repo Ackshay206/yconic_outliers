@@ -48,6 +48,7 @@ function agentLabel(agentId) {
 }
 
 export default function FlawsPanel({ anomalies }) {
+  const items = anomalies || [];
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
       <div style={{
@@ -68,14 +69,14 @@ export default function FlawsPanel({ anomalies }) {
         overflowY: "auto",
         minHeight: 0,
       }}>
-        {anomalies.length === 0 ? (
+        {items.length === 0 ? (
           <div style={{
             padding: 24, textAlign: "center", color: "#555555", fontSize: 12,
           }}>
             Run analysis to detect flaws
           </div>
         ) : (
-          anomalies.map((flaw, i) => {
+          items.map((flaw, i) => {
             const level = getSeverityLabel(flaw.severity);
             return (
               <div key={i}>
@@ -98,7 +99,7 @@ export default function FlawsPanel({ anomalies }) {
                     {flaw.desc || flaw.description || ""}
                   </div>
                 </div>
-                {i < anomalies.length - 1 && (
+                {i < items.length - 1 && (
                   <div style={{ height: 1, background: "#3D0000", margin: "0 16px" }} />
                 )}
               </div>

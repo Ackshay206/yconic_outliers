@@ -24,7 +24,7 @@ export function AnomalyCard({ anomaly, agentId, index }) {
           <p style={{ color: "#94a3b8", fontSize: 12, margin: "0 0 10px", lineHeight: 1.6 }}>{anomaly.desc}</p>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             <span style={{ fontSize: 11, color: "#475569" }}>Cross-references:</span>
-            {anomaly.linked.map(lid => {
+            {(anomaly.linked || []).map(lid => {
               const la = AGENTS.find(a => a.id === lid);
               return la ? (
                 <span key={lid} style={{ fontSize: 11, background: `${DOMAIN_COLORS[lid]}20`, color: DOMAIN_COLORS[lid], padding: "2px 8px", borderRadius: 10, border: `1px solid ${DOMAIN_COLORS[lid]}40` }}>

@@ -2,7 +2,15 @@
 DEADPOOL — Dependency Evaluation And Downstream Prediction Of Operational Liabilities
 FastAPI backend entry point.
 
-Requires: ANTHROPIC_API_KEY environment variable
+Required environment variables:
+  GOOGLE_API_KEY  — Gemini API key (used by all specialist agents + Head Agent)
+  OPENAI_API_KEY  — OpenAI API key (used by Finance Agent / GPT-4o-mini)
+
+Optional:
+  GITHUB_TOKEN    — GitHub personal access token (Code Audit + Infra agents)
+  GITHUB_REPO     — Target repository in "owner/repo" format
+  SLACK_BOT_TOKEN — Slack bot token (People Agent; gracefully skipped if absent)
+
 Run with: uvicorn main:app --reload
 """
 from __future__ import annotations
@@ -11,7 +19,7 @@ import asyncio
 import json
 import logging
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 logging.basicConfig(
@@ -39,7 +47,18 @@ head_agent_instance = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize all agents on startup."""
+    """
+    FastAPI lifespan context manager — runs startup logic before the first
+    request and teardown logic after the last.
+
+    On startup:
+    - Instantiates all 6 specialist agents and the HeadAgent.
+    - Populates the module-level ``agent_registry`` and ``head_agent_instance``
+      globals used by every route handler.
+
+    Agents are created once and reused across requests; each agent caches its
+    last report in ``agent.last_report`` for cheap GET /report responses.
+    """
     global head_agent_instance
 
     # Import here to avoid circular imports at module load time
@@ -95,7 +114,7 @@ app.add_middleware(
 async def health():
     return {
         "status": "ok",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "agents": list(agent_registry.keys()),
     }
 
@@ -176,6 +195,8 @@ async def head_agent_analyze():
     if not head_agent_instance:
         raise HTTPException(status_code=503, detail="Head agent not initialized.")
 
+    logger = logging.getLogger("deadpool.main")
+
     # Collect anomalies from all specialists
     all_anomalies = []
     for agent in agent_registry.values():
@@ -183,7 +204,7 @@ async def head_agent_analyze():
             report = await asyncio.to_thread(agent.run)
             all_anomalies.extend(report.anomalies)
         except Exception as exc:
-            print(f"[DEADPOOL] Agent {agent.domain} failed: {exc}")
+            logger.warning("Agent '%s' failed during analysis: %s", agent.domain, exc)
 
     try:
         risk_score = await asyncio.to_thread(head_agent_instance.analyze, all_anomalies)
@@ -308,24 +329,25 @@ async def sse_updates():
             }
 
         # Stream new events
-        while True:
-            try:
-                # Wait up to 15 seconds for a new event, then send heartbeat
-                anomaly = await asyncio.wait_for(queue.get(), timeout=15.0)
-                payload = anomaly.model_dump()
-                payload["timestamp"] = payload["timestamp"].isoformat()
-                yield {
-                    "event": "anomaly",
-                    "data": json.dumps(payload, default=str),
-                }
-            except asyncio.TimeoutError:
-                yield {
-                    "event": "heartbeat",
-                    "data": json.dumps({"ts": datetime.utcnow().isoformat()}),
-                }
-            except asyncio.CancelledError:
-                break
-
-        bus.unsubscribe(queue)
+        try:
+            while True:
+                try:
+                    # Wait up to 15 seconds for a new event, then send heartbeat
+                    anomaly = await asyncio.wait_for(queue.get(), timeout=15.0)
+                    payload = anomaly.model_dump()
+                    payload["timestamp"] = payload["timestamp"].isoformat()
+                    yield {
+                        "event": "anomaly",
+                        "data": json.dumps(payload, default=str),
+                    }
+                except asyncio.TimeoutError:
+                    yield {
+                        "event": "heartbeat",
+                        "data": json.dumps({"ts": datetime.now(timezone.utc).isoformat()}),
+                    }
+                except asyncio.CancelledError:
+                    break
+        finally:
+            bus.unsubscribe(queue)
 
     return EventSourceResponse(event_generator())

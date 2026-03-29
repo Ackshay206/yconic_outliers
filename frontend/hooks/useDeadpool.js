@@ -13,12 +13,14 @@ export function useDeadpool() {
   const [riskScore, setRiskScore]         = useState(null);
   const [running, setRunning]             = useState(false);
   const [done, setDone]                   = useState(false);
+  const [error, setError]                 = useState(null);
 
   const runAnalysis = useCallback(async () => {
     if (running) return;
 
     setRunning(true);
     setDone(false);
+    setError(null);
     setAnomalies([]);
     setCascadeSteps([]);
     setRiskScore(null);
@@ -78,12 +80,13 @@ export function useDeadpool() {
 
     } catch (err) {
       console.error("[DEADPOOL] Analysis failed:", err);
+      setError(err.message || "Analysis failed");
       setAgentStatuses(Object.fromEntries(AGENT_NAMES.map(n => [n, "idle"])));
+    } finally {
+      setRunning(false);
+      setDone(true);
     }
-
-    setRunning(false);
-    setDone(true);
   }, [running]);
 
-  return { agentStatuses, anomalies, cascadeSteps, riskScore, running, done, runAnalysis };
+  return { agentStatuses, anomalies, cascadeSteps, riskScore, running, done, error, runAnalysis };
 }

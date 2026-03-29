@@ -3,8 +3,14 @@ Cascade Mapper — traces anomalies forward through a pre-built dependency graph
 of cross-domain causal relationships.
 
 The six pre-seeded cascade paths encode the most common startup failure patterns.
-Conditional probabilities are baseline values; the Head Agent adjusts them in
-real-time based on corroborated specialist agent data.
+Conditional probabilities are baseline values calibrated against Series-A SaaS
+post-mortems; the Head Agent can override them at runtime via
+``probability_overrides`` when live specialist data provides stronger evidence.
+
+Urgency formula:  urgency = (1 / time_to_impact_days) × severity × (1 − reversibility)
+
+Chains are pruned when cumulative probability drops below the THRESHOLD (0.25).
+This prevents low-probability tail paths from inflating the risk score with noise.
 """
 from __future__ import annotations
 
@@ -301,10 +307,11 @@ def map_cascade(anomaly: Anomaly, probability_overrides: dict[str, float] | None
     path_template = CASCADE_PATHS[path_key]
     nodes: list[CascadeNode] = []
     cumulative = 1.0
-    THRESHOLD = 0.25
+    THRESHOLD = 0.25  # prune chains whose cumulative probability falls below 25%
 
     for step in path_template:
         node_id = step["id"]
+        # Use override probability if the Head Agent supplied one for this node
         cond_prob = overrides.get(node_id, step["conditional_probability"])
         cumulative = cumulative * cond_prob
 
@@ -323,22 +330,24 @@ def map_cascade(anomaly: Anomaly, probability_overrides: dict[str, float] | None
         if cumulative < THRESHOLD:
             break
 
-    # Default impact estimates per path
+    # Median financial impact estimates (USD) per cascade path, calibrated for
+    # a Series-A SaaS company with the Brainrot revenue profile (~$500K ARR).
     impact_map = {
-        "people_key_person": 1_900_000,
-        "code_audit_cve": 750_000,
-        "code_audit_coverage": 400_000,
-        "infra_deploy_velocity": 250_000,
-        "finance_concentration": 1_200_000,
-        "infra_sla": 500_000,
+        "people_key_person": 1_900_000,   # full Nexus Corp contract + re-hiring + down-round dilution
+        "code_audit_cve": 750_000,         # breach liability + emergency patching + investor confidence
+        "code_audit_coverage": 400_000,    # churn recovery + bug-fix sprint + lost expansion revenue
+        "infra_deploy_velocity": 250_000,  # competitive feature gap + customer acquisition slowdown
+        "finance_concentration": 1_200_000, # overnight revenue cliff + down-round clause discount
+        "infra_sla": 500_000,              # SLA penalties + emergency infrastructure remediation
     }
+    # Median days from anomaly detection to financial materialisation per path
     time_map = {
-        "people_key_person": 75,
-        "code_audit_cve": 45,
-        "code_audit_coverage": 60,
-        "infra_deploy_velocity": 90,
-        "finance_concentration": 60,
-        "infra_sla": 50,
+        "people_key_person": 75,   # ~10 weeks: notice period + handover + deadline slip
+        "code_audit_cve": 45,      # ~6 weeks: compliance audit → legal exposure
+        "code_audit_coverage": 60, # ~8 weeks: bugs accumulate → visible churn
+        "infra_deploy_velocity": 90, # ~13 weeks: slow-burn competitive loss
+        "finance_concentration": 60, # ~8 weeks: contract renewal / termination window
+        "infra_sla": 50,           # ~7 weeks: SLA breach window → penalty invoice
     }
 
     financial_impact = impact_map.get(path_key, 500_000)

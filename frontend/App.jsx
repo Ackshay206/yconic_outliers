@@ -1,12 +1,13 @@
 import React from "react";
-import Header      from "./components/layout/Header";
-import AgentsPanel from "./components/AgentsPanel";
-import FlawsPanel  from "./components/FlawsPanel";
-import RiskIndex   from "./components/RiskIndex";
+import Header        from "./components/layout/Header";
+import AgentsPanel   from "./components/AgentsPanel";
+import FlawsPanel    from "./components/FlawsPanel";
+import RiskIndex     from "./components/RiskIndex";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { useDeadpool } from "./hooks/useDeadpool";
 
-export default function App() {
-  const { agentStatuses, anomalies, cascadeSteps, riskScore, running, runAnalysis } = useDeadpool();
+function AppInner() {
+  const { agentStatuses, anomalies, cascadeSteps, riskScore, running, error, runAnalysis } = useDeadpool();
 
   return (
     <div style={{
@@ -17,6 +18,14 @@ export default function App() {
       overflow: "hidden",
     }}>
       <Header running={running} onRun={runAnalysis} />
+      {error && (
+        <div style={{
+          background: "#3D0000", color: "#FF6060", fontSize: 12, fontWeight: 600,
+          padding: "8px 24px", borderBottom: "1px solid #7A0000", flexShrink: 0,
+        }}>
+          Analysis error: {error}
+        </div>
+      )}
 
       {/* Two-column body */}
       <div style={{
@@ -70,5 +79,13 @@ export default function App() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppInner />
+    </ErrorBoundary>
   );
 }

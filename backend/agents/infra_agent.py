@@ -49,6 +49,16 @@ class InfraAgent(BaseAgent):
         super().__init__(domain="infra", system_prompt=SYSTEM_PROMPT)
 
     def load_data(self) -> dict:
+        """
+        Load infrastructure data from two sources and merge them.
+
+        ``infrastructure.json`` is always loaded as the static baseline (service
+        topology, SLA obligations, deployment targets). If ``GITHUB_TOKEN`` and
+        ``GITHUB_REPO`` are set, live GitHub Actions workflow run data is fetched
+        on top and added under the ``github_actions`` key. This dual-source
+        approach means the agent always has *something* to analyse even without
+        GitHub credentials.
+        """
         # Always load infrastructure.json as primary static source
         data = self._load_infrastructure_json()
 
@@ -139,6 +149,7 @@ class InfraAgent(BaseAgent):
         }
 
     def _load_infrastructure_json(self) -> dict:
+        """Load the static infrastructure baseline from ``data/infrastructure.json``."""
         if FALLBACK_JSON.exists():
             with open(FALLBACK_JSON) as f:
                 data = json.load(f)
