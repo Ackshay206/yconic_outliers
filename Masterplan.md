@@ -68,7 +68,7 @@ We are not starting from zero. Here's what's done and what remains:
 | **LangGraph orchestrator** (`orchestrator.py`) | ✅ Done | Parallel fan-out → head_agent → cascade_expander loop → format_output |
 | **Head Agent** (cross-validate + risk score + briefing) | ✅ Done | Single-pass cross-validation; briefing via Gemini 2.5 Pro |
 | **LLM cascade expander** (loop, max 5 depth) | ✅ Done | Replaces deterministic NetworkX — Gemini drives expansion |
-| **SSE streaming** | ✅ Done | FastAPI `signal_bus` → React `EventSource` |
+| **Single-request analysis** | ✅ Done | Frontend POSTs to `/api/head-agent/analyze`; all dashboard state populated from one response |
 | **Dashboard: cascade graph (React Flow)** | ✅ Done | Domain-colored nodes, animated edges, MiniMap, Controls |
 | **Dashboard: risk score + founder briefing** | ✅ Done | Summary, timeline, recommended_action |
 | **Dashboard: liabilities panel** | ✅ Done | Replaces activity log — sorted by severity |
@@ -306,7 +306,7 @@ LLM-driven consequence expansion via the `_llm_next_step` function in `cascade_m
 | **Dashboard: cascade graph** | Dev 4 | React Flow directed graph — domain-colored nodes, animated edges, MiniMap, Controls. | ✅ Shipped (React Flow, not D3) |
 | **Dashboard: risk score + briefing** | Dev 4 | 0–100 score, severity level, trend, FounderBriefing (summary, timeline, action). | ✅ Shipped |
 | **Dashboard: liabilities panel** | Dev 4 | Scrollable severity-sorted anomaly list. Replaced activity log. | ✅ Shipped |
-| **SSE streaming** | Dev 5 | FastAPI `signal_bus` → React `EventSource` — incremental anomaly display during analysis. | ✅ Shipped |
+| **Single-request analysis** | Dev 5 | Frontend POSTs to `/api/head-agent/analyze` and populates all dashboard state from the response. Agent statuses derived from cascade node probabilities. | ✅ Shipped |
 
 ### Tier 2 — Should ship
 
@@ -328,9 +328,9 @@ LLM-driven consequence expansion via the `_llm_next_step` function in `cascade_m
 
 2. **The orchestration work was well-scoped.** The conditional routing is a known LangGraph pattern (`add_conditional_edges`). The LLM cascade expander follows a clear prompt/parse/prune loop with hard depth limits. Both are engineering problems with clear solutions, not open-ended research.
 
-3. **Five people eliminates the frontend bottleneck.** The most common hackathon failure mode is "backend works but dashboard isn't ready." With a dedicated frontend dev (Dev 4) and an integration dev (Dev 5) who handles SSE + deployment, the frontend track runs in parallel with zero dependency on the orchestration track.
+3. **Five people eliminates the frontend bottleneck.** The most common hackathon failure mode is "backend works but dashboard isn't ready." With a dedicated frontend dev (Dev 4) and an integration dev (Dev 5) who handles deployment, the frontend track runs in parallel with zero dependency on the orchestration track.
 
-4. **We have a working fallback at every layer.** D3 graph too complex? → Table view in 30 minutes. What-If not ready? → Demo script has an if/else that skips to traction. SSE breaks? → Pre-cached last result in frontend state. The demo never breaks; it just degrades gracefully.
+4. **We have a working fallback at every layer.** D3 graph too complex? → Table view in 30 minutes. What-If not ready? → Demo script has an if/else that skips to traction. API slow? → Loading state with spinner; all state is populated from the single POST response. The demo never breaks; it just degrades gracefully.
 
 5. **We've already validated the hardest integration point.** Gemini and GPT-4o-mini both produce outputs that parse into the same Pydantic `AgentReport` schema. The cross-provider schema mismatch risk — the scariest feasibility question — is already resolved.
 
@@ -338,7 +338,7 @@ LLM-driven consequence expansion via the `_llm_next_step` function in `cascade_m
 
 - The corroboration loop was simplified to a single-pass cross-validation in `HeadAgent._cross_validate()` using a static `CORROBORATION_MAP`. This proved sufficient and removed the complexity of iterative re-queries.
 - D3 cascade graph was replaced with React Flow (`@xyflow/react`), which provided interactive graph rendering out of the box with less custom code.
-- End-to-end integration worked via `signal_bus.py` for SSE and `asyncio.to_thread()` for the blocking LangGraph invocation.
+- End-to-end integration worked via `asyncio.to_thread()` for the blocking LangGraph invocation. The frontend uses a single POST to `/api/head-agent/analyze`; SSE was removed in favour of a simpler single-response model.
 
 ---
 
@@ -349,7 +349,7 @@ LLM-driven consequence expansion via the `_llm_next_step` function in `cascade_m
 | Orchestration | **LangGraph** `StateGraph` | Typed state, conditional edges, parallel fan-out, loop-capable cascade expander. The right primitive for graph-structured agent orchestration. |
 | AI (primary) | **Gemini 2.5 Pro** via `google-genai` SDK | 5 specialist nodes + head_agent + cascade expander. JSON mode for structured output. |
 | AI (finance) | **GPT-4o-mini** via `openai` SDK | Finance node only. `response_format={"type": "json_object"}`, `temperature=0.1`. |
-| Backend | **Python + FastAPI** | Async-native, Pydantic v2 for type-safe I/O, SSE via `sse-starlette`. |
+| Backend | **Python + FastAPI** | Async-native, Pydantic v2 for type-safe I/O. |
 | Frontend | **React + React Flow** | `@xyflow/react` for cascade chain graph. React for dashboard state and panels. |
 | Deployment | **Caddy** (reverse proxy) + **Railway** | Single Railway service; Caddy serves built frontend + proxies API. |
 
@@ -735,13 +735,13 @@ Backend agent nodes and frontend scaffold are done. We are now in the **agent co
 - Dev 1 + Dev 2: Tune specialist prompts — ensure cross_reference_hints are populated correctly in anomaly outputs. Test that entity keys match across agents.
 - Dev 3: **LangGraph orchestrator** — build `orchestrator.py` with head_agent node, cascade_expander loop, conditional edges, format_output node.
 - Dev 4: **Dashboard: Overview page** — risk score display, BriefingPanel, FlawsPanel (liabilities). AgentsPanel with status cards.
-- Dev 5: **SSE streaming** — `signal_bus.py`, FastAPI SSE endpoint, React `EventSource` client.
+- Dev 5: **Frontend integration** — wire React hook to `POST /api/head-agent/analyze`, deploy to Railway with Caddy reverse proxy.
 
 **8:00 – 10:00 PM (cascade detection sprint):**
 - Dev 3: **LLM cascade expander** — `_llm_next_step`, `_apply_rules`, probability pruning, depth loop. Wire into LangGraph graph after head_agent.
 - Dev 1 + Dev 2: **Integration testing** — invoke full graph with `graph.invoke()`, verify the primary cascade fires (People → Code Audit → Infra → Legal → Finance). Debug entity key mismatches, schema parsing failures.
 - Dev 4: **React Flow cascade graph** — Cascade Chains page, CascadeChainPanel with domain-colored nodes, animated edges, MiniMap.
-- Dev 5: Wire SSE to real graph output. Deploy to Railway with Caddy reverse proxy.
+- Dev 5: Deploy to Railway with Caddy reverse proxy. Wire frontend hook to full pipeline response.
 
 **10:00 PM – midnight (buffer + polish):**
 - All: Fix whatever broke in integration. If primary cascade works end-to-end:

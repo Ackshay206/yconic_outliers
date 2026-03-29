@@ -82,7 +82,7 @@ The system is **multi-model by design**: five specialist agents run on **Google 
 3. Anomalies with severity ≥ 0.5 become root threads fed into the **Cascade Expander loop**.
 4. The Cascade Expander calls Gemini iteratively: *"given all active causal threads, what happens next?"* — collecting all threads together so cross-cause acceleration is captured. Branches below 40% probability are pruned. Loop runs up to 5 depths.
 5. The **Format Output** node assembles `nodes`, `edges`, and `activeChains` for the React Flow dashboard.
-6. Anomalies stream to the dashboard in real-time via **Server-Sent Events (SSE)** from `signal_bus.py` while the pipeline runs. The authoritative final result arrives via the POST response.
+6. The frontend POSTs to `/api/head-agent/analyze` and awaits the full response. Agent statuses are derived from cascade node probabilities in the response.
 
 ---
 
@@ -94,9 +94,8 @@ The system is **multi-model by design**: five specialist agents run on **Google 
 | AI (Specialists) | **Gemini 2.5 Flash** via `google-genai` SDK | 5 specialist agents (people, infra, product, legal, code_audit) |
 | AI (Orchestration) | **Gemini 2.5 Pro** via `google-genai` SDK | Head Agent + cascade expansion |
 | AI (Finance) | **GPT-4o-mini** via `openai` SDK | Finance agent — fast structured CSV extraction, precise arithmetic |
-| Backend | **Python 3.11+ / FastAPI** | Async API server, SSE streaming, Pydantic v2 data validation |
+| Backend | **Python 3.11+ / FastAPI** | Async API server, Pydantic v2 data validation |
 | Frontend | **React 19 + Vite 6 + React Flow** | Two-page dashboard: Overview + Cascade Chains (`@xyflow/react`) |
-| Real-time | **sse-starlette** | Server → browser push for live anomaly updates |
 | Data | **Pandas** | CSV parsing for Finance Agent |
 | Integrations | **slack-sdk**, **PyGithub** | Slack team monitoring and GitHub commit history |
 | Deployment | **Caddy** + **Railway** | Single Railway service; Caddy serves built frontend + proxies `/api` |
@@ -113,11 +112,11 @@ yconic_outliers/
 ├── README.md                   # ← You are here
 │
 ├── backend/                    # ── Python FastAPI Backend ──
-│   ├── main.py                 # 🚀 Entry point — routes, CORS, SSE, agent lifecycle
+│   ├── main.py                 # 🚀 Entry point — routes, CORS, agent lifecycle
 │   ├── models.py               # 📐 Pydantic v2 schemas (Anomaly, CascadeChain, RiskScore, FounderBriefing, etc.)
 │   ├── orchestrator.py         # 🔀 LangGraph StateGraph — fan-out → head_agent → cascade_expander loop → format_output
 │   ├── cascade_mapper.py       # 🔗 _llm_next_step (Gemini) + _apply_rules (probability boosts for domain combos)
-│   ├── signal_bus.py           # 📡 In-memory pub/sub ring buffer for SSE anomaly streaming
+│   ├── signal_bus.py           # 📡 In-memory pub/sub ring buffer (agents publish anomalies)
 │   ├── requirements.txt        # Python dependencies
 │   │
 │   ├── agents/                 # 🤖 AI Agent Modules
@@ -182,7 +181,7 @@ yconic_outliers/
     │       └── AnomalyCard.jsx
     │
     ├── hooks/
-    │   └── useDeadpool.js          # Main hook — SSE + POST /api/head-agent/analyze + all state
+    │   └── useDeadpool.js          # Main hook — POST /api/head-agent/analyze + all dashboard state
     │
     ├── utils/
     │   ├── formatter.js            # Number/date formatting
@@ -287,7 +286,6 @@ The full pipeline runs via `asyncio.to_thread(run_pipeline, agent_registry, head
 | `/api/cascades` | GET | List active cascade chains from last analysis |
 | `/api/agents/{name}/report` | GET | Most recent report for a specific agent |
 | `/api/whatif` | POST | What-If scenario simulation |
-| `/api/sse/updates` | GET | SSE stream — real-time anomaly & risk updates |
 | `/api/slack/status` | GET | Slack integration health |
 
 #### LangGraph Orchestrator: `backend/orchestrator.py`
@@ -332,7 +330,7 @@ All data is typed with **Pydantic v2** schemas:
 
 All agents except Finance inherit from `BaseAgent`:
 - Initializes a `google.genai.Client` with `GOOGLE_API_KEY`
-- `run()` method: calls `load_data()` → builds a structured prompt → calls Gemini 2.5 Flash → parses JSON response → strips markdown fences → validates into `Anomaly` objects → publishes each to the signal bus → returns `AgentReport`
+- `run()` method: calls `load_data()` → builds a structured prompt → calls Gemini 2.5 Flash → parses JSON response → strips markdown fences → validates into `Anomaly` objects → publishes each to the internal signal bus → returns `AgentReport`
 - If the model returns malformed JSON, gracefully returns an empty anomaly list
 
 Subclasses only need to implement `load_data()` to return their domain data dict.
@@ -375,11 +373,10 @@ The `_build_cascade` function also exists in this file but is not used in the ma
 
 #### Signal Bus: `backend/signal_bus.py`
 
-In-memory **publish/subscribe** system:
+In-memory **publish/subscribe** ring buffer:
 - Agents call `bus.publish(anomaly)` after each detection
-- SSE endpoint subscribes and streams events to the dashboard
-- Ring buffer retains the last 500 events
-- Supports multiple concurrent subscribers
+- Retains the last 500 events; accessible via `bus.get_recent(n)`
+- Backend SSE endpoint (`/api/sse/updates`) is wired to the bus but not consumed by the current frontend
 
 ### Frontend Deep Dive
 
@@ -389,9 +386,9 @@ React 19 + Vite 6 single-page dashboard. No file upload — agents load their ow
 
 Manages the entire analysis lifecycle:
 
-1. Opens `EventSource` to `/api/sse/updates` — streams anomaly events incrementally, updating liabilities and agent statuses in real time while the pipeline runs.
-2. POSTs to `/api/head-agent/analyze` — the authoritative final response. On completion, overwrites all SSE-accumulated state with the definitive values.
-3. Closes SSE after POST resolves.
+1. POSTs to `/api/head-agent/analyze` and awaits the full pipeline response.
+2. Populates all dashboard state from the single response: risk score, briefing, liabilities, cascade nodes/edges/chains.
+3. Derives agent statuses from cascade node probabilities in the response (highest probability node per domain → `critical` / `warning` / `healthy`).
 
 Exposes: `agentStatuses`, `liabilities`, `cascadeChains`, `cascadeNodes`, `cascadeEdges`, `riskScore`, `severityLevel`, `trend`, `briefing`, `running`, `done`, `error`, `runAnalysis`.
 
@@ -412,12 +409,6 @@ Full-width `CascadeChainPanel` using **React Flow** (`@xyflow/react`):
 - Domain-colored nodes with probability bars; MiniMap, Controls, domain legend in header
 - `fitView` called on load and on data change
 
-#### SSE Integration
-
-The `useDeadpool` hook opens an `EventSource` receiving three event types:
-- `anomaly` — new anomaly detected; incrementally adds to liabilities list and updates agent status
-- `risk_score` — updates risk score display
-- `heartbeat` — keep-alive ping every 15 seconds (no action taken)
 
 #### Utilities & Constants
 
@@ -476,12 +467,6 @@ curl -X POST http://localhost:8000/api/whatif \
 ```bash
 curl http://localhost:8000/api/agents/finance/report
 ```
-
-### SSE Stream (Real-time)
-```bash
-curl -N http://localhost:8000/api/sse/updates
-```
-Event types: `anomaly`, `risk_score`, `heartbeat` (every 15s)
 
 ### Slack Integration Status
 ```bash
