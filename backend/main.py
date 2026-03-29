@@ -38,6 +38,8 @@ from models import AgentReport, CascadeChain, RiskScore, WhatIfScenario
 # Load .env if present (ANTHROPIC_API_KEY must be set in environment)
 load_dotenv()
 
+logger = logging.getLogger("deadpool.main")
+
 # ---------------------------------------------------------------------------
 # Agent registry — populated during lifespan startup
 # ---------------------------------------------------------------------------
@@ -82,9 +84,9 @@ async def lifespan(app: FastAPI):
 
     head_agent_instance = HeadAgent(specialist_agents=specialists)
 
-    print("[DEADPOOL] All agents initialized. Ready.")
+    logger.info("[DEADPOOL] All agents initialized. Ready.")
     yield
-    print("[DEADPOOL] Shutting down.")
+    logger.info("[DEADPOOL] Shutting down.")
 
 
 # ---------------------------------------------------------------------------
@@ -151,6 +153,7 @@ async def run_agent(agent_name: str):
         report = await asyncio.to_thread(agent.run)
         return report
     except Exception as exc:
+        logger.exception("Agent %s run failed", agent_name)
         raise HTTPException(status_code=500, detail=str(exc))
 
 
@@ -214,9 +217,9 @@ async def head_agent_analyze():
     try:
         return await _run_full_pipeline()
     except Exception as exc:
+        logger.exception("Full pipeline failed (head-agent/analyze)")
         raise HTTPException(status_code=500, detail=str(exc))
 
-    
 
 # ---------------------------------------------------------------------------
 # Dashboard — same pipeline, same response
@@ -229,6 +232,7 @@ async def get_dashboard():
     try:
         return await _run_full_pipeline()
     except Exception as exc:
+        logger.exception("Full pipeline failed (dashboard)")
         raise HTTPException(status_code=500, detail=str(exc))
 
 
@@ -280,6 +284,7 @@ async def get_agent_report(agent_name: str):
             report = await asyncio.to_thread(agent.run)
             return report
         except Exception as exc:
+            logger.exception("Agent %s report fetch failed", agent_name)
             raise HTTPException(status_code=500, detail=str(exc))
 
     return agent.last_report
@@ -307,6 +312,7 @@ async def whatif_simulation(scenario: WhatIfScenario):
         result = await asyncio.to_thread(head_agent_instance.simulate_whatif, scenario)
         return result
     except Exception as exc:
+        logger.exception("What-if simulation failed for scenario type %s", scenario.scenario_type)
         raise HTTPException(status_code=500, detail=str(exc))
 
 
