@@ -1,20 +1,13 @@
 """
-CascadeMapper agent for DEADPOOL.
+CascadeMapper utilities for DEADPOOL.
 
-Takes root causes from HeadAgent and builds a directed consequence graph,
-following causal chains until every branch either:
-  - drops below PROB_THRESHOLD (40%), or
-  - reaches a founder-control-loss terminal state.
-
-Branches are evaluated collectively at each level so cross-cause
-acceleration is captured.
+Provides the LLM-based next-step consequence predictor (_llm_next_step)
+and the domain rules engine (_apply_rules) used by the orchestrator's
+cascade_expander LangGraph node.
 """
 from __future__ import annotations
 
 import json
-import os
-from dataclasses import dataclass, field
-from typing import Optional
 
 import google.genai as genai
 from google.genai import types as genai_types
@@ -24,7 +17,6 @@ from google.genai import types as genai_types
 # ---------------------------------------------------------------------------
 
 PROB_THRESHOLD = 40  # Stop a branch below this probability
-MAX_DEPTH = 10       # Hard stop to prevent runaway chains
 
 TERMINAL_STATES = {
     "bankruptcy",
@@ -41,28 +33,6 @@ RULES: dict[str, int] = {
     "legal+finance": 20,
     "infra+product": 15,
 }
-
-# ---------------------------------------------------------------------------
-# Data models
-# ---------------------------------------------------------------------------
-
-@dataclass
-class CascadeNode:
-    cause: str
-    probability: float          # 0–100
-    contributing_causes: list[str] = field(default_factory=list)
-    children: list["CascadeNode"] = field(default_factory=list)
-    terminal: bool = False
-    terminal_state: Optional[str] = None
-    depth: int = 0
-
-
-@dataclass
-class CascadeResult:
-    roots: list[CascadeNode]    # One per root cause from head agent
-    reached_terminal: bool      # True if any branch hit a control-loss state
-    terminal_states_hit: list[str]
-    max_depth_reached: int
 
 
 # ---------------------------------------------------------------------------
@@ -163,126 +133,3 @@ Respond ONLY with a JSON array. Each element:
                 return v
     return []
 
-
-# ---------------------------------------------------------------------------
-# Core cascade logic
-# ---------------------------------------------------------------------------
-
-def _build_cascade(
-    client: genai.Client,
-    root_causes: list[str],
-    domains_present: list[str],
-) -> CascadeResult:
-    """
-    Iteratively expand the cascade graph level by level.
-    Each level passes all active threads to the LLM together so
-    cross-cause interactions are captured.
-    """
-    terminal_states_hit: list[str] = []
-    max_depth_reached = 0
-
-    # Seed the first level with root causes at 100% (they already happened)
-    root_nodes: list[CascadeNode] = [
-        CascadeNode(cause=rc, probability=100.0, depth=0)
-        for rc in root_causes
-    ]
-
-    # Track all nodes at the current depth so we pass them collectively
-    # to the LLM — this is what enables cross-cause acceleration detection.
-    depth_map: dict[int, list[CascadeNode]] = {0: root_nodes}
-
-    visited_causes: set[str] = set(root_causes)
-
-    current_depth = 0
-
-    while current_depth < MAX_DEPTH:
-        active_nodes = depth_map.get(current_depth, [])
-        if not active_nodes:
-            break
-
-        # Only pass threads that are still alive (above threshold, not terminal)
-        live_threads = [
-            {"cause": n.cause, "probability": n.probability}
-            for n in active_nodes
-            if not n.terminal and n.probability >= PROB_THRESHOLD
-        ]
-        if not live_threads:
-            break
-
-        max_depth_reached = current_depth
-        next_depth = current_depth + 1
-
-        raw_consequences = _llm_next_step(client, live_threads, current_depth)
-
-        next_nodes: list[CascadeNode] = []
-
-        for c in raw_consequences:
-            prob = float(c["probability"])
-            prob = _apply_rules(domains_present, prob)
-
-            # Deduplicate — if this consequence already exists in the graph,
-            # skip spawning a new branch (prevents infinite loops)
-            if c["cause"] in visited_causes:
-                continue
-            visited_causes.add(c["cause"])
-
-            node = CascadeNode(
-                cause=c["cause"],
-                probability=prob,
-                contributing_causes=c.get("contributing_causes", []),
-                terminal=c.get("is_terminal", False),
-                terminal_state=c.get("terminal_state"),
-                depth=next_depth,
-            )
-
-            # Attach to parent nodes that contributed.
-            # Fall back to attaching to all active parents if no exact match is
-            # found — the LLM rarely reproduces the cause string verbatim.
-            contributing = set(c.get("contributing_causes", []))
-            attached = False
-            for parent in active_nodes:
-                if parent.cause in contributing:
-                    parent.children.append(node)
-                    attached = True
-            if not attached:
-                for parent in active_nodes:
-                    parent.children.append(node)
-
-            if node.terminal:
-                if node.terminal_state:
-                    terminal_states_hit.append(node.terminal_state)
-                next_nodes.append(node)
-                continue  # Don't expand past terminal
-
-            if prob < PROB_THRESHOLD:
-                next_nodes.append(node)
-                continue  # Branch dies here — still record it, don't expand
-
-            next_nodes.append(node)
-
-        depth_map[next_depth] = next_nodes
-        current_depth += 1
-
-    return CascadeResult(
-        roots=root_nodes,
-        reached_terminal=len(terminal_states_hit) > 0,
-        terminal_states_hit=list(set(terminal_states_hit)),
-        max_depth_reached=max_depth_reached,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Agent class
-# ---------------------------------------------------------------------------
-
-class CascadeMapperAgent:
-    """
-    Standalone agent — receives root causes and domains from HeadAgent output,
-    returns a fully expanded CascadeResult.
-    """
-
-    def __init__(self):
-        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
-
-    def run(self, root_causes: list[str], domains_present: list[str]) -> CascadeResult:
-        return _build_cascade(self.client, root_causes, domains_present)

@@ -33,7 +33,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
-from models import AgentReport, CascadeChain, RiskScore, WhatIfScenario
+from models import AgentReport
 
 # Load .env if present (ANTHROPIC_API_KEY must be set in environment)
 load_dotenv()
@@ -216,47 +216,6 @@ async def head_agent_analyze():
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
-    
-
-# ---------------------------------------------------------------------------
-# Dashboard — same pipeline, same response
-# ---------------------------------------------------------------------------
-@app.get("/api/dashboard", tags=["Risk"])
-async def get_dashboard():
-    """Alias for /api/head-agent/analyze — returns full pipeline result."""
-    if not head_agent_instance:
-        raise HTTPException(status_code=503, detail="Head agent not initialized.")
-    try:
-        return await _run_full_pipeline()
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-# ---------------------------------------------------------------------------
-# Risk score
-# ---------------------------------------------------------------------------
-@app.get("/api/risk-score", response_model=RiskScore, tags=["Risk"])
-async def get_risk_score():
-    """Return the most recent computed risk score with top 3 cascades."""
-    if not head_agent_instance:
-        raise HTTPException(status_code=503, detail="Head agent not initialized.")
-
-    if head_agent_instance.last_risk_score:
-        return head_agent_instance.last_risk_score
-
-    # No cached score — trigger a fresh analysis
-    return await head_agent_analyze()
-
-
-# ---------------------------------------------------------------------------
-# Active cascades
-# ---------------------------------------------------------------------------
-@app.get("/api/cascades", response_model=list[CascadeChain], tags=["Risk"])
-async def get_cascades():
-    """List all active cascade chains detected in the last analysis."""
-    if not head_agent_instance:
-        raise HTTPException(status_code=503, detail="Head agent not initialized.")
-    return head_agent_instance.active_cascades
 
 
 # ---------------------------------------------------------------------------
@@ -283,31 +242,6 @@ async def get_agent_report(agent_name: str):
             raise HTTPException(status_code=500, detail=str(exc))
 
     return agent.last_report
-
-
-# ---------------------------------------------------------------------------
-# What-If simulation
-# ---------------------------------------------------------------------------
-@app.post("/api/whatif", response_model=WhatIfScenario, tags=["Simulation"])
-async def whatif_simulation(scenario: WhatIfScenario):
-    """
-    Simulate a what-if scenario and return modified cascade chains
-    with a new risk score and comparison briefing.
-
-    Scenario types:
-    - engineer_leaves
-    - client_churns
-    - cve_discovered
-    - cloud_costs_double
-    """
-    if not head_agent_instance:
-        raise HTTPException(status_code=503, detail="Head agent not initialized.")
-
-    try:
-        result = await asyncio.to_thread(head_agent_instance.simulate_whatif, scenario)
-        return result
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
 
 
 # ---------------------------------------------------------------------------

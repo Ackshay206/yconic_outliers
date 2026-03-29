@@ -77,7 +77,6 @@ class CascadeChain(BaseModel):
     time_to_impact_days: int
     financial_impact: float  # USD
     urgency_score: float
-    head_agent_briefing: str | None = None  # deprecated — use RiskScore.briefing
 
 
 class FounderBriefing(BaseModel):
