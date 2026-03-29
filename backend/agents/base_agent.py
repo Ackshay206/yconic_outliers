@@ -1,7 +1,7 @@
 """
 Base agent — shared foundation for all DEADPOOL specialist agents.
 
-Uses Google Gemini (gemini-2.5-pro) by default.
+Uses Google Gemini (gemini-2.5-flash) by default.
 Finance Agent overrides the model to GPT-4o-mini.
 
 Requires GOOGLE_API_KEY environment variable.
@@ -23,7 +23,7 @@ from models import Anomaly, AgentReport
 class BaseAgent:
     """Abstract base class for specialist agents."""
 
-    MODEL = "gemini-2.5-pro"
+    MODEL = "gemini-2.5-flash"
 
     def __init__(self, domain: str, system_prompt: str):
         self.domain = domain

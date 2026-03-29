@@ -63,7 +63,7 @@ class PeopleAgent(BaseAgent):
     def load_data(self) -> dict:
         """Fetch live Slack messages grouped by developer."""
         try:
-            from slack_client import slack
+            from utils.slack_client import slack
 
             if not slack.is_connected:
                 return {
