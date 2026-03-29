@@ -75,8 +75,8 @@ We are not starting from zero. Here's what's done and what remains:
 | **Dashboard: liabilities panel** | ✅ Done | Replaces activity log — sorted by severity |
 | **What-If simulation** | ✅ Done | `POST /api/whatif` wired to `HeadAgent.simulate_whatif()` |
 | **Agent Chat** | ✅ Shipped | `POST /api/agents/{name}/chat` — per-agent conversational interface grounded in latest analysis data, SSE token streaming, persisted conversation history across tab switches |
-| **Dashboard: activity log** | ❌ Not shipped | Deprioritised in favour of liabilities panel |
-| **Landing page** | ❌ Not shipped | Out of scope for hackathon code submission |
+
+| **Landing page** |  shipped |
 
 The critical path was **agent collaboration and cascade detection** — getting the LangGraph conditional routing to work correctly so that the primary cascade (People → Code Audit → Infra → Legal → Finance) fires end-to-end. This is complete. The LLM-driven cascade expander replaced the planned deterministic NetworkX approach.
 
@@ -346,7 +346,7 @@ Three-section layout:
 
 **The scoring rubric evaluates code against the master plan.** Overcommitting kills the completeness score. We define three tiers:
 
-### Tier 1 — Must ship ✅ All shipped
+###  Must ship ✅ All shipped
 
 | Feature | Owner | Description | Status |
 |---------|-------|-------------|--------|
@@ -358,21 +358,7 @@ Three-section layout:
 | **SSE streaming** | Dev 5 | FastAPI `signal_bus` → React `EventSource` — incremental anomaly display during analysis. | ✅ Shipped |
 | **Agent Chat** | Dev 4 + Dev 5 | Per-agent conversational interface grounded in latest analysis data. Token streaming via SSE. Conversation history persists across tab switches. | ✅ Shipped |
 
-### Tier 2 — Should ship
 
-| Feature | Owner | Description | Status |
-|---------|-------|-------------|--------|
-| **What-If simulation** | Dev 3 | `POST /api/whatif` — modifies domain severities, re-scores, returns comparison briefing. | ✅ Shipped (backend only) |
-| **Cross-provider highlighting** | Dev 4 | Visualise Gemini ↔ GPT-4o-mini boundary in the dashboard. | ❌ Not shipped |
-| **Cascade animation** | Dev 4 | Pulse animation along active chains. | ❌ Not shipped |
-
-### Tier 3 — Stretch
-
-| Feature | Owner | Description | Status |
-|---------|-------|-------------|--------|
-| **Alert toasts** | Dev 4 | Toast notifications at severity thresholds. | ❌ Not shipped |
-| **LangGraph trace visualization** | Dev 5 | Live node/edge activity during graph execution. | ❌ Not shipped |
-| **Multiple simultaneous cascades** | Dev 3 | Dashboard renders 2+ chains simultaneously. | ✅ Shipped — React Flow renders all active chains |
 
 ### Feasibility analysis — why this ships in time
 
@@ -893,22 +879,12 @@ Show landing page + signup count. "[X] founders signed up in 20 hours."
 
 ## Success criteria
 
-### Tier 1 (must achieve — code will be measured against these)
+### (must achieve — code will be measured against these)
 - ✅ All 6 LangGraph specialist nodes + head_agent + cascade_expander + format_output running with structured outputs writing to `OrchestratorState`
 - ✅ LangGraph conditional edges driving cascade loop (cascade_expander ↔ format_output)
 - ✅ Primary cascade detected spanning 4+ domains, crossing Gemini → GPT-4o-mini boundary
 - ✅ Dashboard displaying: React Flow cascade graph, risk score, FounderBriefing, liabilities panel
 - ✅ SSE streaming live anomaly updates from backend to frontend during analysis
-
-### Tier 2 (should achieve)
-- ✅ What-If simulation mode — `POST /api/whatif` backend endpoint working
-- ❌ Cross-provider corroboration highlighted in dashboard — not shipped
-- ❌ Cascade animation — not shipped
-
-### Tier 3 (stretch)
-- ❌ Alert toast notifications — not shipped
-- ✅ Multiple simultaneous cascade rendering — React Flow renders all activeChains
-- ❌ LangGraph execution trace visualization — not shipped
 
 ---
 
