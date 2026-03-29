@@ -12,11 +12,14 @@ Requires OPENAI_API_KEY environment variable.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import uuid
 from datetime import datetime
 from pathlib import Path
+
+logger = logging.getLogger("deadpool.finance_agent")
 
 import pandas as pd
 from openai import OpenAI
@@ -200,6 +203,6 @@ class FinanceAgent:
             item["agent_domain"] = "finance"
             try:
                 anomalies.append(Anomaly(**item))
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("[finance] Skipping malformed anomaly: %s", exc)
         return anomalies
