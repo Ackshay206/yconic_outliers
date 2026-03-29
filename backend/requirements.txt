@@ -6,7 +6,7 @@ uvicorn[standard]==0.30.0
 pydantic==2.9.0
 
 # AI providers
-google-genai==1.69.0
+google-genai==1.10.0
 openai==1.70.0
 
 # LangGraph orchestration
@@ -14,7 +14,7 @@ langgraph==0.3.21
 
 # Data ingestion
 pandas==2.2.3
-pdfplumber==0.11.4
+pymupdf==1.25.5
 duckduckgo-search==7.5.1
 requests==2.32.3
 

@@ -121,6 +121,8 @@ class LegalAgent(BaseAgent):
         ]
         results = []
         try:
+            import logging
+            logging.getLogger("primp").setLevel(logging.ERROR)
             from duckduckgo_search import DDGS
             with DDGS() as ddgs:
                 for query in queries:
