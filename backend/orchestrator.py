@@ -32,8 +32,8 @@ from typing_extensions import TypedDict
 if TYPE_CHECKING:
     from langgraph.graph.state import CompiledStateGraph
 
-from models import AgentReport, Anomaly, RiskScore
-from cascade_mapper import PROB_THRESHOLD, _llm_next_step, _apply_rules
+from backend.models import AgentReport, Anomaly, RiskScore
+from backend.cascade_mapper import PROB_THRESHOLD, _llm_next_step, _apply_rules
 
 # ---------------------------------------------------------------------------
 # Constants

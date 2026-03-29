@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from agents.base_agent import BaseAgent
+from backend.agents.base_agent import BaseAgent
 
 CSV_PATH          = Path(__file__).parent.parent / "data" / "csv" / "product_data.csv"
 FALLBACK_JSON     = Path(__file__).parent.parent / "data" / "product_metrics.json"
@@ -98,7 +98,7 @@ class ProductAgent(BaseAgent):
         # --- Source 2: Reddit scrape (with cached JSON fallback) ---
         reddit_data = None
         try:
-            from utils.reddit_scraper import fetch_subreddit_data
+            from backend.utils.reddit_scraper import fetch_subreddit_data
             reddit_data = fetch_subreddit_data(SUBREDDIT, max_pages=3, fetch_comments=True)
         except Exception as exc:
             import logging as _logging

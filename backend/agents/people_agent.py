@@ -12,7 +12,7 @@ Requires SLACK_BOT_TOKEN environment variable.
 """
 from __future__ import annotations
 
-from agents.base_agent import BaseAgent
+from backend.agents.base_agent import BaseAgent
 
 SYSTEM_PROMPT = """You are the People Agent for DEADPOOL, a startup risk monitoring system.
 
@@ -71,7 +71,7 @@ class PeopleAgent(BaseAgent):
     def load_data(self) -> dict:
         """Fetch live Slack messages grouped by developer."""
         try:
-            from utils.slack_client import slack
+            from backend.utils.slack_client import slack
 
             if not slack.is_connected:
                 return {

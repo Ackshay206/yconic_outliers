@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 import google.genai as genai
 from google.genai import types as genai_types
 
-from models import Anomaly, AgentReport
+from backend.models import Anomaly, AgentReport
 
 logger = logging.getLogger("deadpool.base_agent")
 
@@ -94,7 +94,7 @@ class BaseAgent:
         self.last_report = report
 
         # Publish to signal bus
-        from signal_bus import bus
+        from backend.signal_bus import bus
         for anomaly in anomalies:
             bus.publish(anomaly)
 
@@ -153,3 +153,73 @@ class BaseAgent:
         keys = list(data.keys())
         total_items = sum(len(v) if isinstance(v, list) else 1 for v in data.values())
         return f"{self.domain} data loaded — top-level keys: {keys}, ~{total_items} data points"
+
+    # ------------------------------------------------------------------
+    # Chat interface
+    # ------------------------------------------------------------------
+
+    def get_chat_context(self) -> str:
+        """
+        Return a compact data context string for the chat interface.
+        Uses the last anomaly report when available (avoids re-scraping data).
+        Falls back to a brief note if no analysis has run yet.
+        """
+        if self.last_report and self.last_report.anomalies:
+            lines = [f"Latest {self.domain} analysis found {len(self.last_report.anomalies)} anomalies:\n"]
+            for a in self.last_report.anomalies:
+                lines.append(
+                    f"- [{a.severity:.0%} severity] {a.title}: {a.description}"
+                )
+            return "\n".join(lines)
+        return f"No {self.domain} analysis has been run yet. I can still answer general questions about {self.domain} risks."
+
+    def chat_stream(self, message: str, history: list[dict]):
+        """
+        Yield text chunks for a streaming chat response.
+
+        history: list of {"role": "user"|"model", "text": "..."}
+        """
+        chat_system = (
+            f"{self.system_prompt}\n\n"
+            "--- CHAT MODE ---\n"
+            "You are now in interactive chat mode with a founder or operator. "
+            "Answer in plain conversational language — no JSON arrays. "
+            "Be concise, specific, and actionable. Reference the data context you've been given."
+        )
+
+        contents = []
+
+        # Inject data context as a priming exchange so it stays in-window
+        data_ctx = self.get_chat_context()
+        contents.append(genai_types.Content(
+            role="user",
+            parts=[genai_types.Part(text=f"Here is the current {self.domain} data context:\n\n{data_ctx}")]
+        ))
+        contents.append(genai_types.Content(
+            role="model",
+            parts=[genai_types.Part(text=f"Understood. I've reviewed the {self.domain} data and I'm ready to help.")]
+        ))
+
+        # Replay conversation history
+        for msg in history:
+            contents.append(genai_types.Content(
+                role=msg["role"],
+                parts=[genai_types.Part(text=msg["text"])]
+            ))
+
+        # Current user turn
+        contents.append(genai_types.Content(
+            role="user",
+            parts=[genai_types.Part(text=message)]
+        ))
+
+        for chunk in self.client.models.generate_content_stream(
+            model=self.MODEL,
+            contents=contents,
+            config=genai_types.GenerateContentConfig(
+                system_instruction=chat_system,
+                max_output_tokens=4096,
+            ),
+        ):
+            if chunk.text:
+                yield chunk.text

@@ -18,7 +18,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from agents.base_agent import BaseAgent
+from backend.agents.base_agent import BaseAgent
 
 FALLBACK_JSON = Path(__file__).parent.parent / "data" / "infrastructure.json"
 LOOKBACK_DAYS = 30

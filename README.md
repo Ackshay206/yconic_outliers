@@ -37,7 +37,7 @@ Startups don't die from one thing — they die from a **chain reaction** nobody 
 
 **DEADPOOL is a multi-agent startup immune system.** Six specialist AI agents continuously monitor every operational layer of a company — **People, Finance, Infrastructure, Product, Legal, and Code Audit** — orchestrated by a **LangGraph pipeline** that cross-validates findings, traces cascade chains using LLM-driven consequence expansion, and produces plain-language founder briefings.
 
-The system is **multi-model by design**: five specialist agents and the Head Agent run on **Google Gemini 2.5 Pro**, while the Finance Agent runs on **OpenAI GPT-4o-mini**. When agents on different model families independently corroborate the same risk, the signal is model-independent — not just one model agreeing with itself.
+The system is **multi-model by design**: five specialist agents run on **Google Gemini 2.5 Flash**, the Head Agent and cascade expander run on **Gemini 2.5 Pro**, and the Finance Agent runs on **OpenAI GPT-4o-mini**. When agents on different model families independently corroborate the same risk, the signal is model-independent — not just one model agreeing with itself.
 
 ---
 
@@ -46,11 +46,11 @@ The system is **multi-model by design**: five specialist agents and the Head Age
 ```
   ┌──────────────┐  ┌────────────────┐  ┌─────────────────┐
   │ People       │  │ Finance        │  │ Infra           │
-  │ (Gemini Pro) │  │ (GPT-4o-mini)  │  │ (Gemini Pro)    │
+  │ (Gemini Flash│  │ (GPT-4o-mini)  │  │ (Gemini Flash)  │
   └──────┬───────┘  └───────┬────────┘  └────────┬────────┘
   ┌──────┴───────┐  ┌───────┴────────┐  ┌────────┴────────┐
   │ Product      │  │ Legal          │  │ Code Audit      │
-  │ (Gemini Pro) │  │ (Gemini Pro)   │  │ (Gemini Pro)    │
+  │ (Gemini Flash│  │ (Gemini Flash) │  │ (Gemini Flash)  │
   └──────┬───────┘  └───────┬────────┘  └────────┬────────┘
          └──────────────────▼──────────────────────┘
                    ┌───────────────────────────────────┐
@@ -91,10 +91,11 @@ The system is **multi-model by design**: five specialist agents and the Head Age
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | Orchestration | **LangGraph** `StateGraph` | Typed state, conditional edges, parallel fan-out, cascade expander loop |
-| AI (Primary) | **Gemini 2.5 Pro** via `google-genai` SDK | 5 specialist agents + Head Agent + cascade expansion |
+| AI (Specialists) | **Gemini 2.5 Flash** via `google-genai` SDK | 5 specialist agents (people, infra, product, legal, code_audit) |
+| AI (Orchestration) | **Gemini 2.5 Pro** via `google-genai` SDK | Head Agent + cascade expansion |
 | AI (Finance) | **GPT-4o-mini** via `openai` SDK | Finance agent — fast structured CSV extraction, precise arithmetic |
 | Backend | **Python 3.11+ / FastAPI** | Async API server, SSE streaming, Pydantic v2 data validation |
-| Frontend | **React 19 + Vite 6 + React Flow** | Two-page dashboard: Overview + Cascade Chains (`@xyflow/react`) |
+| Frontend | **React 19 + Vite 6 + React Flow** | Three-page dashboard: Overview + Cascade Chains + Agent Chat (`@xyflow/react`) |
 | Real-time | **sse-starlette** | Server → browser push for live anomaly updates |
 | Data | **Pandas** | CSV parsing for Finance Agent |
 | Integrations | **slack-sdk**, **PyGithub** | Slack team monitoring and GitHub commit history |
@@ -123,12 +124,12 @@ yconic_outliers/
 │   │   ├── __init__.py
 │   │   ├── base_agent.py       # Abstract base — Gemini client, prompt template, JSON parsing
 │   │   ├── head_agent.py       # Cross-validate + risk score + FounderBriefing + What-If simulation
-│   │   ├── people_agent.py     # Team health & key-person risk         (Gemini 2.5 Pro)
+│   │   ├── people_agent.py     # Team health & key-person risk         (Gemini 2.5 Flash)
 │   │   ├── finance_agent.py    # Cash flow, runway, revenue            (GPT-4o-mini)
-│   │   ├── infra_agent.py      # System reliability & deploy ops       (Gemini 2.5 Pro)
-│   │   ├── product_agent.py    # User engagement & retention           (Gemini 2.5 Pro)
-│   │   ├── legal_agent.py      # Contracts & compliance                (Gemini 2.5 Pro)
-│   │   └── code_audit_agent.py # Codebase health, CVEs, bus factor     (Gemini 2.5 Pro)
+│   │   ├── infra_agent.py      # System reliability & deploy ops       (Gemini 2.5 Flash)
+│   │   ├── product_agent.py    # User engagement & retention           (Gemini 2.5 Flash)
+│   │   ├── legal_agent.py      # Contracts & compliance                (Gemini 2.5 Flash)
+│   │   └── code_audit_agent.py # Codebase health, CVEs, bus factor     (Gemini 2.5 Flash)
 │   │
 │   ├── utils/
 │   │   ├── dashboard_formatter.py  # Dashboard response formatting helpers
@@ -151,15 +152,16 @@ yconic_outliers/
     ├── index.html              # HTML entry point
     ├── package.json            # Dependencies: React 19, Vite 6, @xyflow/react
     ├── vite.config.js          # Vite build configuration
-    ├── App.jsx                 # 🏠 Root — two-page app (Overview ↔ Cascade Chains)
+    ├── App.jsx                 # 🏠 Root — three-page app (Overview ↔ Cascade Chains ↔ Agent Chat)
     │
     ├── src/
     │   └── main.jsx            # React DOM mount point
     │
     ├── components/
     │   ├── layout/
-    │   │   └── Header.jsx          # Top bar — DEADPOOL branding + Run Analysis button + page nav
+    │   │   └── Header.jsx          # Top bar — DEADPOOL branding + Run Analysis button + page nav (Overview / Cascade Chains / Agent Chat)
     │   │
+    │   ├── AgentChatPanel.jsx      # 💬 Agent Chat page — per-agent conversational interface with SSE streaming
     │   ├── AgentsPanel.jsx         # 2×3 grid of agent status cards (idle/processing/healthy/warning/critical)
     │   ├── BriefingPanel.jsx       # FounderBriefing (summary, timeline, recommended_action)
     │   ├── FlawsPanel.jsx          # Scrollable liabilities list sorted by severity
@@ -182,6 +184,7 @@ yconic_outliers/
     │
     ├── hooks/
     │   ├── useDeadpool.js          # Main hook — SSE + POST /api/head-agent/analyze + all state
+    │   ├── useAgentProcessor.js    # Agent data processing helper hook
     │   └── useCascaseAnimation.js  # Cascade animation controller (unused in production)
     │
     ├── utils/
@@ -286,6 +289,7 @@ The full pipeline runs via `asyncio.to_thread(run_pipeline, agent_registry, head
 | `/api/risk-score` | GET | Latest `RiskScore` (triggers fresh analysis if none cached) |
 | `/api/cascades` | GET | List active cascade chains from last analysis |
 | `/api/agents/{name}/report` | GET | Most recent report for a specific agent |
+| `/api/agents/{name}/chat` | POST | Agent chat — streaming token-by-token SSE response grounded in latest analysis |
 | `/api/whatif` | POST | What-If scenario simulation |
 | `/api/sse/updates` | GET | SSE stream — real-time anomaly & risk updates |
 | `/api/slack/status` | GET | Slack integration health |
@@ -332,7 +336,9 @@ All data is typed with **Pydantic v2** schemas:
 
 All agents except Finance inherit from `BaseAgent`:
 - Initializes a `google.genai.Client` with `GOOGLE_API_KEY`
-- `run()` method: calls `load_data()` → builds a structured prompt → calls Gemini 2.5 Pro → parses JSON response → strips markdown fences → validates into `Anomaly` objects → publishes each to the signal bus → returns `AgentReport`
+- `run()` method: calls `load_data()` → builds a structured prompt → calls Gemini 2.5 Flash → parses JSON response → strips markdown fences → validates into `Anomaly` objects → publishes each to the signal bus → returns `AgentReport`
+- `get_chat_context()`: returns the last `AgentReport` summary as a priming string for chat, or a generic greeting if no analysis has run yet
+- `chat_stream(message, history)`: injects data context as a priming `user`/`model` exchange, replays conversation history, appends the current message, and yields Gemini response chunks as SSE — enables data-grounded multi-turn dialogue
 - If the model returns malformed JSON, gracefully returns an empty anomaly list
 
 Subclasses only need to implement `load_data()` to return their domain data dict.
@@ -404,6 +410,22 @@ Two-column layout:
   - `FlawsPanel` — scrollable severity-sorted list of detected liabilities
   - `RiskIndex` — 0–100 score with severity level and trend
 
+#### Page: Agent Chat
+
+Full-width `AgentChatPanel` — accessible from the header nav at any time, before or after running analysis.
+
+**Layout:**
+- **Left sidebar** — six agent cards with domain-colored status dots (critical/warning/healthy/idle), agent label, and a one-line description. Clicking a card activates that agent and restores its conversation history.
+- **Main chat area** — auto-scrolling message history. User messages are right-aligned; agent responses are left-aligned with domain-color-coded headers and a blinking streaming cursor during generation.
+- **Welcome state** — when a conversation is empty, shows a per-agent icon, description, and 3–4 suggested questions (e.g., *"Which engineer is the biggest single point of failure?"*). Clicking a suggestion pre-fills the input.
+- **Input bar** — multi-line `textarea` with a domain-color-focused border, Send button, and Clear Chat button.
+
+**Data grounding:** Each agent injects its latest `AgentReport` summary as a priming exchange before the first user message, so answers reference the company's current operational state — not generic LLM knowledge.
+
+**Streaming:** Uses `fetch` + `response.body.getReader()` to consume `text/event-stream` chunks. Each `data: {"text": "chunk"}` packet is appended to the active message bubble. A `data: [DONE]` sentinel removes the cursor and marks the message complete.
+
+**Conversation persistence:** Each agent's history is stored in a `Map<agentName, messages[]>` in React state. Switching between agents (or to the Overview page and back) preserves full conversation history for the session.
+
 #### Page: Cascade Chains (unlocks after analysis)
 
 Full-width `CascadeChainPanel` using **React Flow** (`@xyflow/react`):
@@ -463,6 +485,16 @@ curl http://localhost:8000/api/risk-score
 ```bash
 curl http://localhost:8000/api/cascades
 ```
+
+### Chat with an Agent (streaming)
+```bash
+# Options: people, finance, infra, product, legal, code_audit
+curl -X POST http://localhost:8000/api/agents/people/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Who is the biggest key-person risk right now?", "history": []}'
+```
+Response: `text/event-stream` — `data: {"text": "chunk"}` events until `data: [DONE]`.
+Each agent primes the conversation with its latest analysis findings before responding.
 
 ### What-If Simulation
 ```bash

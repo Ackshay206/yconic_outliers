@@ -8,7 +8,7 @@ import asyncio
 from collections import deque
 from datetime import datetime
 
-from models import Anomaly
+from backend.models import Anomaly
 
 
 class SignalBus:

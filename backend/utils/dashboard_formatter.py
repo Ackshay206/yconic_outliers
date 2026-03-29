@@ -11,7 +11,7 @@ Output shape:
 """
 from __future__ import annotations
 
-from models import RiskScore, CascadeNode
+from backend.models import RiskScore, CascadeNode
 
 # ---------------------------------------------------------------------------
 # Lookup tables

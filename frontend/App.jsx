@@ -5,6 +5,8 @@ import FlawsPanel        from "./components/FlawsPanel";
 import CascadeChainPanel from "./components/CascadeChainPanel";
 import RiskIndex         from "./components/RiskIndex";
 import BriefingPanel     from "./components/BriefingPanel";
+import AgentChatPanel    from "./components/AgentChatPanel";
+import LandingPage       from "./components/LandingPage";
 import ErrorBoundary     from "./components/ErrorBoundary";
 import { useDeadpool }   from "./hooks/useDeadpool";
 
@@ -25,6 +27,7 @@ function AppInner() {
     runAnalysis,
   } = useDeadpool();
 
+  const [landed, setLanded]         = useState(false); // false = show landing
   // "cascades" page only unlocks after analysis completes
   const [activePage, setActivePage] = useState("overview");
 
@@ -70,45 +73,50 @@ function AppInner() {
         </div>
       )}
 
-      {/* ── PAGE: Cascade Chains (full-width) ─────────────────────────────── */}
-      {activePage === "cascades" ? (
-        <div style={{ flex: 1, overflow: "hidden" }}>
-          <CascadeChainPanel
-            cascadeChains={cascadeChains}
-            cascadeNodes={cascadeNodes}
-            cascadeEdges={cascadeEdges}
-          />
-        </div>
-      ) : (
-        /* ── PAGE: Overview (two-column) ──────────────────────────────────── */
-        <div style={{
-          flex: 1, display: "grid", gridTemplateColumns: "3fr 7fr",
-          gap: 0, overflow: "hidden",
-        }}>
-          {/* Left — Agents */}
-          <div style={{
-            background: "#0A0A0A",
-            borderRight: "1px solid #3D0000",
-            overflow: "hidden",
-            padding: 24,
-          }}>
-            <AgentsPanel agentStatuses={agentStatuses} />
-          </div>
+      {/* ── Always-mounted pages — visibility toggled via display so state persists ── */}
 
-          {/* Right — Briefing + Liabilities + Risk Index */}
-          <div style={{
-            background: "#111111",
-            display: "flex", flexDirection: "column",
-            padding: 24, gap: 20, overflow: "hidden",
-          }}>
-            <BriefingPanel briefing={briefing} />
-            <FlawsPanel liabilities={liabilities} />
-            <div style={{ flexShrink: 0 }}>
-              <RiskIndex score={riskScore} severityLevel={severityLevel} trend={trend} />
-            </div>
+      {/* Agent Chat — always mounted so conversation history survives tab switches */}
+      <div style={{ flex: 1, overflow: "hidden", display: activePage === "chat" ? "flex" : "none", flexDirection: "column" }}>
+        <AgentChatPanel agentStatuses={agentStatuses} />
+      </div>
+
+      {/* Cascade Chains */}
+      <div style={{ flex: 1, overflow: "hidden", display: activePage === "cascades" ? "flex" : "none", flexDirection: "column" }}>
+        <CascadeChainPanel
+          cascadeChains={cascadeChains}
+          cascadeNodes={cascadeNodes}
+          cascadeEdges={cascadeEdges}
+        />
+      </div>
+
+      {/* Overview (two-column) */}
+      <div style={{
+        flex: 1, display: activePage === "overview" ? "grid" : "none",
+        gridTemplateColumns: "3fr 7fr", overflow: "hidden",
+      }}>
+        {/* Left — Agents */}
+        <div style={{
+          background: "#0A0A0A",
+          borderRight: "1px solid #3D0000",
+          overflow: "hidden",
+          padding: 24,
+        }}>
+          <AgentsPanel agentStatuses={agentStatuses} />
+        </div>
+
+        {/* Right — Briefing + Liabilities + Risk Index */}
+        <div style={{
+          background: "#111111",
+          display: "flex", flexDirection: "column",
+          padding: 24, gap: 20, overflow: "hidden",
+        }}>
+          <BriefingPanel briefing={briefing} />
+          <FlawsPanel liabilities={liabilities} />
+          <div style={{ flexShrink: 0 }}>
+            <RiskIndex score={riskScore} severityLevel={severityLevel} trend={trend} />
           </div>
         </div>
-      )}
+      </div>
 
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
@@ -125,6 +133,10 @@ function AppInner() {
           -webkit-font-smoothing: antialiased;
         }
       `}</style>
+
+      {/* Landing page overlays on top — main app is already mounted beneath,
+          so when the landing fades out there is no white flash */}
+      {!landed && <LandingPage onEnter={() => setLanded(true)} />}
     </div>
   );
 }

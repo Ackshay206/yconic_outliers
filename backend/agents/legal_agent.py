@@ -11,10 +11,13 @@ Requires GOOGLE_API_KEY (inherited from BaseAgent / Gemini).
 from __future__ import annotations
 
 import json
+import logging
 import os
 from pathlib import Path
 
-from agents.base_agent import BaseAgent
+logger = logging.getLogger("deadpool.legal_agent")
+
+from backend.agents.base_agent import BaseAgent
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "contracts.json"
 PDF_DIR = Path(__file__).parent.parent / "data"
@@ -110,7 +113,8 @@ class LegalAgent(BaseAgent):
                     "pages": len(pages_text),
                     "text": full_text,
                 })
-            except Exception:
+            except Exception as exc:
+                logger.warning("[legal] Failed to extract PDF %s: %s", pdf_path.name, exc)
                 continue
 
         return results
@@ -135,6 +139,6 @@ class LegalAgent(BaseAgent):
                             "snippet": hit.get("body", "")[:500],
                             "url": hit.get("href", ""),
                         })
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("[legal] Regulatory web search failed: %s", exc)
         return results

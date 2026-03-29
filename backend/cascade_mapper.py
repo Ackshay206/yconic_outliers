@@ -132,4 +132,3 @@ Respond ONLY with a JSON array. Each element:
             if isinstance(v, list):
                 return v
     return []
-

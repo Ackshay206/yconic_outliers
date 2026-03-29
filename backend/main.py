@@ -31,12 +31,16 @@ logging.basicConfig(
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel as PydanticBaseModel
 from sse_starlette.sse import EventSourceResponse
 
-from models import AgentReport
+from backend.models import AgentReport
 
 # Load .env if present (ANTHROPIC_API_KEY must be set in environment)
 load_dotenv()
+
+logger = logging.getLogger("deadpool.main")
 
 # ---------------------------------------------------------------------------
 # Agent registry — populated during lifespan startup
@@ -62,13 +66,13 @@ async def lifespan(app: FastAPI):
     global head_agent_instance
 
     # Import here to avoid circular imports at module load time
-    from agents.people_agent import PeopleAgent
-    from agents.finance_agent import FinanceAgent
-    from agents.infra_agent import InfraAgent
-    from agents.product_agent import ProductAgent
-    from agents.legal_agent import LegalAgent
-    from agents.code_audit_agent import CodeAuditAgent
-    from agents.head_agent import HeadAgent
+    from backend.agents.people_agent import PeopleAgent
+    from backend.agents.finance_agent import FinanceAgent
+    from backend.agents.infra_agent import InfraAgent
+    from backend.agents.product_agent import ProductAgent
+    from backend.agents.legal_agent import LegalAgent
+    from backend.agents.code_audit_agent import CodeAuditAgent
+    from backend.agents.head_agent import HeadAgent
 
     specialists = {
         "people": PeopleAgent(),
@@ -82,9 +86,9 @@ async def lifespan(app: FastAPI):
 
     head_agent_instance = HeadAgent(specialist_agents=specialists)
 
-    print("[DEADPOOL] All agents initialized. Ready.")
+    logger.info("[DEADPOOL] All agents initialized. Ready.")
     yield
-    print("[DEADPOOL] Shutting down.")
+    logger.info("[DEADPOOL] Shutting down.")
 
 
 # ---------------------------------------------------------------------------
@@ -125,7 +129,7 @@ async def health():
 @app.get("/api/slack/status", tags=["Integrations"])
 async def slack_status():
     """Check whether the Slack API integration is connected and healthy."""
-    from utils.slack_client import slack
+    from backend.utils.slack_client import slack
     return slack.status()
 
 
@@ -151,6 +155,7 @@ async def run_agent(agent_name: str):
         report = await asyncio.to_thread(agent.run)
         return report
     except Exception as exc:
+        logger.exception("Agent %s run failed", agent_name)
         raise HTTPException(status_code=500, detail=str(exc))
 
 
@@ -188,7 +193,7 @@ async def run_all_agents():
 # ---------------------------------------------------------------------------
 async def _run_full_pipeline() -> dict:
     """Shared logic: run full LangGraph pipeline and merge RiskScore + dashboard."""
-    from orchestrator import run_pipeline
+    from backend.orchestrator import run_pipeline
 
     dashboard = await asyncio.to_thread(run_pipeline, agent_registry, head_agent_instance)
 
@@ -214,8 +219,8 @@ async def head_agent_analyze():
     try:
         return await _run_full_pipeline()
     except Exception as exc:
+        logger.exception("Full pipeline failed (head-agent/analyze)")
         raise HTTPException(status_code=500, detail=str(exc))
-
 
 
 # ---------------------------------------------------------------------------
@@ -239,9 +244,79 @@ async def get_agent_report(agent_name: str):
             report = await asyncio.to_thread(agent.run)
             return report
         except Exception as exc:
+            logger.exception("Agent %s report fetch failed", agent_name)
             raise HTTPException(status_code=500, detail=str(exc))
 
     return agent.last_report
+
+
+# -------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Agent chat — streaming SSE endpoint
+# ---------------------------------------------------------------------------
+
+class ChatMessage(PydanticBaseModel):
+    role: str   # "user" | "model"
+    text: str
+
+class ChatRequest(PydanticBaseModel):
+    message: str
+    history: list[ChatMessage] = []
+
+
+@app.post("/api/agents/{agent_name}/chat", tags=["Chat"])
+async def agent_chat(agent_name: str, body: ChatRequest):
+    """
+    Stream a chat response from a specialist agent using SSE.
+
+    The agent answers in plain language, grounded in its latest data context.
+    Emits chunks as: data: {"text": "..."}\n\n
+    Terminates with:  data: [DONE]\n\n
+    """
+    if agent_name not in VALID_AGENTS:
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_name}' not found.")
+    agent = agent_registry.get(agent_name)
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized.")
+
+    history = [{"role": m.role, "text": m.text} for m in body.history]
+
+    async def generate():
+        loop = asyncio.get_event_loop()
+        queue: asyncio.Queue = asyncio.Queue()
+
+        def run_stream():
+            try:
+                for chunk in agent.chat_stream(body.message, history):
+                    loop.call_soon_threadsafe(queue.put_nowait, chunk)
+            except Exception as exc:
+                loop.call_soon_threadsafe(
+                    queue.put_nowait,
+                    f"\n\n[Agent error: {exc}]"
+                )
+            finally:
+                loop.call_soon_threadsafe(queue.put_nowait, None)  # sentinel
+
+        import threading
+        threading.Thread(target=run_stream, daemon=True).start()
+
+        while True:
+            chunk = await queue.get()
+            if chunk is None:
+                yield f"data: [DONE]\n\n"
+                break
+            yield f"data: {json.dumps({'text': chunk})}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -258,7 +333,7 @@ async def sse_updates():
     - risk_score: updated overall risk score
     - heartbeat: keep-alive ping every 15 seconds
     """
-    from signal_bus import bus
+    from backend.signal_bus import bus
 
     queue = bus.subscribe()
 

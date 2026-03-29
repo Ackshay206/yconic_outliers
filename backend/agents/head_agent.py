@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 import google.genai as genai
 from google.genai import types as genai_types
 
-from models import Anomaly, AgentReport, CascadeChain, FounderBriefing, RiskScore
+from backend.models import Anomaly, AgentReport, CascadeChain, FounderBriefing, RiskScore
+
+logger = logging.getLogger("deadpool.head_agent")
 
 MODEL = "gemini-2.5-pro"
 
@@ -247,7 +249,7 @@ class HeadAgent:
             data = json.loads(clean.strip())
             return FounderBriefing(**data)
         except Exception as e:
-            logger.warning("Failed to parse briefing JSON (%s), using fallback.", e)
+            logger.warning("[HeadAgent] Failed to parse briefing JSON (%s), using fallback.", e)
             # Best-effort: return raw text as summary
             return FounderBriefing(
                 summary=raw[:500] if raw else "Analysis complete.",
@@ -296,9 +298,9 @@ class HeadAgent:
                 )
                 if response.text:
                     return response.text
-                logger.warning("Gemini returned empty (attempt %d/3, finish_reason=%s)", attempt + 1, response.candidates[0].finish_reason if response.candidates else "N/A")
+                logger.warning("[HeadAgent] Gemini returned empty (attempt %d/3, finish_reason=%s)", attempt + 1, response.candidates[0].finish_reason if response.candidates else "N/A")
             except Exception as e:
-                logger.warning("Gemini call failed (attempt %d/3): %s", attempt + 1, e)
+                logger.warning("[HeadAgent] Gemini call failed (attempt %d/3): %s", attempt + 1, e)
             import time
             time.sleep(2)
         return "Unable to generate briefing at this time."

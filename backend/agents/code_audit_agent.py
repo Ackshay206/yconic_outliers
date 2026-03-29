@@ -22,7 +22,7 @@ from pathlib import Path
 
 import logging
 
-from agents.base_agent import BaseAgent
+from backend.agents.base_agent import BaseAgent
 
 logger = logging.getLogger("deadpool.code_audit_agent")
 
