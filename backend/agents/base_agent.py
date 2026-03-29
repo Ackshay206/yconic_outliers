@@ -9,6 +9,7 @@ Requires GOOGLE_API_KEY environment variable.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import uuid
@@ -18,6 +19,8 @@ import google.genai as genai
 from google.genai import types as genai_types
 
 from models import Anomaly, AgentReport
+
+logger = logging.getLogger("deadpool.base_agent")
 
 
 class BaseAgent:
@@ -36,6 +39,16 @@ class BaseAgent:
     # ------------------------------------------------------------------
 
     def load_data(self) -> dict:
+        """
+        Load and return the agent's domain data as a plain dict.
+
+        The returned dict is serialised to JSON and passed verbatim as the
+        ``user_message`` context to the AI model. Subclasses decide what keys
+        and structure to include — the richer and more specific the data, the
+        better the model's anomaly detection.
+
+        Must be implemented by every specialist agent subclass.
+        """
         raise NotImplementedError(f"{self.__class__.__name__} must implement load_data()")
 
     # ------------------------------------------------------------------
@@ -101,7 +114,10 @@ class BaseAgent:
                 max_output_tokens=16384,
             ),
         )
-        return response.text or ""
+        if response.text is None:
+            logger.warning("[%s] Gemini returned None — model may have exhausted token budget", self.domain)
+            return "[]"
+        return response.text
 
     def _parse_anomalies(self, raw: str) -> list[Anomaly]:
         """
@@ -128,8 +144,8 @@ class BaseAgent:
             item["agent_domain"] = self.domain
             try:
                 anomalies.append(Anomaly(**item))
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("[%s] Skipping malformed anomaly: %s", self.domain, exc)
 
         return anomalies
 

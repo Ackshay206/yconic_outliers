@@ -12,7 +12,27 @@ from models import Anomaly
 
 
 class SignalBus:
-    def __init__(self, max_size: int = 500):
+    """
+    In-memory publish/subscribe event bus for anomaly streaming.
+
+    Agents call ``publish()`` after detecting an anomaly. The SSE endpoint
+    subscribes via ``subscribe()`` and streams events to connected dashboard
+    clients. The ring buffer (``_events``) retains the last ``max_size``
+    anomalies so that clients connecting mid-session can catch up on recent
+    events via ``get_recent()``.
+
+    Thread safety: ``put_nowait`` is used for non-blocking puts; if a subscriber
+    queue is full the event is dropped for that subscriber rather than blocking
+    the publishing agent.
+    """
+
+    def __init__(self, max_size: int = 500) -> None:
+        """
+        Args:
+            max_size: Ring-buffer capacity. Once full, the oldest event is
+                      evicted to make room for the newest. 500 events covers
+                      approximately one full analysis cycle across all agents.
+        """
         self._events: deque[Anomaly] = deque(maxlen=max_size)
         self._subscribers: list[asyncio.Queue] = []
 
@@ -45,6 +65,7 @@ class SignalBus:
         return events[-n:]
 
     def clear(self) -> None:
+        """Flush all retained events from the ring buffer (used in tests)."""
         self._events.clear()
 
 

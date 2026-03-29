@@ -20,7 +20,11 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import logging
+
 from agents.base_agent import BaseAgent
+
+logger = logging.getLogger("deadpool.code_audit_agent")
 
 FALLBACK_JSON = Path(__file__).parent.parent / "data" / "codebase_audit.json"
 COMMIT_LOOKBACK_DAYS = 84   # 12 weeks
@@ -195,9 +199,9 @@ class CodeAuditAgent(BaseAgent):
                     "manifest_path": alert.dependency.manifest_path if alert.dependency else None,
                     "created_at": alert.created_at.isoformat() if alert.created_at else None,
                 })
-        except Exception:
-            # Dependabot API requires the repo to have Dependabot enabled
-            pass
+        except Exception as exc:
+            # Dependabot API requires Dependabot to be enabled on the repo
+            logger.warning("Dependabot alerts unavailable: %s", exc)
         return alerts
 
     def _fetch_pr_patterns(self, repo) -> dict:
@@ -216,7 +220,7 @@ class CodeAuditAgent(BaseAgent):
         for pr in repo.get_pulls(state="all", sort="updated", direction="desc"):
             updated = pr.updated_at
             if updated.tzinfo is None:
-                updated = updated.replace(timezone.utc)
+                updated = updated.replace(tzinfo=timezone.utc)
             if updated < since:
                 break
 

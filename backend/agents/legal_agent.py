@@ -97,7 +97,10 @@ class LegalAgent(BaseAgent):
                 doc.close()
                 full_text = "\n\n".join(pages_text)
 
-                # Chunk if very long (Gemini handles up to 1M tokens but be safe)
+                # Gemini 2.5 Flash supports ~1M token context, but large PDFs with
+                # boilerplate can easily hit 100K+ chars. 80K chars (~20K tokens) keeps
+                # the request well within the model's optimal reasoning window and avoids
+                # excessive latency on very long contracts.
                 max_chars = 80_000
                 if len(full_text) > max_chars:
                     full_text = full_text[:max_chars] + "\n[...truncated for length]"

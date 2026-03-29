@@ -88,7 +88,8 @@ The system is **multi-model by design**: five specialist agents and the Head Sup
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | Orchestration | **LangGraph** `StateGraph` | Typed state, conditional edges, parallel fan-out, `MemorySaver` checkpointing |
-| AI (Primary) | **Gemini 2.5 Flash** via `google-genai` SDK | 5 specialist agents + Head Supervisor + briefing generation |
+| AI (Primary) | **Gemini 2.5 Flash** via `google-genai` SDK | 5 specialist agents + briefing generation |
+| AI (Head Agent) | **Gemini 2.5 Pro** via `google-genai` SDK | Head Agent — largest context window for cross-domain synthesis |
 | AI (Finance) | **GPT-4o-mini** via `openai` SDK | Finance agent — fast structured CSV extraction, precise arithmetic |
 | Backend | **Python 3.11+ / FastAPI** | Async API server, SSE streaming, Pydantic v2 data validation |
 | Frontend | **React 19 + Vite 6 + D3.js** | Dashboard with data ingestion, cascade graph visualization, real-time SSE client |
@@ -112,13 +113,15 @@ yconic_outliers/
 │
 ├── backend/                    # ── Python FastAPI Backend ──
 │   ├── main.py                 # 🚀 Entry point — routes, CORS, SSE, agent lifecycle
-│   ├── models.py               # 📐 Pydantic v2 schemas (Anomaly, CascadeChain, RiskScore, etc.)
-│   ├── cascade_mapper.py       # 🔗 Deterministic cascade engine — 6 pre-seeded failure paths
+│   ├── models.py               # 📐 Pydantic v2 schemas (Anomaly, CascadeChain, RiskScore, FounderBriefing, etc.)
+│   ├── orchestrator.py         # 🔀 LangGraph StateGraph builder — fan-out/fan-in pipeline
 │   ├── signal_bus.py           # 📡 In-memory pub/sub event bus for SSE anomaly streaming
-│   ├── slack_client.py         # 💬 Slack API integration client
-│   ├── get_commit_history.py   # 📊 GitHub commit history fetcher
-│   ├── test_auth.py            # 🧪 Authentication test utilities
 │   ├── requirements.txt        # Python dependencies
+│   │
+│   ├── utils/
+│   │   ├── cascade_mapper.py   # 🔗 Deterministic cascade engine — 6 pre-seeded failure paths
+│   │   ├── slack_client.py     # 💬 Slack API integration client
+│   │   └── reddit_scraper.py   # 🌐 Reddit public JSON API scraper (r/BrainrotGenz)
 │   │
 │   ├── agents/                 # 🤖 AI Agent Modules
 │   │   ├── __init__.py
@@ -296,7 +299,8 @@ All data flowing through the system is typed with **Pydantic v2** schemas:
 | `Anomaly` | A single detected risk signal | `severity` (0–1), `confidence` (0–1), `affected_entities`, `evidence`, `cross_references` |
 | `CascadeNode` | One step in a cascade chain | `conditional_probability`, `cumulative_probability` |
 | `CascadeChain` | Full failure chain trigger → end-state | `overall_probability`, `time_to_impact_days`, `financial_impact`, `urgency_score` |
-| `RiskScore` | Overall system output | `score` (0–100), `trend`, `top_cascades` (top 3), `briefing` |
+| `FounderBriefing` | Structured plain-language briefing | `summary`, `timeline`, `recommended_action` |
+| `RiskScore` | Overall system output | `score` (0–100), `severity_level`, `trend`, `top_cascades` (top 3), `briefing: FounderBriefing` |
 | `AgentReport` | Specialist agent output | `anomalies` list, `raw_data_summary` |
 | `WhatIfScenario` | Simulation input/output | `scenario_type`, `parameters`, `modified_cascades`, `new_risk_score` |
 
@@ -497,7 +501,9 @@ Each path prunes at a **cumulative probability threshold of 0.25** — low-proba
 |----------|----------|---------|-------|
 | `GOOGLE_API_KEY` | ✅ Yes | All Gemini agents + Head Agent | Required for startup |
 | `OPENAI_API_KEY` | ✅ Yes | Finance Agent (GPT-4o-mini) | Required for startup |
-| `SLACK_BOT_TOKEN` | ❌ Optional | `slack_client.py` | Only for Slack integration |
+| `GITHUB_TOKEN` | ⚠️ Recommended | Code Audit Agent, Infra Agent | Falls back to JSON if missing |
+| `GITHUB_REPO` | ⚠️ Recommended | Code Audit Agent, Infra Agent | Format: `owner/repo` |
+| `SLACK_BOT_TOKEN` | ❌ Optional | `utils/slack_client.py` | Only for Slack integration; gracefully skipped if missing |
 
 ---
 

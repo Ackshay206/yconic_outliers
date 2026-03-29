@@ -49,11 +49,24 @@ Output ONLY a valid JSON array of anomaly objects."""
 
 
 class FinanceAgent:
-    """Finance Agent — runs on GPT-4o-mini instead of Gemini."""
+    """
+    Finance Agent — runs on GPT-4o-mini (OpenAI) instead of Gemini.
+
+    Does **not** extend ``BaseAgent`` because it uses a different SDK and
+    response format. Financial analysis involves precise arithmetic over
+    structured CSV data; GPT-4o-mini with ``response_format={"type": "json_object"}``
+    and ``temperature=0.1`` produces more reliable structured numeric output than
+    a general-purpose prompt-only approach.
+
+    This also creates *cross-provider corroboration*: when Finance (GPT-4o-mini)
+    and Legal (Gemini) independently flag the same contract risk, the signal is
+    model-family-independent — not just one model agreeing with itself.
+    """
 
     MODEL = "gpt-4o-mini"
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialise the OpenAI client and set the agent domain identifier."""
         self.domain = "finance"
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.last_report: AgentReport | None = None
@@ -92,6 +105,12 @@ class FinanceAgent:
         return data
 
     def run(self) -> AgentReport:
+        """
+        Load finance CSV data, call GPT-4o-mini, parse anomalies, and return an AgentReport.
+
+        Mirrors the ``BaseAgent.run()`` contract so the orchestrator can treat
+        this agent identically to Gemini-backed agents.
+        """
         data = self.load_data()
         data_json = json.dumps(data, indent=2)
 
@@ -143,6 +162,14 @@ class FinanceAgent:
         return report
 
     def _parse_anomalies(self, raw: str) -> list[Anomaly]:
+        """
+        Parse GPT-4o-mini's response into a validated list of ``Anomaly`` objects.
+
+        GPT with ``json_object`` response mode is guaranteed to return valid JSON
+        but may wrap the anomaly array in a top-level key (e.g., ``{"anomalies": [...]}``)
+        rather than returning a bare array. This method unwraps common wrapper keys
+        before deserialising.
+        """
         text = re.sub(r"```(?:json)?\s*", "", raw).strip().rstrip("`").strip()
 
         # GPT-4o-mini with json_object mode may wrap the array in a key

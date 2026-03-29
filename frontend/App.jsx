@@ -1,41 +1,100 @@
 import React from "react";
-import Header  from "./components/layout/Header";
-import TabBar  from "./components/layout/TabBar";
-import IngestTab  from "./components/ingest/IngestTab";
-import CascadeTab from "./components/cascade/CascadeTab";
-import { useAgentProcessor } from "./hooks/useAgentProcessor";
-import { HARDCODED_CASCADE } from "./constants/cascade";
+import Header        from "./components/layout/Header";
+import AgentsPanel   from "./components/AgentsPanel";
+import FlawsPanel    from "./components/FlawsPanel";
+import RiskIndex     from "./components/RiskIndex";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { useDeadpool } from "./hooks/useDeadpool";
 
-export default function App() {
-  const [tab, setTab] = React.useState("ingest");
-  const { files, agentStatus, processing, processed, handleFile, runAnalysis } = useAgentProcessor();
+function AppInner() {
+  const { agentStatuses, anomalies, cascadeSteps, riskScore, running, error, runAnalysis } = useDeadpool();
 
   return (
-    <div style={{ minHeight: "100vh", background: "#020817", color: "#e2e8f0", fontFamily: "'Inter', sans-serif", fontSize: 14 }}>
-      <Header riskScore={HARDCODED_CASCADE.riskScore} showScore={processed} />
-      <TabBar active={tab} onChange={setTab} />
+    <div style={{
+      height: "100%",
+      background: "#0E0E0E", color: "#FFFFFF",
+      fontFamily: "'Inter', sans-serif",
+      display: "flex", flexDirection: "column",
+      overflow: "hidden",
+      position: "relative",
+    }}>
+      {running && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 50,
+          background: "rgba(0, 0, 0, 0.5)",
+          pointerEvents: "none",
+          transition: "opacity 0.4s ease"
+        }} />
+      )}
+      <Header running={running} onRun={runAnalysis} />
+      {error && (
+        <div style={{
+          background: "#3D0000", color: "#FF6060", fontSize: 12, fontWeight: 600,
+          padding: "8px 24px", borderBottom: "1px solid #7A0000", flexShrink: 0,
+        }}>
+          Analysis error: {error}
+        </div>
+      )}
 
-      <div style={{ padding: "28px 32px", maxWidth: 1200, margin: "0 auto" }}>
-        {tab === "ingest" && (
-          <IngestTab
-            files={files}
-            agentStatus={agentStatus}
-            processing={processing}
-            processed={processed}
-            onFile={handleFile}
-            onRun={runAnalysis}
-          />
-        )}
-        {tab === "cascade" && <CascadeTab />}
+      {/* Two-column body */}
+      <div style={{
+        flex: 1, display: "grid", gridTemplateColumns: "3fr 7fr",
+        gap: 0, overflow: "hidden",
+      }}>
+
+        {/* Left column: Agents */}
+        <div style={{
+          background: "#0A0A0A",
+          borderRight: "1px solid #3D0000",
+          overflow: "hidden",
+          padding: 24,
+        }}>
+          <AgentsPanel agentStatuses={agentStatuses} />
+        </div>
+
+        {/* Right column: Flaws Detected + Risk Index */}
+        <div style={{
+          background: "#111111",
+          display: "flex", flexDirection: "column",
+          padding: 24, gap: 24, overflow: "hidden",
+        }}>
+          <FlawsPanel anomalies={anomalies} />
+          <div style={{ flexShrink: 0 }}>
+            <RiskIndex score={riskScore} />
+          </div>
+        </div>
       </div>
 
       <style>{`
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body, #root { height: 100%; overflow: hidden; margin: 0; padding: 0; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #020817; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #0E0E0E; }
+        ::-webkit-scrollbar-thumb { background: #3D0000; border-radius: 2px; }
+        .material-icons {
+          font-family: 'Material Icons';
+          font-weight: normal;
+          font-style: normal;
+          line-height: 1;
+          letter-spacing: normal;
+          text-transform: none;
+          display: inline-block;
+          white-space: nowrap;
+          direction: ltr;
+          -webkit-font-feature-settings: 'liga';
+          font-feature-settings: 'liga';
+          -webkit-font-smoothing: antialiased;
+        }
       `}</style>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppInner />
+    </ErrorBoundary>
   );
 }
