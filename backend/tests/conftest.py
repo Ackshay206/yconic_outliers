@@ -31,18 +31,27 @@ VALID_ANOMALY = {
 
 
 def make_claude_response(anomalies_json: str) -> MagicMock:
-    """Return a mock that looks like an anthropic Messages response."""
-    content_block = MagicMock()
-    content_block.text = anomalies_json
+    """Return a mock that looks like a Gemini GenerateContentResponse."""
     response = MagicMock()
-    response.content = [content_block]
+    response.text = anomalies_json
+    return response
+
+
+def make_openai_response(anomalies_json: str) -> MagicMock:
+    """Return a mock that looks like an OpenAI ChatCompletion response."""
+    message = MagicMock()
+    message.content = anomalies_json
+    choice = MagicMock()
+    choice.message = message
+    response = MagicMock()
+    response.choices = [choice]
     return response
 
 
 @pytest.fixture
 def mock_signal_bus():
     """Patch the signal bus so publish() is a no-op during tests."""
-    with patch("agents.base_agent.bus") as mock_bus:
+    with patch("signal_bus.bus") as mock_bus:
         mock_bus.publish = MagicMock()
         yield mock_bus
 
@@ -50,11 +59,24 @@ def mock_signal_bus():
 @pytest.fixture
 def mock_anthropic_client():
     """
-    Patch anthropic.Anthropic so no real API calls are made.
-    Returns the mock client instance; tests set mock_client.messages.create.return_value
-    to control what Claude 'returns'.
+    Patch google.genai.Client so no real API calls are made.
+    Returns the mock client instance; tests set
+    mock_client.models.generate_content.return_value to control what Gemini 'returns'.
     """
-    with patch("anthropic.Anthropic") as MockClass:
+    with patch("google.genai.Client") as MockClass:
+        mock_instance = MagicMock()
+        MockClass.return_value = mock_instance
+        yield mock_instance
+
+
+@pytest.fixture
+def mock_openai_client():
+    """
+    Patch openai.OpenAI so no real API calls are made.
+    Returns the mock client instance; tests set
+    mock_client.chat.completions.create.return_value to control what GPT 'returns'.
+    """
+    with patch("openai.OpenAI") as MockClass:
         mock_instance = MagicMock()
         MockClass.return_value = mock_instance
         yield mock_instance

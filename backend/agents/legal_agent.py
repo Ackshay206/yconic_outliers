@@ -17,7 +17,7 @@ from pathlib import Path
 from agents.base_agent import BaseAgent
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "contracts.json"
-PDF_DIR = Path(__file__).parent.parent / "data" / "contracts"
+PDF_DIR = Path(__file__).parent.parent / "data"
 
 SYSTEM_PROMPT = """You are the Legal Agent for DEADPOOL, a startup risk monitoring system.
 
@@ -72,7 +72,7 @@ class LegalAgent(BaseAgent):
         return data
 
     def _extract_pdfs(self) -> list[dict]:
-        """Extract text from all PDFs in the contracts directory."""
+        """Extract text from all PDFs in the data directory using PyMuPDF."""
         if not PDF_DIR.exists():
             return []
 
@@ -81,20 +81,21 @@ class LegalAgent(BaseAgent):
             return []
 
         try:
-            import pdfplumber
+            import fitz  # PyMuPDF
         except ImportError:
             return []
 
         results = []
         for pdf_path in pdf_files:
             try:
-                with pdfplumber.open(pdf_path) as pdf:
-                    pages_text = []
-                    for page in pdf.pages:
-                        text = page.extract_text()
-                        if text:
-                            pages_text.append(text.strip())
-                    full_text = "\n\n".join(pages_text)
+                doc = fitz.open(str(pdf_path))
+                pages_text = []
+                for page in doc:
+                    text = page.get_text()
+                    if text:
+                        pages_text.append(text.strip())
+                doc.close()
+                full_text = "\n\n".join(pages_text)
 
                 # Chunk if very long (Gemini handles up to 1M tokens but be safe)
                 max_chars = 80_000
@@ -103,7 +104,7 @@ class LegalAgent(BaseAgent):
 
                 results.append({
                     "filename": pdf_path.name,
-                    "pages": len(pdf.pages),
+                    "pages": len(pages_text),
                     "text": full_text,
                 })
             except Exception:

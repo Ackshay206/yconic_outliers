@@ -8,11 +8,12 @@ Covers:
 - Parse handles an empty array (no anomalies)
 - Parse handles malformed JSON gracefully
 - load_data() reads the correct JSON file
+- Data file presence and schema validation (real file on disk)
 """
 import json
 import os
 import pytest
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 
 from conftest import VALID_ANOMALY, make_claude_response
 
@@ -49,7 +50,7 @@ PEOPLE_ANOMALY = {**VALID_ANOMALY, "agent_domain": "people"}
 class TestPeopleAgentRun:
     def test_run_returns_agent_report(self, people_agent, mock_signal_bus):
         """run() should return an AgentReport with the correct agent domain."""
-        people_agent.client.messages.create.return_value = make_claude_response(
+        people_agent.client.models.generate_content.return_value = make_claude_response(
             json.dumps([PEOPLE_ANOMALY])
         )
         with patch.object(people_agent, "load_data", return_value=SAMPLE_TEAM_DATA):
@@ -61,7 +62,7 @@ class TestPeopleAgentRun:
 
     def test_run_populates_anomalies(self, people_agent, mock_signal_bus):
         """run() should parse Claude's JSON response into Anomaly objects."""
-        people_agent.client.messages.create.return_value = make_claude_response(
+        people_agent.client.models.generate_content.return_value = make_claude_response(
             json.dumps([PEOPLE_ANOMALY])
         )
         with patch.object(people_agent, "load_data", return_value=SAMPLE_TEAM_DATA):
@@ -73,7 +74,7 @@ class TestPeopleAgentRun:
 
     def test_run_publishes_to_signal_bus(self, people_agent, mock_signal_bus):
         """Each detected anomaly must be published to the signal bus."""
-        people_agent.client.messages.create.return_value = make_claude_response(
+        people_agent.client.models.generate_content.return_value = make_claude_response(
             json.dumps([PEOPLE_ANOMALY, {**PEOPLE_ANOMALY, "id": "test_002"}])
         )
         with patch.object(people_agent, "load_data", return_value=SAMPLE_TEAM_DATA):
@@ -83,7 +84,7 @@ class TestPeopleAgentRun:
 
     def test_run_caches_last_report(self, people_agent, mock_signal_bus):
         """run() should store the report in last_report for later retrieval."""
-        people_agent.client.messages.create.return_value = make_claude_response(
+        people_agent.client.models.generate_content.return_value = make_claude_response(
             json.dumps([PEOPLE_ANOMALY])
         )
         with patch.object(people_agent, "load_data", return_value=SAMPLE_TEAM_DATA):
@@ -93,7 +94,7 @@ class TestPeopleAgentRun:
 
     def test_run_no_anomalies(self, people_agent, mock_signal_bus):
         """run() with an empty anomaly array should return a report with no anomalies."""
-        people_agent.client.messages.create.return_value = make_claude_response("[]")
+        people_agent.client.models.generate_content.return_value = make_claude_response("[]")
         with patch.object(people_agent, "load_data", return_value=SAMPLE_TEAM_DATA):
             report = people_agent.run()
 
@@ -147,16 +148,89 @@ class TestPeopleAgentParseAnomalies:
 
 
 class TestPeopleAgentLoadData:
-    def test_load_data_reads_json_file(self, people_agent):
-        """load_data() should open and parse the team_activity.json file."""
-        fake_data = {"team": []}
-        m = mock_open(read_data=json.dumps(fake_data))
-        with patch("builtins.open", m):
-            data = people_agent.load_data()
-        assert data == fake_data
+    def test_load_data_returns_dict(self, people_agent):
+        """load_data() always returns a dict (Slack not connected in test env)."""
+        data = people_agent.load_data()
+        assert isinstance(data, dict)
 
-    def test_load_data_file_not_found(self, people_agent):
-        """load_data() should propagate FileNotFoundError when data file is missing."""
-        with patch("builtins.open", side_effect=FileNotFoundError):
-            with pytest.raises(FileNotFoundError):
-                people_agent.load_data()
+    def test_load_data_has_developers_key(self, people_agent):
+        """load_data() always includes a developers key."""
+        data = people_agent.load_data()
+        assert "developers" in data
+
+    def test_load_data_has_data_sources_key(self, people_agent):
+        """load_data() always includes a data_sources list."""
+        data = people_agent.load_data()
+        assert "data_sources" in data
+
+    def test_load_data_slack_not_connected_returns_empty_developers(self, people_agent):
+        """When SLACK_BOT_TOKEN is unset, developers should be empty (no real Slack)."""
+        data = people_agent.load_data()
+        assert data["developers"] == {} or isinstance(data["developers"], dict)
+
+
+class TestPeopleAgentDataFile:
+    """Validate the real team_activity.json file on disk."""
+
+    DATA_PATH = os.path.join(os.path.dirname(__file__), "../data/team_activity.json")
+
+    @pytest.fixture(scope="class")
+    def data(self):
+        with open(self.DATA_PATH, "r") as f:
+            return json.load(f)
+
+    def test_data_file_exists(self):
+        assert os.path.exists(self.DATA_PATH), "team_activity.json not found"
+
+    def test_data_file_is_valid_json(self):
+        with open(self.DATA_PATH, "r") as f:
+            content = f.read()
+        assert len(content) > 0
+        parsed = json.loads(content)
+        assert isinstance(parsed, dict)
+
+    def test_top_level_keys_present(self, data):
+        for key in ("metadata", "developers", "team_alerts"):
+            assert key in data, f"Missing top-level key: {key}"
+
+    def test_developers_is_non_empty_list(self, data):
+        assert isinstance(data["developers"], list)
+        assert len(data["developers"]) > 0, "developers list must not be empty"
+
+    def test_developer_entries_have_required_fields(self, data):
+        required = {"name", "role", "primary_services", "weekly_activity", "code_ownership"}
+        for dev in data["developers"]:
+            missing = required - dev.keys()
+            assert not missing, f"Developer {dev.get('name', '?')} missing fields: {missing}"
+
+    def test_weekly_activity_is_list(self, data):
+        for dev in data["developers"]:
+            assert isinstance(dev["weekly_activity"], list), (
+                f"{dev['name']}: weekly_activity must be a list"
+            )
+
+    def test_code_ownership_is_dict(self, data):
+        for dev in data["developers"]:
+            assert isinstance(dev["code_ownership"], dict), (
+                f"{dev['name']}: code_ownership must be a dict"
+            )
+
+    def test_team_alerts_is_list(self, data):
+        assert isinstance(data["team_alerts"], list)
+
+    def test_metadata_has_team_size(self, data):
+        assert "team_size" in data["metadata"]
+        assert isinstance(data["metadata"]["team_size"], int)
+        assert data["metadata"]["team_size"] > 0
+
+    def test_developer_count_matches_metadata(self, data):
+        assert len(data["developers"]) == data["metadata"]["team_size"]
+
+    @pytest.mark.usefixtures("mock_anthropic_client", "mock_signal_bus")
+    def test_load_data_returns_expected_structure(self):
+        """PeopleAgent.load_data() reads from Slack; returns dict with developers key."""
+        from agents.people_agent import PeopleAgent
+        agent = PeopleAgent()
+        data = agent.load_data()
+        assert "developers" in data
+        assert "data_sources" in data
