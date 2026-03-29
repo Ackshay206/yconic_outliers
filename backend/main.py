@@ -94,6 +94,16 @@ async def health():
 
 
 # ---------------------------------------------------------------------------
+# Slack integration status
+# ---------------------------------------------------------------------------
+@app.get("/api/slack/status", tags=["Integrations"])
+async def slack_status():
+    """Check whether the Slack API integration is connected and healthy."""
+    from slack_client import slack
+    return slack.status()
+
+
+# ---------------------------------------------------------------------------
 # Individual agent run
 # ---------------------------------------------------------------------------
 VALID_AGENTS = {"people", "finance", "infra", "product", "legal", "code_audit"}
