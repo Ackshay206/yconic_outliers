@@ -4,6 +4,7 @@ export default function Header({ running, onRun, activePage, onPageChange, showC
   const navTabs = [
     { id: "overview",  label: "Overview" },
     ...(showCascades ? [{ id: "cascades", label: "Cascade Chains" }] : []),
+    { id: "chat",      label: "Agent Chat" },
   ];
 
   return (
@@ -57,17 +58,6 @@ export default function Header({ running, onRun, activePage, onPageChange, showC
               onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#555555"; }}
             >
               {tab.label}
-              {tab.id === "cascades" && (
-                <span style={{
-                  marginLeft: 7, fontSize: 9, fontWeight: 900,
-                  background: active ? "rgba(255,32,32,0.2)" : "rgba(255,255,255,0.06)",
-                  color: active ? "#FF2020" : "#555555",
-                  border: active ? "1px solid rgba(255,32,32,0.4)" : "1px solid #2A2A2A",
-                  borderRadius: 10, padding: "1px 6px",
-                }}>
-                  LIVE
-                </span>
-              )}
             </button>
           );
         })}

@@ -31,6 +31,8 @@ logging.basicConfig(
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel as PydanticBaseModel
 from sse_starlette.sse import EventSourceResponse
 
 from models import AgentReport, CascadeChain, RiskScore, WhatIfScenario
@@ -314,6 +316,73 @@ async def whatif_simulation(scenario: WhatIfScenario):
     except Exception as exc:
         logger.exception("What-if simulation failed for scenario type %s", scenario.scenario_type)
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
+# Agent chat — streaming SSE endpoint
+# ---------------------------------------------------------------------------
+
+class ChatMessage(PydanticBaseModel):
+    role: str   # "user" | "model"
+    text: str
+
+class ChatRequest(PydanticBaseModel):
+    message: str
+    history: list[ChatMessage] = []
+
+
+@app.post("/api/agents/{agent_name}/chat", tags=["Chat"])
+async def agent_chat(agent_name: str, body: ChatRequest):
+    """
+    Stream a chat response from a specialist agent using SSE.
+
+    The agent answers in plain language, grounded in its latest data context.
+    Emits chunks as: data: {"text": "..."}\n\n
+    Terminates with:  data: [DONE]\n\n
+    """
+    if agent_name not in VALID_AGENTS:
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_name}' not found.")
+    agent = agent_registry.get(agent_name)
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized.")
+
+    history = [{"role": m.role, "text": m.text} for m in body.history]
+
+    async def generate():
+        loop = asyncio.get_event_loop()
+        queue: asyncio.Queue = asyncio.Queue()
+
+        def run_stream():
+            try:
+                for chunk in agent.chat_stream(body.message, history):
+                    loop.call_soon_threadsafe(queue.put_nowait, chunk)
+            except Exception as exc:
+                loop.call_soon_threadsafe(
+                    queue.put_nowait,
+                    f"\n\n[Agent error: {exc}]"
+                )
+            finally:
+                loop.call_soon_threadsafe(queue.put_nowait, None)  # sentinel
+
+        import threading
+        threading.Thread(target=run_stream, daemon=True).start()
+
+        while True:
+            chunk = await queue.get()
+            if chunk is None:
+                yield f"data: [DONE]\n\n"
+                break
+            yield f"data: {json.dumps({'text': chunk})}\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
